@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import styled from 'styled-components';
+import Calendar from './component/calendar1';
+import { Route, Switch } from 'react-router-dom';
+import { withRouter } from 'react-router';
+import EditSchedule from './component/calendar1/EditSchedule';
+import { useSelector } from 'react-redux';
 
-function App() {
+const App = ({ history }) => {
+  const { isOpenEditPopup } = useSelector((state) => state.schedule);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppWrapper>
+      <Title>CALENDAR</Title>
+      <ContentWrapper>
+        <Switch>
+          <Route exact path="/" component={Calendar} />
+          <Route exact path="/edit/:id" component={EditSchedule} />
+        </Switch>
+        {isOpenEditPopup && <EditSchedule />}
+      </ContentWrapper>
+    </AppWrapper>
   );
-}
+};
 
-export default App;
+const AppWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+`;
+
+const ContentWrapper = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+`;
+
+const Title = styled.div`
+  color: gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 5vh;
+  font-size: 1.5em;
+  font-weight: bold;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+export default withRouter(App); 
