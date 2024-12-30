@@ -15,6 +15,6 @@ OUTPUT_DIRS = {
 
 # URL 상수
 URLS = {
-    'saramin': 'https://www.saramin.co.kr/zf_user/jobs/list/job-category?cat_mcls=2&panel_type=&search_optional_item=n&search_done=y&panel_count=y&preview=y&page=1&sort=RD',
-    'jobkorea': 'https://www.jobkorea.co.kr/recruit/joblist'
+    'saramin': 'https://www.saramin.co.kr/zf_user/jobs/list/job-category?cat_mcls=2&loc_mcd=101000&panel_type=&search_optional_item=n&search_done=y&panel_count=y&preview=y',
+    'jobkorea': 'https://www.jobkorea.co.kr/recruit/joblist?menucode=duty'
 }
