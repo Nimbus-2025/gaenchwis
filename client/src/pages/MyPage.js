@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CalendarApp from '../calendar';
 import './MyPage.css';
 
+
 const MyPage = () => {
   const [searchText, setSearchText] = useState('');
 

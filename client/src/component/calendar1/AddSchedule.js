@@ -53,8 +53,9 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
     width: 250,
-    textAlign: 'center' },
-    button: {
+    textAlign: 'center'
+  },
+  button: {
     width: '250px',
     backgroundColor: 'skyblue',
     color: 'white',
@@ -75,16 +76,15 @@ const AddSchedule = ({ onClose }) => {
   };
 
   const onAddSchedule = () => {
-    if (onClose) {
-      onClose();
-    }
     if (checkValid()) {
       const yyyymmdd = date.split('T')[0].replaceAll('-', '');
       const time = date.split('T')[1].replaceAll(':', '');
       const data = { date: yyyymmdd, time, title };
 
       dispatch(createSchedule(data));
-      onClose();
+      if (onClose) {
+        onClose();
+      }
     }
   };
 
