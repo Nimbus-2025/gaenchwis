@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
+import { makeStyles } from '@mui/styles';
+import TextField from '@mui/material/TextField';
 
 // useStyles를 컴포넌트 외부로 이동
 const useStyles = makeStyles((theme) => ({

@@ -1,8 +1,7 @@
-import firebase from 'firebase/app';
-import 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  // Firebase 설정 정보를 여기에 넣으세요
   apiKey: "your-api-key",
   authDomain: "your-auth-domain",
   projectId: "your-project-id",
@@ -11,10 +10,8 @@ const firebaseConfig = {
   appId: "your-app-id"
 };
 
-// Initialize Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
 
-export const firestore = firebase.firestore();
-export const scheduleCollection = firestore.collection('schedule');
+const db = getFirestore(app);
+
+export { app, db };

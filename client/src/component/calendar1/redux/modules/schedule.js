@@ -1,9 +1,15 @@
 import { createReducer, createAction } from '@reduxjs/toolkit';
-import { firestore, scheduleCollection } from '../../../calendar1/Firebase';
+import { db } from '../../../calendar1/Firebase';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { makeStyles } from '@mui/styles';
+export const OPEN_ADD_SCHEDULE = 'schedule/OPEN_ADD_SCHEDULE';
+export const CLOSE_ADD_SCHEDULE = 'schedule/CLOSE_ADD_SCHEDULE';
+
+// `schedule` 컬렉션 정의
+const scheduleCollection = collection(db, 'schedule');
 
 // Constants
 const COLLECTION_NAME = 'schedule';
-const db = scheduleCollection;
 
 // Initial State
 export const initialState = {
@@ -12,7 +18,8 @@ export const initialState = {
   thisMonth: [],
   isOpenEditPopup: false,
   currentSchedule: null,
-  isFilter: false
+  isFilter: false,
+  isOpenAddPopup: false
 };
 
 // Action Creators
@@ -74,6 +81,20 @@ const schedule = createReducer(initialState, {
       
       return state.isFilter ? dateInRange && sc.completed : dateInRange;
     });
+  },
+
+  [OPEN_ADD_SCHEDULE]: (state) => {
+    return {
+      ...state,
+      isOpenAddPopup: true
+    };
+  },
+
+  [CLOSE_ADD_SCHEDULE]: (state) => {
+    return {
+      ...state,
+      isOpenAddPopup: false
+    };
   }
 });
 
@@ -111,7 +132,7 @@ export const readSchedule = ({ startDay, endDay }) => async (dispatch) => {
 
 export const updateSchedule = (data) => async (dispatch) => {
   try {
-    await db.doc(data.id).update(data);
+    await updateDoc(doc(scheduleCollection, data.id), data);
     dispatch(editSchedule(data));
   } catch (error) {
     console.error('Error updating schedule:', error);
@@ -121,12 +142,20 @@ export const updateSchedule = (data) => async (dispatch) => {
 
 export const deleteSchedule = (id) => async (dispatch) => {
   try {
-    await db.doc(id).delete();
+    await deleteDoc(doc(scheduleCollection, id));
     dispatch(removeSchedule(id));
   } catch (error) {
     console.error('Error deleting schedule:', error);
     // 에러 처리 로직 추가
   }
 };
+
+export const openAddSchedule = () => ({
+  type: OPEN_ADD_SCHEDULE,
+});
+
+export const closeAddSchedule = () => ({
+  type: CLOSE_ADD_SCHEDULE,
+});
 
 export default schedule; 

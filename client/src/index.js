@@ -1,17 +1,31 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './component/calendar1/redux/configStore';
-import App from './App';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import FirstPage from './firstpage'
+import MainPage from './pages/MainPage';
+import MyPage from './pages/MyPage';
+import UserPage from './pages/UserPage';
+import MyPage1 from './pages/MyPage1';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
+    <GoogleOAuthProvider clientId="800144464912-bjdvo0b4vru9sp0i1segrktsgbk9kngu.apps.googleusercontent.com">
+      <Provider store={store}>
       <BrowserRouter>
-        <App />
+      <Routes>
+        <Route path="/" element={<FirstPage />} />
+        <Route path="/mainpage" element={<MainPage />} />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage1" element={<MyPage1 />} />
+        <Route path="/userpage" element={<UserPage />} />
+      </Routes>
       </BrowserRouter>
-    </Provider>
+      </Provider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );

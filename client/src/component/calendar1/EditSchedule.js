@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { MdChevronLeft } from 'react-icons/md';
 import Datepicker from './Datepicker';
-import { Button, TextField, makeStyles, ButtonGroup } from '@material-ui/core';
+import { Button, TextField, ButtonGroup } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   deleteSchedule,
   openEditPopup,
   updateSchedule
 } from './redux/modules/schedule';
+import { makeStyles } from '@mui/styles';
 
-// useStyles를 컴포넌트 외부로 이동
 const useStyles = makeStyles((theme) => ({
   textField: {
     marginLeft: theme.spacing(1),

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import styled from 'styled-components';
-import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
+import { makeStyles } from '@mui/styles';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import { createSchedule } from './redux/modules/schedule';
 import Datepicker from './Datepicker';
 
@@ -53,9 +53,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
     width: 250,
-    textAlign: 'center'
-  },
-  button: {
+    textAlign: 'center' },
+    button: {
     width: '250px',
     backgroundColor: 'skyblue',
     color: 'white',
@@ -76,6 +75,9 @@ const AddSchedule = ({ onClose }) => {
   };
 
   const onAddSchedule = () => {
+    if (onClose) {
+      onClose();
+    }
     if (checkValid()) {
       const yyyymmdd = date.split('T')[0].replaceAll('-', '');
       const time = date.split('T')[1].replaceAll(':', '');
@@ -90,7 +92,6 @@ const AddSchedule = ({ onClose }) => {
     <Overlay>
       <Wrapper>
         <CloseButton onClick={onClose}>×</CloseButton>
-        <h2>일정 추가</h2>
         <Datepicker setDate={setDate} date={date} />
         <TextField
           id="standard-basic"

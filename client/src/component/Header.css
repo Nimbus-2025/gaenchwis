@@ -1,0 +1,72 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .left-section, .search-section, .right-section {
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-logo {
+    width: 100px;
+    height: 40px;
+    margin-right: 20px;
+  }
+  
+  .category-btn, .search-btn, .mypage-btn, .header-login-btn {
+    margin-left: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  .category-btn:hover, .search-btn:hover, .mypage-btn:hover, .header-login-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .search-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .recommended-jobs, .latest-jobs {
+    width: 48%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    min-height: 200px;
+  }
+  .job-sections {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .recommended-jobs h2, .latest-jobs h2 {
+    margin-bottom: 10px;
+  }
+  .recommended-jobs {
+    background-color: #c9f9ff; /* 추천 채용공고 칸의 배경색 */
+  }
+  
+  .latest-jobs {
+    background-color: #f9e0b6; /* 최신 공고 칸의 배경색 */
+  }
+  .job-list p {
+    margin: 5px 0;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    flex-direction: column;
+  }
