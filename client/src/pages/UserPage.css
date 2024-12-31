@@ -1,0 +1,49 @@
+.user-content {
+    padding: 20px;
+  }
+  
+  .job-sections {
+    display: flex;
+    flex-direction: column; 
+    margin-top: 20px;
+  }
+  
+  .recommended-jobs, .latest-jobs {
+    width: 95%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    min-height: 300px;
+  }
+  
+  .recommended-jobs {
+    background-color: #e0f7fa;
+  }
+  
+  .latest-jobs {
+    background-color: #fff3e0;
+  }
+  
+  .job-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .job-item {
+    margin: 10px 0;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .logout-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
