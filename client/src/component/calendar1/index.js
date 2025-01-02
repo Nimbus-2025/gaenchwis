@@ -152,34 +152,45 @@ const Calendar = ({ history }) => {
           {generate()}
         </DateContainer>
       </CalendarWrapper>
-      <ButtonWrapper>
-        {isFilter ? (
-          <MdCheck
-            onClick={() => onFilter(false)}
-            className={'filterBtn subBtn'}
-          />
-        ) : (
-          <MdDoneAll
-            onClick={() => onFilter(true)}
-            className={'filterBtn subBtn'}
-          />
-        )}
-        <MdEdit 
-          onClick={goToAddSchedule}
-          className={'writeBtn subBtn'}
+      <ButtonWrapper onClick={() => dispatch(openEditPopup(false))}>
+      {isFilter ? (
+        <MdCheck
+          onClick={(e) => {
+            e.stopPropagation();  // 이벤트 버블링 방지
+            onFilter(false);
+          }}
+          className={'filterBtn subBtn'}
         />
-        <MdDehaze className={'menuBtn'} />
-      </ButtonWrapper>
+      ) : (
+        <MdDoneAll
+          onClick={(e) => {
+            e.stopPropagation();  // 이벤트 버블링 방지
+            onFilter(true);
+          }}
+          className={'filterBtn subBtn'}
+        />
+      )}
+      <MdEdit 
+        onClick={(e) => {
+          e.stopPropagation();  // 이벤트 버블링 방지
+          goToAddSchedule();
+        }}
+        className={'writeBtn subBtn'}
+      />
+      <MdDehaze className={'menuBtn'} />
+    </ButtonWrapper>
     </Body>
   );
 };
 const Body = styled.div`
   width: 50%;
-`
+  position: relative;  // 추가
+`;
+
 const ButtonWrapper = styled.div`
-  position: absolute;
-  left: 90vw;
-  top: 60vh;
+  position: fixed; 
+  right: 350px;   
+  bottom: 50px;  
   text-align: center;
   padding-bottom: 3px;
   display: flex;
@@ -187,6 +198,7 @@ const ButtonWrapper = styled.div`
   justify-content: space-between;
   overflow: hidden;
   height: 150px;
+  z-index: 1000;
 
   &:hover .subBtn {
     opacity: 1;
@@ -201,6 +213,7 @@ const ButtonWrapper = styled.div`
     width: 25px;
     height: 25px;
     padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);  // 그림자 효과 추가
 
     &.filterBtn {
       background-color: pink;

@@ -37,7 +37,6 @@ const App = () => {
           </Routes>
           {isOpenEditPopup && <EditSchedule />}
           {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} />}
-          <AddButton onClick={handleOpenAdd}>일정 추가</AddButton>
         </ContentWrapper>
       </AppWrapper>
     </ThemeProvider>
@@ -68,21 +67,6 @@ const Title = styled.div`
   font-weight: bold;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const AddButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: skyblue;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    background-color: deepskyblue;
-  }
 `;
 
 export default App; 
