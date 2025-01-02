@@ -1,0 +1,13 @@
+{
+  "env": {
+    "browser": true,
+    "webextensions": true
+  },
+  "globals": {
+    "chrome": "readonly"
+  },
+  "rules": {
+    // 여기에 프로젝트에 필요한 ESLint 규칙을 추가할 수 있습니다.
+    // 예: "no-unused-vars": "warn"
+  }
+}
