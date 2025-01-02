@@ -1,0 +1,8 @@
+.logo-href {
+display: inline-block;
+}
+  
+.logo {
+    height: 10vmin;
+    pointer-events: none;
+}
