@@ -15,6 +15,6 @@
   "background": {
     "service_worker": "module/Background.js"
   },
-  "permissions": ["activeTab", "scripting"]
+  "permissions": ["contextMenus", "activeTab", "scripting"]
 }
   

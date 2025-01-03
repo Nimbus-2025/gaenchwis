@@ -1,32 +1,30 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Button from '../component/Button';
+import React, { useState, useEffect } from 'react';
+import Home from './Home';
+import DetectEssay from './DetectEssay';
+import LoadEssay from './LoadEssay'
+import SaveEssay from './SaveEssay';
 
 function Main() {
-  const navigate = useNavigate();
+  const [page,setPage]=useState(<Home />);
 
-  const handleButtonClick = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        function: () => {
-          chrome.runtime.sendMessage({ message: 'crawling' });
-        }
-      });
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.message === 'move_page_main') {
+        setPage(<Home />);
+      }
+      if (request.message === 'move_page_detectessay') {
+        setPage(<DetectEssay />);
+      }
+      if (request.message === 'move_page_loadessay') {
+        setPage(<LoadEssay />);
+      }
+      if (request.message === 'move_page_saveessay') {
+        setPage(<SaveEssay />);
+      }
     });
-    navigate("/detectessay")
-  };
+  }, []);
 
-  return (
-    <div>
-      <h4>자기소개서 관리 서비스입니다!</h4>
-      <h4>현재 페이지에서 자기소개서를 탐색할까요?</h4>
-      <Button
-        title="탐색"
-        onClick={handleButtonClick}
-      />
-    </div>
-  );
+  return (<div>{page}</div>);
 }
 
 export default Main;
