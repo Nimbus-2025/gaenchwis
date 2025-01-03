@@ -9,3 +9,7 @@ class DynamoDBException(AWSServiceException):
 class S3Exception(AWSServiceException):
     # S3 관련 예외
     pass
+
+class StorageException(AWSServiceException):
+    """저장소 관련 예외"""
+    pass
