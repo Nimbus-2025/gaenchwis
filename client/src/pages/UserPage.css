@@ -47,3 +47,22 @@
     border-radius: 5px;
     cursor: pointer;
   }
+  .info-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-between; /* 항목 간의 간격을 균등하게 배분 */
+    margin: 20px auto; /* 위쪽 여백과 가운데 정렬 */
+    width: 80%; /* 전체 너비의 80% */
+}
+
+.info-box {
+    background-color: #f0f0f0; /* 사각형 배경색 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    padding: 15px; /* 내부 여백 */
+    width: 22%; /* 각 사각형의 너비 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.tag-item {
+    display: block; /* 각 태그를 블록으로 표시 */
+    margin-top: 5px; /* 태그 간의 간격 */
+}
