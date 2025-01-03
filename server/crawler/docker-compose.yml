@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crawler-service
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./output:/app/output
+    environment:
+      - FLASK_ENV=development
+      - DOCKER_CONTAINER=true
+    restart: unless-stopped
+
+  # alarm:
+  #   build: ./alarm
+  #   container_name: alarm-service
+  #   ports:
+  #     - '8001:8000'
+  #   restart: unless-stopped
+
+  # essay:
+  #   build: ./essay
+  #   container_name: essay-service
+  #   ports:
+  #     - '8002:8000'
+  #   restart: unless-stopped
+
+  # job-posting:
+  #   build: ./job_posting
+  #   container_name: job-posting-service
+  #   ports:
+  #     - '8003:8000'
+  #   restart: unless-stopped
+
+networks:
+  default:
+    name: gaenchwis-network

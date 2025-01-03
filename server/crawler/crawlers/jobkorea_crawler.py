@@ -106,7 +106,7 @@ class JobKoreaCrawler(BaseCrawler):
     def crawl_jobs(self):
         jobkorea_data = []
         page = 1
-        max_pages = 10
+        max_pages = 2
 
         try:
             while page <= max_pages:
