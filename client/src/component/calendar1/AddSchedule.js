@@ -1,151 +1,238 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import moment from 'moment';
 import styled from 'styled-components';
-import { makeStyles } from '@mui/styles';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import { createSchedule } from './redux/modules/schedule';
+import { MdChevronLeft } from 'react-icons/md';
 import Datepicker from './Datepicker';
+import { Button, TextField } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { createSchedule } from './redux/modules/schedule';
+import moment from 'moment';
+
+
+// 스타일 컴포넌트들을 먼저 정의
+const Wrapper = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  z-index: 1000;
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* Mobile Device */
+  @media screen and (max-width: 767px) {
+    width: 90vw;
+    max-width: 400px;
+  }
+
+  /* Tablet Device */
+  @media screen and (min-width: 768px) and (max-width: 991px) {
+    width: 60vw;
+    max-width: 500px;
+  }
+
+  /* Desktop Device */
+  @media screen and (min-width: 992px) {
+    width: 30vw;
+    max-width: 400px;
+  }
+`;
 
 const Overlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  z-index: 999;
 `;
 
-const Wrapper = styled.div`
-  padding: 40px 20px 20px 20px;        // 상하 패딩만 유지하고 좌우 패딩 제거
+const Header = styled.div`
+  background-color: white;
+  height: 7vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 3px;
+  font-size: 1.5em;
+
+  & * {
+    color: #cccccc;
+    cursor: pointer;
+  }
+
+  /* Mobile Device */
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
+
+  /* Tablet Device */
+  @media screen and (min-width: 768px) and (max-width: 991px) {
+    width: 100%;
+  }
+
+  /* Desktop Device */
+  @media screen and (min-width: 992px) {
+    width: 100%;
+  }
+`;
+
+const Body = styled.div`
+  padding: 20px;
+  height: calc(100% - 7vh);
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 270px;
-  max-width: 500px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-`;
+  justify-content: center; // 추가
+  gap: 20px;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-  &:hover {
-    color: #333;
+  /* 내용물을 감싸는 컨테이너 추가 */
+  & > div:not(:first-child) {
+    margin-top: 20px;
+  }
+
+  /* Datepicker와 입력 필드들을 포함하는 영역 */
+  & > * {
+    width: 100%;
+    max-width: 250px;
+    display: flex;
+    justify-content: center;
   }
 `;
 
+
+
+// useStyles 정의
 const useStyles = makeStyles((theme) => ({
   textField: {
-    width: 250,           // 기존 입력창 너비 유지
+    marginLeft: theme?.spacing?.(1) || '8px',
+    marginRight: theme?.spacing?.(1) || '8px',
+    width: 250,
     textAlign: 'center',
-    '& .MuiInputBase-root': {
-      height: '120px'     // 입력창 높이 유지
+    '& label': {
+      color: '#1976d2'
+    },
+    '& .MuiInput-underline:before': {
+      borderBottom: '1px solid #1976d2'
+    },
+    '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+      borderBottom: '2px solid #1976d2'
+    },
+    '& .MuiInput-underline:after': {
+      borderBottomColor: '#1976d2'
     }
   },
-  spacer: {              // 날짜창과 입력창 사이 빈 공간
-    height: '5px'       // 5mm 정도의 간격
-  },
-  smallSpacer: {         // 입력창과 버튼 사이 간격
-    height: '10px'        // 0.5mm
-  },
   button: {
-    width: 250,          // 입력창과 동일한 너비
-    backgroundColor: 'skyblue',
-    color: 'white',
-    marginTop: '32px',
-    padding: '12px'
+    width: '250px',
+    backgroundColor: props => props.hasInput ? '#1976d2' : 'white',
+    color: props => props.hasInput ? 'white' : 'rgba(0, 0, 0, 0.26)',
+    border: props => props.hasInput ? 'none' : '1px solid rgba(0, 0, 0, 0.12)',
+    '&:hover': {
+      backgroundColor: props => props.hasInput ? '#115293' : 'white'
+    }
   }
 }));
 
-const AddSchedule = ({ onClose }) => {
-  const classes = useStyles();
+// AddSchedule 컴포넌트 정의
+const AddSchedule = ({ onClose }) => {  // onClose props 추가
   const dispatch = useDispatch();
   const [date, setDate] = useState(
     moment().format().split(':')[0] + ':' + moment().format().split(':')[1]
   );
   const [title, setTitle] = useState('');
-  const [error, setError] = useState(''); // 에러 상태 추가
+  const [description, setDescription] = useState('');
+  const [titleError, setTitleError] = useState(false);
+  const classes = useStyles({ hasInput: title.trim().length > 0 });
 
   const checkValid = () => {
-    if (!title || title.trim().length === 0) {
-      setError('제목을 입력해주세요');
+    if (title.length === 0 || title.trim().length === 0) {
+      setTitleError(true);
       return false;
     }
     return true;
   };
 
-  const onAddSchedule = async () => {
-    try {
-      if (checkValid()) {
-        console.log('Adding schedule - Initial data:', { date, title }); // 디버깅 로그
+  const onAddSchedule = () => {
+    if (checkValid()) {
+      const yyyymmdd = date.split('T')[0].replaceAll('-', '');
+      const time = date.split('T')[1].replaceAll(':', '');
+      const scheduleData = {
+        date: yyyymmdd,
+        time,
+        title,
+        description,
+      };
 
-        const yyyymmdd = date.split('T')[0].replaceAll('-', '');
-        const time = date.split('T')[1].replaceAll(':', '');
-        
-        const scheduleData = {
-          date: yyyymmdd,
-          time,
-          title: title.trim(),
-          completed: false
-        };
+      dispatch(createSchedule(scheduleData));
+      onClose();  // props로 받은 onClose 함수 호출
+    }
+  };
 
-        console.log('Processed schedule data:', scheduleData); // 디버깅 로그
+  const handleAddSchedule = () => {  // onAddSchedule을 handleAddSchedule로 이름 변경
+    if (checkValid()) {
+      const yyyymmdd = date.split('T')[0].replaceAll('-', '');
+      const time = date.split('T')[1].replaceAll(':', '');
+      const scheduleData = {
+        date: yyyymmdd,
+        time,
+        title,
+        description,
+      };
 
-        // createSchedule 액션 디스패치
-        await dispatch(createSchedule(scheduleData));
-        console.log('Schedule created successfully'); // 디버깅 로그
-
-        // 팝업 닫기
-        if (onClose) {
-          onClose();
-        }
-      }
-    } catch (error) {
-      console.error('Error adding schedule:', error);
-      setError('일정 추가 중 오류가 발생했습니다');
+      dispatch(createSchedule(scheduleData));
+      onClose();  // 팝업 닫기
     }
   };
 
   return (
-    <Overlay onClick={(e) => e.stopPropagation()}>
+    <>
+      <Overlay onClick={onClose} />
       <Wrapper>
-        <CloseButton onClick={onClose}>×</CloseButton>
-        <Datepicker setDate={setDate} date={date} />
-        <div className={classes.spacer} />
-        <TextField
-          id="standard-basic"
-          label="어떤 일정이 있나요?"
-          className={classes.textField}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          error={!!error}
-          helperText={error}
-        />
-        <div className={classes.smallSpacer} />
-        <Button
-          className={classes.button}
-          variant="contained"
-          onClick={onAddSchedule}
-          disabled={!title.trim()}
-        >
-          추가하기
-        </Button>
+        <Header>
+          <MdChevronLeft onClick={onClose} />
+          일정 추가 &nbsp;&nbsp;&nbsp;
+          <i />
+        </Header>
+        <Body>
+          <Datepicker setDate={setDate} date={date} />
+          <TextField
+            id="standard-basic"
+            label="어떤 일정이 있나요?"
+            error={titleError}
+            className={classes.textField}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (titleError) setTitleError(false);
+            }}
+            value={title}
+          />
+          <TextField
+            id="outlined-multiline-static"
+            label="간단 메모"
+            multiline
+            rows={4}
+            className={classes.textField}
+            variant="outlined"
+            onChange={(e) => setDescription(e.target.value)}
+            value={description}
+          />
+          <Button
+            className={classes.button}
+            variant="contained"
+            onClick={onAddSchedule}
+            disabled={!title.trim()}
+          >
+            + ADD
+          </Button>
+        </Body>
       </Wrapper>
-    </Overlay>
+    </>
   );
 };
 
