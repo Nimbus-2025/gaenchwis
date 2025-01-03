@@ -1,7 +1,7 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get(null, (result) => {
     const essay = result.essay || {};
-    const essay_titles = Object.keys(essay)
+    const essay_titles = Object.keys(essay);
     const new_essay_title_num = essay_titles.length+1;
 
     chrome.contextMenus.create({
@@ -29,6 +29,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         const essay = result.essay || {};
         if (type === "dragTitle") {
           essay[text]=null
+          chrome.storage.local.set({ essay: essay })
         }
       });
     },
