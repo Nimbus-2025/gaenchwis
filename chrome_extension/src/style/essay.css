@@ -1,0 +1,17 @@
+.title{
+  margin: 4%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgb(190, 190, 190);/*rgb(100, 200, 200);*/
+}
+
+.content{
+  margin: 4%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgb(190, 190, 190);/*rgb(100, 200, 200);*/
+}

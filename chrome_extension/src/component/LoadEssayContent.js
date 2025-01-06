@@ -1,17 +1,18 @@
 import React from 'react';
-import '../style/LoadEssayContent.css'
+import '../style/modal.css'
+import '../style/essay.css'
 
 function LoadEssayContent({title,content,onClose}) {
   return (
     <div className="modal">
       <div className="modal-content">
-        <span onClick={onClose}>abc</span>
-        <div>
+        <div className="title">
           <p>{title}</p>
         </div>
-        <div>
-          <p>{content}</p>
+        <div className="content">
+          <p>{content!=null ? content : "내용을 입력해주세요."}</p>
         </div>
+        <span className="close" onClick={onClose}>닫기</span>
       </div>
     </div>
   );
