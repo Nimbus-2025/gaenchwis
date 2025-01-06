@@ -17,8 +17,8 @@ function LoadEssay() {
         );
 
         sendResponse({ status: 'loaded'})
-        return true;
       }
+      return true;
     });
   }, []);
 

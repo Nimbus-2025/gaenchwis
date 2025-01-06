@@ -1,1 +1,1 @@
-importScripts('Drag.js', 'Page.js')
+importScripts('Drag.js', 'Page.js', 'Crawling.js')
