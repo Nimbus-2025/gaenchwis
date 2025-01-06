@@ -13,9 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   readSchedule,
   setIsFilter,
-  openEditPopup,
-  openAddSchedule,
-  closeAddSchedule
+  openEditPopup
 } from './redux/modules/schedule';
 import Day from './Day';
 import EditSchedule from './EditSchedule';
@@ -33,9 +31,10 @@ import {
 } from './styles/CalendarStyles';
 
 const Calendar = () => {
-  const { thisMonth, isOpenEditPopup, isFilter, isOpenAddPopup } = useSelector(
+  const { thisMonth, isOpenEditPopup, isFilter } = useSelector(
     (state) => state.schedule
   );
+  const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [current, setCurrent] = useState(moment());
   const dispatch = useDispatch();
 
@@ -86,12 +85,14 @@ const Calendar = () => {
                   ? ''
                   : 'grayed';
 
-              const currentSch = thisMonth.filter((s) => s.date === fullDate);
+              const currentSch = thisMonth.filter((s) => {
+                return s.date === fullDate;
+              });
 
               const dateInfo = { day, fullDate, dow: idx, currentSch };
               return (
                 <Day
-                  key={`${w}-${idx}`}
+                  key={n + idx}
                   dateInfo={dateInfo}
                   className={`${isGrayed} ${isToday}`}
                 />
@@ -103,12 +104,16 @@ const Calendar = () => {
     return calendar;
   };
 
+  const onFilter = (isFilter) => {
+    dispatch(setIsFilter(isFilter));
+  };
+
   return (
     <Body>
       <CalendarWrapper>
         {isOpenEditPopup && <EditSchedule />}
-        {isOpenAddPopup && (
-          <AddSchedule onClose={() => dispatch(closeAddSchedule())} />
+        {isAddPopupOpen && (
+          <AddSchedule onClose={() => setIsAddPopupOpen(false)} />
         )}
         <Header>
           <YearDisplay>{current.format('YYYY')}</YearDisplay>
@@ -119,44 +124,58 @@ const Calendar = () => {
           </HeaderContent>
         </Header>
         <DateContainer>
-          <Weekend>
-            <Dow color="#ff4b4b">S</Dow>
-            <Dow>M</Dow>
-            <Dow>T</Dow>
-            <Dow>W</Dow>
-            <Dow>T</Dow>
-            <Dow>F</Dow>
-            <Dow color="#4b87ff">S</Dow>
+          <Weekend className="row">
+            <Dow color="#ff4b4b">
+              <span>S</span>
+            </Dow>
+            <Dow>
+              <span>M</span>
+            </Dow>
+            <Dow>
+              <span>T</span>
+            </Dow>
+            <Dow>
+              <span>W</span>
+            </Dow>
+            <Dow>
+              <span>T</span>
+            </Dow>
+            <Dow>
+              <span>F</span>
+            </Dow>
+            <Dow color="#4b87ff">
+              <span>S</span>
+            </Dow>
           </Weekend>
           {generate()}
         </DateContainer>
       </CalendarWrapper>
-      <ButtonWrapper onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
+      <ButtonWrapper onClick={() => dispatch(openEditPopup(false))}>
         {isFilter ? (
           <MdCheck
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(setIsFilter(false));
+              onFilter(false);
             }}
-            className="filterBtn subBtn"
+            className={'filterBtn subBtn'}
           />
         ) : (
           <MdDoneAll
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(setIsFilter(true));
+              onFilter(true);
             }}
-            className="filterBtn subBtn"
+            className={'filterBtn subBtn'}
           />
         )}
         <MdEdit
           onClick={(e) => {
             e.stopPropagation();
-            dispatch(openAddSchedule());
+            setIsAddPopupOpen(true);
           }}
-          className="writeBtn subBtn"
+          className={'writeBtn subBtn'}
         />
-        <MdDehaze className="menuBtn" />
+        <MdDehaze className={'menuBtn'} />
       </ButtonWrapper>
     </Body>
   );
