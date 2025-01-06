@@ -17,12 +17,12 @@ function SaveEssay() {
         );
 
         setTimeout(() => {
-          chrome.runtime.sendMessage({ message: 'page_main' });
+          chrome.runtime.sendMessage({ message: 'save_to_page_main' });
         }, 2000);
         
         sendResponse({ status: 'saved' });
-        return true;
       }
+      return true;
     });
   }, []);
 

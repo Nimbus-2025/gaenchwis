@@ -11,16 +11,21 @@ function Main() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.message === 'move_page_main') {
         setPage(<Home />);
+        sendResponse({ move: 'Page Home' });
       }
-      if (request.message === 'move_page_detectessay') {
+      else if (request.message === 'move_page_detectessay') {
         setPage(<DetectEssay />);
+        sendResponse({ move: 'Page DetectEssay' });
       }
-      if (request.message === 'move_page_loadessay') {
+      else if (request.message === 'move_page_loadessay') {
         setPage(<LoadEssay />);
+        sendResponse({ move: 'Page LoadEssay' });
       }
-      if (request.message === 'move_page_saveessay') {
+      else if (request.message === 'move_page_saveessay') {
         setPage(<SaveEssay />);
+        sendResponse({ move: 'Page SaveEssay' });
       }
+      return true;
     });
   }, []);
 

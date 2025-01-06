@@ -1,41 +1,17 @@
-const page='page_main'
+let page='page_main'
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === 'crawling') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        function: (saramin, jobkorea, essay) => {
-          const url = window.location.href;
-          console.log(url)
-          if (url.includes(essay) && (url.includes(saramin) || url.includes(jobkorea))){
-            let pageContent = document.documentElement.innerHTML;
-            chrome.runtime.sendMessage({ message: 'detected_essay', content: pageContent });
-          }
-          else {
-            chrome.runtime.sendMessage({ message: 'notsupport' });
-          }
-        },
-        args: [
-          "",//"saramin.co.kr"
-          "",//"jobkorea.co.kr"
-          ""
-        ]
-      });
-    });
+  if ((page === 'page_saveessay' && request.message === 'save_to_page_main') || request.message === 'page_main') {
+    chrome.runtime.sendMessage({ message: 'move_page_main' });
+    page=request.message;
+    sendResponse({ message: 'Page Home' });
   }
-
-  if (request.message === 'page_main') {
-    if (page === 'page_saveessay'){
-      chrome.runtime.sendMessage({ message: 'move_page_main' });
-    }
-    page=request.message
-  }
-  if (request.message === 'page_detectessay') {
+  else if (request.message === 'page_detectessay') {
     chrome.runtime.sendMessage({ message: 'move_page_detectessay' });
-    page=request.message
+    page=request.message;
+    sendResponse({ message: 'Page DetectEssay' });
   }
-  if (request.message === 'page_loadessay') {
+  else if (request.message === 'page_loadessay') {
     chrome.runtime.sendMessage({ message: 'move_page_loadessay' });
     setTimeout(() => {
       data="abc"
@@ -45,9 +21,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       );
     }, 100);
-    page=request.message
+    page=request.message;
+    sendResponse({ message: 'Page LoadEssay' });
   }
-  if (request.message === 'page_saveessay') {
+  else if (request.message === 'page_saveessay') {
     chrome.runtime.sendMessage({ message: 'move_page_saveessay' });
     setTimeout(() => {
       chrome.runtime.sendMessage({ message: 'saved' },
@@ -56,6 +33,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       );
     }, 100);
-    page=request.message
+    page=request.message;
+    sendResponse({ message: 'Page SaveEssay' });
   }
+  return true;
 });
