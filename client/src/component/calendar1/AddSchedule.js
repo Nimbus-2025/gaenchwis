@@ -29,17 +29,58 @@ const AddSchedule = ({ onClose, type }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formattedDate = moment(scheduleData.date).format('YYYYMMDD');
-    
-    dispatch(createSchedule({   // addSchedule을 createSchedule로 변경
-      ...scheduleData,
-      date: formattedDate,
-      type: type
-    }));
+    if (type === 'announcement') {
+      // 공고 마감일 일정 생성
+      if (scheduleData.deadlineDate) {
+        dispatch(createSchedule({
+          title: `${scheduleData.company} 공고 마감`,
+          date: moment(scheduleData.deadlineDate).format('YYYYMMDD'),
+          content: scheduleData.content,
+          type: 'schedule',
+          completed: false
+        }));
+      }
+
+      // 면접일 일정 생성
+      if (scheduleData.interviewDate) {
+        dispatch(createSchedule({
+          title: `${scheduleData.company} 면접일`,
+          date: moment(scheduleData.interviewDate).format('YYYYMMDD'),
+          content: scheduleData.content,
+          type: 'schedule',
+          completed: false
+        }));
+      }
+
+      // 최종 발표일 일정 생성
+      if (scheduleData.finalDate) {
+        dispatch(createSchedule({
+          title: `${scheduleData.company} 최종 발표`,
+          date: moment(scheduleData.finalDate).format('YYYYMMDD'),
+          content: scheduleData.content,
+          type: 'schedule',
+          completed: false
+        }));
+      }
+
+      // 원래 공고 정보도 저장
+      dispatch(createSchedule({
+        ...scheduleData,
+        date: moment(scheduleData.date).format('YYYYMMDD'),
+        type: type
+      }));
+    } else {
+      // 일반 일정 추가 시 기존 로직 유지
+      dispatch(createSchedule({
+        ...scheduleData,
+        date: moment(scheduleData.date).format('YYYYMMDD'),
+        type: type
+      }));
+    }
     
     onClose();
   };
-
+  
   const title = type === 'schedule' ? '일정 추가' : '공고 추가';
   
   return (
