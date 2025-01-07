@@ -1,17 +1,16 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Optional
+import os
 
 @dataclass
 class AWSConfig:
-    region: str
-    dynamodb_table: str
-    s3_bucket: str
-    
-    @classmethod
-    def from_env(cls) -> 'AWSConfig':
-        import os
-        return cls(
-            region=os.getenv('AWS_REGION', 'ap-northeast-2'),
-            dynamodb_table=os.getenv('DYNAMODB_TABLE'),
-            s3_bucket=os.getenv('S3_BUCKET')
-        )
+    """AWS 설정"""
+    region: str = os.getenv('AWS_REGION', 'ap-northeast-2')
+    access_key: Optional[str] = os.getenv('AWS_ACCESS_KEY_ID')
+    secret_key: Optional[str] = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+@dataclass
+class MongoDBConfig:
+    """MongoDB 설정"""
+    uri: str = os.getenv('MONGODB_URI', 'mongodb://localhost:27017')
+    database: str = os.getenv('MONGODB_DATABASE', 'crawler_db')

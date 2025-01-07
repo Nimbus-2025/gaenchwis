@@ -1,81 +1,84 @@
-from typing import Dict, List, Optional
-from pymongo import MongoClient
+import os
+from typing import Dict, List, Union, Optional
+import pymongo
 from ...base import BaseRepository
+from ...config import MongoDBConfig
 from ...exceptions import StorageException
 
 class MongoDBRepository(BaseRepository):
     def __init__(self, collection_name: str):
-        super().__init__('mongodb', collection_name)
-        self.client = MongoClient('mongodb://localhost:27017/')
-        self.db = self.client['crawler_db']
-        self.collection = self.db[collection_name]
+        super().__init__(collection_name)
+        mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://admin:password@mongodb:27017/crawler_db?authSource=admin')
+        # config = MongoDBConfig()
+        
+        try:
+            self.client = pymongo.MongoClient(mongodb_uri)
+            db_name = mongodb_uri.split('/')[-1].split('?')[0]
+            self.db = self.client[db_name]
+            self.collection = self.db[collection_name]
+            
+            # 연결 테스트
+            self.client.admin.command('ping')
+            print(f"MongoDB 연결 성공: {collection_name} 컬렉션")
+        except Exception as e:
+            print(f"MongoDB 연결 에러: {str(e)}")
+            raise StorageException(f"MongoDB 연결 실패: {str(e)}")
     
     def health_check(self) -> bool:
         try:
-            self.collection.find_one()
+            self.client.admin.command('ping')
             return True
         except Exception:
             return False
     
-    def save_items(self, items: List[Dict]) -> bool:
+    def save(self, item: Union[Dict, List[Dict]]) -> bool:
         try:
-            self.collection.insert_many(items)
-            return True
-        except Exception as e:
-            raise StorageException(f"MongoDB 배치 저장 실패: {str(e)}")
-    
-    def save_item(self, item: Dict) -> bool:
-        try:
-            self.collection.insert_one(item)
-            return True
+            if isinstance(item, list):
+                result = self.collection.insert_many(item)
+                return len(result.inserted_ids) == len(item)
+            else:
+                result = self.collection.insert_one(item)
+                return bool(result.inserted_id)
         except Exception as e:
             raise StorageException(f"MongoDB 저장 실패: {str(e)}")
     
-    def get_items(self, query: Optional[Dict] = None) -> List[Dict]:
+    def get(self, 
+            id: Optional[Union[str, List[str]]] = None,
+            query: Optional[Dict] = None) -> Union[Dict, List[Dict]]:
         try:
+            if id:
+                if isinstance(id, list):
+                    return list(self.collection.find({'_id': {'$in': id}}))
+                return self.collection.find_one({'_id': id})
             return list(self.collection.find(query or {}))
         except Exception as e:
             raise StorageException(f"MongoDB 조회 실패: {str(e)}")
     
-    def get_item(self, id: str) -> Optional[Dict]:
-        try:
-            return self.collection.find_one({"_id": id})
-        except Exception as e:
-            raise StorageException(f"MongoDB 조회 실패: {str(e)}")
-    
-    def update_item(self, id: str, data: Dict) -> bool:
+    def update(self, id: str, data: Dict, upsert: bool = False) -> bool:
+        """
+        데이터 업데이트
+        Args:
+            id (str): 업데이트할 문서의 ID
+            data (Dict): 업데이트할 데이터
+            upsert (bool): 문서가 없을 경우 새로 생성할지 여부
+        """
         try:
             result = self.collection.update_one(
-                {"_id": id},
-                {"$set": data}
+                {'_id': id},
+                {'$set': data},
+                upsert=upsert
             )
-            return result.modified_count > 0
+            return bool(result.modified_count or result.upserted_id)
         except Exception as e:
-            raise StorageException(f"MongoDB 업데이트 실패: {str(e)}")
+            raise StorageException(f"MongoDB 수정 실패: {str(e)}")
     
-    def delete_item(self, id: str) -> bool:
+    def delete(self, id: Union[str, List[str]]) -> bool:
         try:
-            result = self.collection.delete_one({"_id": id})
-            return result.deleted_count > 0
+            if isinstance(id, list):
+                result = self.collection.delete_many({'_id': {'$in': id}})
+                return result.deleted_count == len(id)
+            else:
+                result = self.collection.delete_one({'_id': id})
+                return bool(result.deleted_count)
         except Exception as e:
             raise StorageException(f"MongoDB 삭제 실패: {str(e)}")
-    
-    def batch_delete(self, ids: List[str]) -> bool:
-        try:
-            result = self.collection.delete_many({"_id": {"$in": ids}})
-            return result.deleted_count == len(ids)
-        except Exception as e:
-            raise StorageException(f"MongoDB 배치 삭제 실패: {str(e)}")
-    
-    def query(self, 
-            index_name: str, 
-            key_condition: Dict,
-            filter_expression: Optional[Dict] = None) -> List[Dict]:
-        try:
-            query = {**key_condition}
-            if filter_expression:
-                query.update(filter_expression)
-            
-            return list(self.collection.find(query))
-        except Exception as e:
-            raise StorageException(f"MongoDB 쿼리 실패: {str(e)}")

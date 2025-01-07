@@ -3,33 +3,33 @@ version: '3.8'
 services:
   crawler:
     build:
-      context: ./crawler
+      context: .
       dockerfile: Dockerfile
     container_name: crawler-service
     ports:
       - '8000:8000'
     volumes:
-      - ./crawler/output:/app/output
-      - ./crawler/logs:/app/logs # 로그 볼륨 추가
+      - ./crawler/output:/app/crawler/output
+      - ./crawler/logs:/app/crawler/logs # 로그 볼륨 추가
     environment:
       - FLASK_ENV=development
       - DOCKER_CONTAINER=true
       # 스토리지 타입은 .env 파일에서 관리
       - STORAGE_TYPE=${STORAGE_TYPE:-mongodb}
       # MongoDB 연결 정보
-      - MONGODB_URI=mongodb://mongodb:27017/
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/crawler_db?authSource=admin
       - MONGODB_DB=crawler_db
       # AWS 관련 환경변수
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
-      - DYNAMODB_TABLE=${DYNAMODB_TABLE:-job_postings}
+      # - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      # - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      # - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      # - DYNAMODB_TABLE=${DYNAMODB_TABLE:-job_postings}
     depends_on:
       mongodb:
         condition: service_healthy # MongoDB 헬스체크 추가
     healthcheck: # 크롤러 서비스 헬스체크
       test: ['CMD', 'curl', '-f', 'http://localhost:8000/healthcheck']
-      interval: 30s
+      interval: 600s
       timeout: 10s
       retries: 3
     restart: unless-stopped
@@ -41,14 +41,14 @@ services:
       - '27017:27017'
     volumes:
       - mongodb_data:/data/db
-      - ./mongodb/init-scripts:/docker-entrypoint-initdb.d # 초기화 스크립트
+      # - ./mongodb/init-scripts:/docker-entrypoint-initdb.d # 초기화 스크립트
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-password}
       - MONGO_INITDB_DATABASE=crawler_db
     healthcheck: # MongoDB 헬스체크
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
+      interval: 600s
       timeout: 10s
       retries: 5
       start_period: 40s

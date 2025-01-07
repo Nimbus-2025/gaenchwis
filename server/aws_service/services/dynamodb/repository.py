@@ -1,100 +1,98 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Union, Optional
 from ...base import BaseRepository
+from ...aws_client import AWSClient
 from ...exceptions import StorageException
 
 class DynamoDBRepository(BaseRepository):
     def __init__(self, table_name: str):
-        super().__init__('dynamodb', table_name)
-        self.table = self.resource.Table(table_name)
-    
+        super().__init__(table_name)
+        self.client = AWSClient.get_client('dynamodb')
+        
     def health_check(self) -> bool:
         try:
-            self.table.scan(Limit=1)
+            self.client.describe_table(TableName=self.collection_name)
             return True
         except Exception:
             return False
     
-    def save_items(self, items: List[Dict]) -> bool:
+    def save(self, item: Union[Dict, List[Dict]]) -> bool:
         try:
-            with self.table.batch_writer() as batch:
-                for item in items:
-                    batch.put_item(Item=item)
-            return True
-        except Exception as e:
-            raise StorageException(f"DynamoDB 배치 저장 실패: {str(e)}")
-    
-    def save_item(self, item: Dict) -> bool:
-        try:
-            self.table.put_item(Item=item)
-            return True
+            if isinstance(item, list):
+                with self.client.batch_writer(
+                    TableName=self.collection_name
+                ) as batch:
+                    for i in item:
+                        batch.put_item(Item=i)
+                return True
+            else:
+                response = self.client.put_item(
+                    TableName=self.collection_name,
+                    Item=item
+                )
+                return response['ResponseMetadata']['HTTPStatusCode'] == 200
         except Exception as e:
             raise StorageException(f"DynamoDB 저장 실패: {str(e)}")
     
-    def get_items(self, query: Optional[Dict] = None) -> List[Dict]:
+    def get(self, 
+            id: Optional[Union[str, List[str]]] = None,
+            query: Optional[Dict] = None) -> Union[Dict, List[Dict]]:
         try:
-            if query:
-                response = self.table.scan(
-                    FilterExpression=query.get('filter_expression'),
-                    ExpressionAttributeValues=query.get('expression_values')
-                )
+            if id:
+                if isinstance(id, list):
+                    response = self.client.batch_get_item(
+                        RequestItems={
+                            self.collection_name: {
+                                'Keys': [{'id': {'S': i}} for i in id]
+                            }
+                        }
+                    )
+                    return response['Responses'][self.collection_name]
+                else:
+                    response = self.client.get_item(
+                        TableName=self.collection_name,
+                        Key={'id': {'S': id}}
+                    )
+                    return response.get('Item')
             else:
-                response = self.table.scan()
-            return response['Items']
+                response = self.client.scan(
+                    TableName=self.collection_name,
+                    FilterExpression=query if query else None
+                )
+                return response['Items']
         except Exception as e:
             raise StorageException(f"DynamoDB 조회 실패: {str(e)}")
     
-    def get_item(self, id: str) -> Optional[Dict]:
+    def update(self, id: str, data: Dict) -> bool:
         try:
-            response = self.table.get_item(Key={'id': id})
-            return response.get('Item')
-        except Exception as e:
-            raise StorageException(f"DynamoDB 조회 실패: {str(e)}")
-    
-    def update_item(self, id: str, data: Dict) -> bool:
-        try:
-            update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in data.keys())
-            expression_values = {f":{k}": v for k, v in data.items()}
-            expression_names = {f"#{k}": k for k in data.keys()}
+            update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in data)
+            expression_attribute_names = {f"#{k}": k for k in data}
+            expression_attribute_values = {f":{k}": v for k, v in data.items()}
             
-            self.table.update_item(
-                Key={'id': id},
+            response = self.client.update_item(
+                TableName=self.collection_name,
+                Key={'id': {'S': id}},
                 UpdateExpression=update_expression,
-                ExpressionAttributeValues=expression_values,
-                ExpressionAttributeNames=expression_names
+                ExpressionAttributeNames=expression_attribute_names,
+                ExpressionAttributeValues=expression_attribute_values
             )
-            return True
+            return response['ResponseMetadata']['HTTPStatusCode'] == 200
         except Exception as e:
-            raise StorageException(f"DynamoDB 업데이트 실패: {str(e)}")
+            raise StorageException(f"DynamoDB 수정 실패: {str(e)}")
     
-    def delete_item(self, id: str) -> bool:
+    def delete(self, id: Union[str, List[str]]) -> bool:
         try:
-            self.table.delete_item(Key={'id': id})
-            return True
+            if isinstance(id, list):
+                with self.client.batch_writer(
+                    TableName=self.collection_name
+                ) as batch:
+                    for i in id:
+                        batch.delete_item(Key={'id': {'S': i}})
+                return True
+            else:
+                response = self.client.delete_item(
+                    TableName=self.collection_name,
+                    Key={'id': {'S': id}}
+                )
+                return response['ResponseMetadata']['HTTPStatusCode'] == 200
         except Exception as e:
             raise StorageException(f"DynamoDB 삭제 실패: {str(e)}")
-    
-    def batch_delete(self, ids: List[str]) -> bool:
-        try:
-            with self.table.batch_writer() as batch:
-                for id in ids:
-                    batch.delete_item(Key={'id': id})
-            return True
-        except Exception as e:
-            raise StorageException(f"DynamoDB 배치 삭제 실패: {str(e)}")
-    
-    def query(self, 
-            index_name: str, 
-            key_condition: Dict,
-            filter_expression: Optional[Dict] = None) -> List[Dict]:
-        try:
-            params = {
-                'IndexName': index_name,
-                'KeyConditionExpression': key_condition
-            }
-            if filter_expression:
-                params['FilterExpression'] = filter_expression
-            
-            response = self.table.query(**params)
-            return response['Items']
-        except Exception as e:
-            raise StorageException(f"DynamoDB 쿼리 실패: {str(e)}")

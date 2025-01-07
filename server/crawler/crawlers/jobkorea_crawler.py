@@ -1,5 +1,10 @@
 from base.base_crawler import BaseCrawler
+import sys
 import os
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(PROJECT_ROOT)
+
 import time
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -8,11 +13,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from common.utils import save_to_csv
 from common.constants import URLS
+from aws_service.factory import create_repository
+from aws_service.services.common.constants import TableNames
 
 class JobKoreaCrawler(BaseCrawler):
     def __init__(self, output_dir):
         super().__init__(output_dir)
         self.url = URLS['jobkorea']
+        self.company_repo = create_repository('mongodb', TableNames.COMPANIES)
+        self.job_repo = create_repository('mongodb', TableNames.JOB_POSTINGS)
+        self.tag_repo = create_repository('mongodb', TableNames.TAGS)
+        self.job_tag_repo = create_repository('mongodb', TableNames.JOB_TAGS)
         
     def apply_job_filters(self):
         try:
@@ -200,14 +211,91 @@ class JobKoreaCrawler(BaseCrawler):
         print(f"총 수집된 공고 수: {len(jobkorea_data)}")
         return jobkorea_data
     
+    def process_and_save_data(self, jobkorea_data):
+        for job_data in jobkorea_data:
+            try:
+                # 1. 기업 정보 저장
+                company_data = {
+                    '_id': job_data['회사명'],  # 회사명을 기업 식별자로 사용
+                    'name': job_data['회사명']
+                    # 추가 회사 정보가 있다면 여기에 추가
+                }
+                self.company_repo.save(company_data)
+
+                # 2. 태그 정보 추출 및 저장
+                tags = []
+                if job_data['직무분야']:
+                    tags.extend(job_data['직무분야'].split(','))
+                if job_data['고용형태']:
+                    tags.append(job_data['고용형태'])
+                if job_data['경력']:
+                    tags.append(job_data['경력'])
+                
+                tag_ids = []
+                for tag in set(tags):  # 중복 제거
+                    tag_data = {
+                        '_id': tag.strip(),
+                        'name': tag.strip(),
+                        'category': self._determine_tag_category(tag)  # 태그 카테고리 결정 함수 필요
+                    }
+                    self.tag_repo.save(tag_data)
+                    tag_ids.append(tag.strip())
+
+                # 3. 채용 공고 저장
+                job_data_processed = {
+                    '_id': job_data['공고URL'],
+                    'company_id': job_data['회사명'],  # 회사명으로 참조
+                    'title': job_data['공고제목'],
+                    'location': job_data['근무지'],
+                    'education': job_data['학력'],
+                    'deadline': job_data['마감일'],
+                    'modified_date': job_data['수정일'],
+                    'url': job_data['공고URL']
+                }
+                self.job_repo.save(job_data_processed)
+
+                # 4. 공고-태그 매핑 정보 저장
+                for tag_id in tag_ids:
+                    mapping_data = {
+                        '_id': f"{job_data['공고URL']}_{tag_id}",  # 복합 키
+                        'job_id': job_data['공고URL'],
+                        'tag_id': tag_id
+                    }
+                    self.job_tag_repo.save(mapping_data)
+
+            except Exception as e:
+                print(f"데이터 처리 중 오류 발생 (회사: {job_data['회사명']}): {e}")
+                continue
+
+    def _determine_tag_category(self, tag: str) -> str:
+        """태그 카테고리 결정"""
+        # 태그의 성격에 따라 카테고리 반환
+        if '신입' in tag or '경력' in tag:
+            return 'experience'
+        elif '정규직' in tag or '계약직' in tag:
+            return 'employment_type'
+        else:
+            return 'job_field'
+        
+        
     def crawl(self):
         try: 
+            print("URL 접속 시도:", self.url)
             self.driver.get(self.url)
+            print("URL 접속 성공")
             self.wait_random(2, 3)
             
+            print("페이지 로딩 대기 중...")
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div#dev-gi-list"))
             )
+            print("페이지 로딩 완료")
+            
+            # Chrome 설정 확인
+            print("Chrome 옵션:", self.driver.capabilities)
+            
+            # 현재 URL 출력
+            print("현재 페이지 URL:", self.driver.current_url)
             
             if (self.apply_job_filters() and 
                 self.apply_location_filters() and
@@ -216,8 +304,13 @@ class JobKoreaCrawler(BaseCrawler):
                 jobkorea_data = self.crawl_jobs()
                 
                 if jobkorea_data:
+                    # CSV 파일 저장 
                     output_file = os.path.join(self.output_dir, 'jobkorea_jobs.csv')
                     save_to_csv(jobkorea_data, output_file)
+                    
+                    # MongoDB에 저장
+                    self.process_and_save_data(jobkorea_data)
+                        
                     print(f"잡코리아 공고 크롤링이 완료되었습니다. 총 {len(jobkorea_data)}개의 공고가 수집되었습니다.")
                 else:
                     print("크롤링된 데이터가 없습니다.")
@@ -228,3 +321,6 @@ class JobKoreaCrawler(BaseCrawler):
             print("페이지 로딩 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.")
         except Exception as e:
             print(f"크롤링 중 오류 발생: {e}")
+            print(f"현재 URL: {self.driver.current_url if self.driver else 'driver not initialized'}")
+            print(f"Page source: {self.driver.page_source if self.driver else 'no page source'}")
+            raise
