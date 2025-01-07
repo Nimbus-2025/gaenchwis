@@ -17,21 +17,42 @@ const EditSchedule = ({ history }) => {
   const inputDescription = useRef();
   const [titleError, setTitleError] = useState(false);
   const [date, setDate] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  // 날짜 변경 핸들러 추가
+  const handleDateChange = (newDate) => {
+    setDate(newDate);
+    if (isEditing) {
+      const yyyymmdd = newDate.split('T')[0].replaceAll('-', '');
+      const time = newDate.split('T')[1].replaceAll(':', '');
+      
+      // 날짜 변경 시 바로 저장
+      const updatedSchedule = {
+        ...currentSchedule,
+        date: yyyymmdd,
+        time: time,
+        title: inputTitle.current.value,
+        description: inputDescription.current.value
+      };
+      
+      dispatch(updateSchedule(updatedSchedule));
+    }
+  };
 
 
   useEffect(() => {
-    if (currentSchedule) {
-      const d = currentSchedule.date;
-      const t = currentSchedule.time;
-      setDate(
-        d.slice(0, 4) +
-        '-' +
-        d.slice(4, 6) +
-        '-' +
-        d.slice(6) +
-        'T' +
-        (t ? (t.slice(0, 2) + ':' + t.slice(2)) : '00:00')
-      );
+    if (currentSchedule && currentSchedule.date) {
+      // 저장된 날짜 형식을 datetime-local input 형식으로 변환
+      const year = currentSchedule.date.slice(0, 4);
+      const month = currentSchedule.date.slice(4, 6);
+      const day = currentSchedule.date.slice(6, 8);
+      const time = currentSchedule.time || '0000';
+      const hours = time.slice(0, 2) || '00';
+      const minutes = time.slice(2, 4) || '00';
+
+      // YYYY-MM-DDTHH:mm 형식으로 설정
+      const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+      setDate(formattedDate);
     }
   }, [currentSchedule]);
 
@@ -93,7 +114,13 @@ const EditSchedule = ({ history }) => {
         <i />
       </Header>
       <Body>
-        <Datepicker setDate={setDate} date={date} />
+        <DatePickerWrapper isEditing={isEditing}>
+          <Datepicker 
+            setDate={handleDateChange} 
+            date={date} 
+            readOnly={!isEditing}
+          />
+        </DatePickerWrapper>
         <InputField>
           <input
             type="text"
@@ -109,6 +136,7 @@ const EditSchedule = ({ history }) => {
             defaultValue={currentSchedule.description}
             ref={inputDescription}
             rows={4}
+            readOnly={!isEditing}
           />
         </TextArea>
         
@@ -119,26 +147,43 @@ const EditSchedule = ({ history }) => {
               placeholder="공고 링크"
               defaultValue={currentSchedule.link}
               name="link"
+              readOnly={!isEditing}
             />
           </InputField>
         )}
 
         <ButtonGroup>
-          {currentSchedule.type !== 'announcement' && (
-            <StyledButton
-              disabled={currentSchedule.completed}
-              onClick={onComplete}
-              color="secondary"
-            >
-              완료
-            </StyledButton>
+        {!isEditing ? (
+            <>
+              <StyledButton onClick={() => setIsEditing(true)} color="secondary">
+                수정
+              </StyledButton>
+              {currentSchedule.type !== 'announcement' && (
+                <StyledButton
+                  disabled={currentSchedule.completed}
+                  onClick={onComplete}
+                  color="secondary"
+                >
+                  완료
+                </StyledButton>
+              )}
+              <StyledButton onClick={onDelete} color="secondary">
+                삭제
+              </StyledButton>
+            </>
+          ) : (
+            <>
+              <StyledButton onClick={onSave} color="secondary">
+                저장
+              </StyledButton>
+              <StyledButton 
+                onClick={() => setIsEditing(false)} 
+                color="secondary"
+              >
+                취소
+              </StyledButton>
+            </>
           )}
-          <StyledButton onClick={onSave} color="secondary">
-            저장
-          </StyledButton>
-          <StyledButton onClick={onDelete} color="secondary">
-            삭제
-          </StyledButton>
         </ButtonGroup>
       </Body>
     </Popup>
@@ -203,6 +248,28 @@ const Body = styled.div`
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+`;
+
+const DatePickerWrapper = styled.div`
+  margin-bottom: 20px;
+  text-align: center;
+  
+  input {
+    font-size: 1.2em;
+    color: #333;
+    text-align: center;
+    cursor: ${props => props.isEditing ? 'pointer' : 'default'};
+    border: none;
+    background: transparent;
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:hover {
+      color: ${props => props.isEditing ? '#ff9aa3' : '#333'};
+    }
+  }
 `;
 
 const InputField = styled.div`
