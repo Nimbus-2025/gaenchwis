@@ -57,6 +57,90 @@ export const ButtonWrapper = styled.div`
       position: relative;
     }
   }
+  position: fixed; 
+  right: 350px;   
+  bottom: 50px;  
+  text-align: center;
+  padding-bottom: 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: visible;
+  height: 150px;
+  z-index: 1000;
+
+  &:hover .subBtn {
+    opacity: 1;
+    visibility: visible;
+    top: 0;
+  }
+
+  & > svg {
+    cursor: pointer;
+    border-radius: 50%;
+    color: white;
+    width: 25px;
+    height: 25px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+    &.filterBtn {
+      background-color: pink;
+      z-index: 1;
+      transition: all 0.4s ease;
+    }
+
+    &.writeBtn {
+      background-color: skyblue;
+      z-index: 2;
+      transition: all 0.5s ease;
+    }
+
+    &.menuBtn {
+      background-color: #ffdb0d;
+      z-index: 3;
+    }
+
+    &.subBtn {
+      opacity: 0;
+      visibility: hidden;
+      top: 60px;
+      position: relative;
+    }
+  }
+  .popup-buttons {
+    position: absolute;
+    left: calc(100% + 5mm);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .writeBtn:hover ~ .popup-buttons,
+  .popup-buttons:hover {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .popup-button {
+    background-color: skyblue;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    
+    &:hover {
+      background-color: #7ac7e6;
+    }
+  }
 `;
 
 export const CalendarWrapper = styled.div`
@@ -154,14 +238,16 @@ export const DayWrapper = styled.div`
     align-items: center;
   }
 
-  & > .title {
+  &.today > .title {
+    color: skyblue;
+    border: 2px solid skyblue;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 30px;
-    height: 30px;
   }
-
   .schedule-list {
     width: 100%;
     display: flex;

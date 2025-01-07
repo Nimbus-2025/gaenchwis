@@ -13,7 +13,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   readSchedule,
   setIsFilter,
-  openEditPopup
+  openEditPopup,
+  openAddSchedule,
+  closeAddSchedule
 } from './redux/modules/schedule';
 import Day from './Day';
 import EditSchedule from './EditSchedule';
@@ -31,11 +33,11 @@ import {
 } from './styles/CalendarStyles';
 
 const Calendar = () => {
-  const { thisMonth, isOpenEditPopup, isFilter } = useSelector(
+  const { thisMonth, isOpenEditPopup, isFilter, isOpenAddPopup } = useSelector(
     (state) => state.schedule
   );
-  const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [current, setCurrent] = useState(moment());
+  const [activePopup, setActivePopup] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -85,14 +87,12 @@ const Calendar = () => {
                   ? ''
                   : 'grayed';
 
-              const currentSch = thisMonth.filter((s) => {
-                return s.date === fullDate;
-              });
+              const currentSch = thisMonth.filter((s) => s.date === fullDate);
 
               const dateInfo = { day, fullDate, dow: idx, currentSch };
               return (
                 <Day
-                  key={n + idx}
+                  key={`${w}-${idx}`}
                   dateInfo={dateInfo}
                   className={`${isGrayed} ${isToday}`}
                 />
@@ -104,16 +104,20 @@ const Calendar = () => {
     return calendar;
   };
 
-  const onFilter = (isFilter) => {
-    dispatch(setIsFilter(isFilter));
-  };
-
   return (
     <Body>
       <CalendarWrapper>
         {isOpenEditPopup && <EditSchedule />}
-        {isAddPopupOpen && (
-          <AddSchedule onClose={() => setIsAddPopupOpen(false)} />
+        {activePopup === 'schedule' && (
+          <AddSchedule onClose={() =>  setActivePopup(null)}
+          type="schedule"
+        />
+        )}
+        {activePopup === 'announcement' && (
+          <AddSchedule 
+            onClose={() => setActivePopup(null)}
+            type="announcement"
+          />
         )}
         <Header>
           <YearDisplay>{current.format('YYYY')}</YearDisplay>
@@ -124,58 +128,58 @@ const Calendar = () => {
           </HeaderContent>
         </Header>
         <DateContainer>
-          <Weekend className="row">
-            <Dow color="#ff4b4b">
-              <span>S</span>
-            </Dow>
-            <Dow>
-              <span>M</span>
-            </Dow>
-            <Dow>
-              <span>T</span>
-            </Dow>
-            <Dow>
-              <span>W</span>
-            </Dow>
-            <Dow>
-              <span>T</span>
-            </Dow>
-            <Dow>
-              <span>F</span>
-            </Dow>
-            <Dow color="#4b87ff">
-              <span>S</span>
-            </Dow>
+          <Weekend>
+            <Dow color="#ff4b4b">S</Dow>
+            <Dow>M</Dow>
+            <Dow>T</Dow>
+            <Dow>W</Dow>
+            <Dow>T</Dow>
+            <Dow>F</Dow>
+            <Dow color="#4b87ff">S</Dow>
           </Weekend>
           {generate()}
         </DateContainer>
       </CalendarWrapper>
-      <ButtonWrapper onClick={() => dispatch(openEditPopup(false))}>
+      <ButtonWrapper onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
         {isFilter ? (
           <MdCheck
             onClick={(e) => {
               e.stopPropagation();
-              onFilter(false);
+              dispatch(setIsFilter(false));
             }}
-            className={'filterBtn subBtn'}
+            className="filterBtn subBtn"
           />
         ) : (
           <MdDoneAll
             onClick={(e) => {
               e.stopPropagation();
-              onFilter(true);
+              dispatch(setIsFilter(true));
             }}
-            className={'filterBtn subBtn'}
+            className="filterBtn subBtn"
           />
         )}
-        <MdEdit
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsAddPopupOpen(true);
-          }}
-          className={'writeBtn subBtn'}
-        />
-        <MdDehaze className={'menuBtn'} />
+        <MdEdit className="writeBtn subBtn" />
+        <div className="popup-buttons">
+          <div 
+            className="popup-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActivePopup('schedule');
+            }}
+          >
+            일정 추가
+          </div>
+          <div 
+            className="popup-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActivePopup('announcement');
+            }}
+          >
+            공고 추가
+          </div>
+        </div>
+        <MdDehaze className="menuBtn" />
       </ButtonWrapper>
     </Body>
   );

@@ -42,7 +42,8 @@ const EditSchedule = ({ history }) => {
         time,
         title,
         description,
-        id: currentSchedule.id
+        id: currentSchedule.id,
+        type: currentSchedule.type || 'schedule'
       };
 
       dispatch(updateSchedule(data));
@@ -78,7 +79,7 @@ const EditSchedule = ({ history }) => {
             dispatch(openEditPopup(false));
           }}
         />
-        일정 보기 &nbsp;&nbsp;&nbsp;
+        {currentSchedule.type === 'announcement' ? '공고 보기' : '일정 보기'} &nbsp;&nbsp;&nbsp;
         <i />
       </Header>
       <Body>
@@ -86,7 +87,7 @@ const EditSchedule = ({ history }) => {
         <InputField>
           <input
             type="text"
-            placeholder="어떤 일정이 있나요?"
+            placeholder={currentSchedule.type === 'announcement' ? "공고 제목" : "어떤 일정이 있나요?"}
             defaultValue={currentSchedule.title}
             ref={inputTitle}
             className={titleError ? 'error' : ''}
@@ -94,20 +95,22 @@ const EditSchedule = ({ history }) => {
         </InputField>
         <TextArea>
           <textarea
-            placeholder="간단 메모"
+            placeholder={currentSchedule.type === 'announcement' ? "공고 내용" : "간단 메모"}
             defaultValue={currentSchedule.description}
             ref={inputDescription}
             rows={4}
           />
         </TextArea>
         <ButtonGroup>
-          <StyledButton
-            disabled={currentSchedule.completed}
-            onClick={onComplete}
-            color="secondary"
-          >
-            완료
-          </StyledButton>
+          {currentSchedule.type !== 'announcement' && (
+            <StyledButton
+              disabled={currentSchedule.completed}
+              onClick={onComplete}
+              color="secondary"
+            >
+              완료
+            </StyledButton>
+          )}
           <StyledButton onClick={onSave} color="secondary">
             저장
           </StyledButton>
@@ -119,6 +122,7 @@ const EditSchedule = ({ history }) => {
     </Popup>
   );
 };
+
 
 const Popup = styled.div`
   position: fixed;
