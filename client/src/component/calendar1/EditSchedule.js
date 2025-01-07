@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { MdChevronLeft } from 'react-icons/md';
 import Datepicker from './Datepicker';
@@ -13,22 +13,32 @@ const EditSchedule = ({ history }) => {
   const dispatch = useDispatch();
   const { currentSchedule } = useSelector((state) => state.schedule);
 
-  const d = currentSchedule.date;
-  const t = currentSchedule.time;
-  const [date, setDate] = useState(
-    d.slice(0, 4) +
-      '-' +
-      d.slice(4, 6) +
-      '-' +
-      d.slice(6) +
-      'T' +
-      t.slice(0, 2) +
-      ':' +
-      t.slice(2)
-  );
   const inputTitle = useRef();
   const inputDescription = useRef();
   const [titleError, setTitleError] = useState(false);
+  const [date, setDate] = useState('');
+
+
+  useEffect(() => {
+    if (currentSchedule) {
+      const d = currentSchedule.date;
+      const t = currentSchedule.time;
+      setDate(
+        d.slice(0, 4) +
+        '-' +
+        d.slice(4, 6) +
+        '-' +
+        d.slice(6) +
+        'T' +
+        (t ? (t.slice(0, 2) + ':' + t.slice(2)) : '00:00')
+      );
+    }
+  }, [currentSchedule]);
+
+  // 데이터가 없을 경우 예외처리
+  if (!currentSchedule) {
+    return null;
+  }
 
   const onSave = () => {
     if (checkValid()) {
@@ -47,7 +57,7 @@ const EditSchedule = ({ history }) => {
       };
 
       dispatch(updateSchedule(data));
-      dispatch(openEditPopup(false));
+      dispatch(openEditPopup({ isOpen: false }));
     }
   };
 
@@ -76,10 +86,10 @@ const EditSchedule = ({ history }) => {
       <Header>
         <MdChevronLeft
           onClick={() => {
-            dispatch(openEditPopup(false));
+            dispatch(openEditPopup({ isOpen: false }));
           }}
         />
-        {currentSchedule.type === 'announcement' ? '공고 보기' : '일정 보기'} &nbsp;&nbsp;&nbsp;
+        {currentSchedule.type === 'announcement' ? '공고 보기' : '일정 보기'}
         <i />
       </Header>
       <Body>
@@ -101,6 +111,18 @@ const EditSchedule = ({ history }) => {
             rows={4}
           />
         </TextArea>
+        
+        {currentSchedule.type === 'announcement' && (
+          <InputField>
+            <input
+              type="url"
+              placeholder="공고 링크"
+              defaultValue={currentSchedule.link}
+              name="link"
+            />
+          </InputField>
+        )}
+
         <ButtonGroup>
           {currentSchedule.type !== 'announcement' && (
             <StyledButton
@@ -122,7 +144,6 @@ const EditSchedule = ({ history }) => {
     </Popup>
   );
 };
-
 
 const Popup = styled.div`
   position: fixed;
