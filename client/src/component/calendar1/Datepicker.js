@@ -2,21 +2,6 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@mui/styles';
 import TextField from '@mui/material/TextField';
-import styled from 'styled-components';
-
-
-const DateInput = styled.input`
-  font-size: 1.2em;
-  color: #333;
-  text-align: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  
-  &:focus {
-    outline: none;
-  }
-`;
 
 // useStyles를 컴포넌트 외부로 이동
 const useStyles = makeStyles((theme) => ({
@@ -33,14 +18,26 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Datepicker = ({ setDate, date, readOnly }) => {
+const Datepicker = ({ setDate, date }) => {
+  const classes = useStyles();
+
+  const handleDateChange = (e) => {
+    setDate(e.target.value);
+  };
+
   return (
-    <DateInput
-      type="datetime-local"
-      value={date}
-      onChange={(e) => setDate(e.target.value)}
-      readOnly={readOnly}
-    />
+    <form className={classes.container} noValidate>
+      <TextField
+        id="datetime-local"
+        type="datetime-local"
+        defaultValue={date}
+        className={classes.textField}
+        onChange={handleDateChange}
+        InputLabelProps={{
+          shrink: true
+        }}
+      />
+    </form>
   );
 };
 
@@ -51,5 +48,3 @@ Datepicker.propTypes = {
 
 // React.memo를 사용하여 불필요한 리렌더링 방지
 export default memo(Datepicker);
-
-
