@@ -32,6 +32,7 @@ import {
   Dow
 } from './styles/CalendarStyles';
 
+// 캘린더 렌더링
 const Calendar = () => {
   const { thisMonth, isOpenEditPopup, isFilter, isOpenAddPopup } = useSelector(
     (state) => state.schedule
