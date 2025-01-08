@@ -1,5 +1,6 @@
 import React from 'react';
 import Logo from '../component/Logo'
+import Button from '../component/Button';
 
 function Home() {
   return (
