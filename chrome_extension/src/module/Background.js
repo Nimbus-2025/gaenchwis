@@ -1,1 +1,6 @@
-importScripts('Drag.js', 'Page.js', 'Crawling.js')
+importScripts(
+  'Drag.js', 
+  'Page.js', 
+  'Crawling.js',
+  'GoogleLogin.js'
+)
