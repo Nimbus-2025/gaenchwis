@@ -1,0 +1,220 @@
+.user-content {
+    margin-top: 50px; /* 헤더와 버튼 간의 간격을 벌리기 위해 상단 여백 추가 */
+  }
+.button-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-around; /* 버튼 간격을 균등하게 배치 */
+    margin: 50px 0 0; /* 상하 여백 */
+  }
+  .logout-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-around; /* 버튼 간격을 균등하게 배치 */
+    margin: 50px 0 0; 
+  }
+  .profile-container {
+    display: flex; /* Flexbox 사용 */
+    gap: 20px; /* 박스 간의 간격 조정 */
+    justify-content: space-around; /* 가운데 정렬 *//* 세로 정렬 */
+    margin-top: 20px; /* 상단 여백 */
+  }
+  .button-container Profilebutton {
+    padding: 20px 30px; /* 버튼 패딩 */
+    font-size: 18px; /* 글자 크기 */
+    cursor: pointer; /* 커서 포인터 */
+    border: 2px solid black; 
+    background-color: #ffffff; /* 파란색 배경 */
+    color: rgb(10, 0, 0); /* 글자색 */
+    transition: background-color 0.3s; /* 배경색 전환 효과 */
+    margin: 0 10px; /* 버튼 간의 좌우 여백 추가 */
+  }
+  .info-box-container {
+    display: flex;
+    flex-direction: column; /* 세로로 정렬 */
+    gap: 50px; /* 각 박스 사이의 간격 */
+    margin-top:150px;
+    
+    margin-left:100px;
+  }
+  Profilebutton {
+    padding: 10px 20px;border: 1px solid rgb(170, 168, 168);
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #e0e0e0; /* 기본 배경색 */
+    transition: background-color 0.3s; /* 배경색 변화 애니메이션 */
+}
+  .button-container Profilebutton:hover {
+    background-color: #0056b3; /* 호버 시 배경색 변경 */
+  }
+  Profilebutton.active {
+    background-color: #007bff; /* 선택된 버튼의 배경색 */
+    color: white; /* 선택된 버튼의 글자색 */
+}
+  .rectangle-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: center; /* 가로 방향으로 가운데 정렬 */
+    align-items: center; /* 세로 방향으로 가운데 정렬 */
+    margin-top: 0; /* 버튼과 사각형 간의 간격 설정 */
+  }
+  .rectangle {
+    width: 95%; /* 사각형의 너비를 100%로 설정 */
+    height: 1000px; /* 사각형의 높이 설정 */
+    background-color: #ffffff; /* 사각형의 배경색을 파란색으로 설정 *
+    border-radius: 5px; /* 모서리 둥글게 설정 (선택 사항) */
+  }
+.profile-info {
+    width: 600px; /* 예시 너비 */
+    height: 400px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 16px;
+    box-sizing: border-box;
+    position: relative; /* 절대 위치 버튼을 위한 설정 */
+    margin-left: 30px;
+    border: 1px solid rgb(170, 168, 168);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #ccc; /* 기본 프로필 사진 색상 */
+    margin-right: 20px;
+}
+
+.profile-details p {
+    margin: 5px 0;
+}
+
+.tag-list {
+  margin-top: 10px;
+  width:800px; /* 제목과 내용 간의 간격 */
+}
+
+.tag {
+    margin-right: 20px;
+}
+
+.tag-item {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.info-box {
+  
+  background-color: #f9f9f9; /* 사각형 배경색 */
+  border-radius: 16px;/*  모서리 둥글게 */
+  padding: 10px; /* 내부 여백 */
+  width: 1000px; /* 각 사각형의 너비 */
+  height:200px;
+  border: 1px solid rgb(170, 168, 168);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  
+  
+}
+.rectangle-container {
+  padding: 20px;
+}
+
+.bookmark-interest-container {
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 40px; /* 섹션 간의 간격 */
+}
+
+.title {
+  font-size: 24px;
+  margin-top: 3px;
+  margin-bottom: 5px;
+  display: flex; /* 플렉스 박스 사용 */
+  align-items: center;
+}
+
+.bookmark-box {
+  width: 100%; /* 사각형의 너비 */
+  height: 250px; /* 사각형의 높이 */
+  background-color: #f0f0f0; /* 사각형의 배경색 */
+  border: 1px solid #ccc; /* 사각형의 테두리 */
+  border-radius: 5px; /* 사각형의 모서리 둥글게 */
+}
+.star-icon {
+  width: 40px; /* 하트 이미지 너비 */
+  height: 40px; /* 하트 이미지 높이 */
+  margin-left: 1px; /* 제목과 하트 이미지 간의 간격 */
+  margin-top: 3px;
+}
+.heart-icon {
+  width: 40px; /* 하트 이미지 너비 */
+  height: 40px; /* 하트 이미지 높이 */
+  margin-left: 1px; /* 제목과 하트 이미지 간의 간격 */
+  margin-top: 3px;
+}
+.profile-image {
+  width: 70px; /* 이미지 너비 */
+  height: 70px; /* 이미지 높이 */
+  border-radius: 50%; /* 원형으로 만들기 */
+  object-fit: cover; /* 이미지 비율 유지 */
+  margin-right: 20px; /* 이미지와 텍스트 간의 간격 */
+}
+edit-form {
+  margin-top: 20px;
+}
+
+.profile-box {
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #ccc; /* 박스 테두리 */
+  border-radius: 10px; /* 박스 모서리 둥글게 */
+  background-color: #f9f9f9; /* 박스 배경색 */
+  margin-right: 80px;
+}
+
+.profile-box h2, .profile-box p {
+  margin: 10px 0; /* 텍스트 간의 간격 */
+}
+.edit-form {
+  display: flex; /* Flexbox 사용 */
+}
+.edit-form label {
+  display: block; /* 라벨을 블록으로 설정 */
+  margin-bottom: 10px; /* 라벨과 입력 필드 간의 간격 */
+}
+
+.edit-form input {
+  padding: 5px;
+  width: 100%; /* 입력 필드 너비 */
+  margin-bottom: 10px; /* 입력 필드와 버튼 간의 간격 */
+}
+.phone-edit-container {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  margin-top: 10px; /* 전화번호와 버튼 간의 간격 */
+}
+
+.edit-button {
+  margin-left: auto; /* 왼쪽 여백 자동 */
+  margin-right: 0; /* 오른쪽 여백 제거 */
+  padding: 5px 10px; /* 버튼 패딩 줄이기 */
+  font-size: 12px; /* 버튼 글자 크기 */
+}
+.profile-header {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  justify-content: space-between; /* 텍스트와 버튼 간의 간격 조정 */
+}
+.profile-details {
+  margin: 5px 0;
+  font-size: 20px; 
+}

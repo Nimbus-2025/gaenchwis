@@ -1,0 +1,106 @@
+.essay-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .search-box {
+    margin-bottom: 20px;
+  }
+  
+  .search-box input {
+    width: 700px;
+    padding: 10px;
+    font-size: 16px;
+    align-items: center;
+  }
+  .essay-rectangle {
+    position: relative;
+    width: 1200px; /* 사각형의 너비를 100%로 설정 */
+    height: 200px; /* 사각형의 높이 설정 */
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+    justify-content: space-between; 
+    border-radius: 5px; /* 모서리 둥글게 설정 (선택 사항) */
+  }
+  .delete-button {
+    width: 50px;
+    height: 50px;
+    background: none;
+    background-image: url('../../images/delete.png'); /* 이미지 URL을 여기에 넣으세요 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    right: 30px; /* 오른쪽 끝에 위치 */
+    align-items: center;
+    top: 50%; 
+    transform: translateY(-50%);
+  }
+  .search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    background-color: #007bff; /* 버튼 배경색 */
+    color: white; /* 버튼 텍스트 색 */
+    cursor: pointer;
+    border-radius: 0 5px 5px 0; /* 오른쪽 모서리만 둥글게 */
+    transition: background-color 0.3s ease;
+}
+.search-button:hover {
+    background-color: #0056b3; /* 버튼 호버 시 색상 */
+}
+.plus-button {
+    width: 50px;
+    height: 50px;
+    background: none;
+    border: none;
+    background-image: url('../../images/essayplus.png'); /* 이미지 URL을 여기에 넣으세요 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    align-items: center;
+    margin-left:100px;
+  }
+  .plus-button:hover::after {
+    content: '자기소개서 추가'; /* 표시할 메시지 */
+    position: absolute;
+    top: 350px; /* 버튼 위쪽에 표시 */
+    right: 90px; /* 버튼 근처로 이동 */
+    background-color: #333; /* 툴팁 배경색 */
+    color: #fff; /* 텍스트 색상 */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .pagination-container button {
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .pagination-container button.active {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .pagination-container button:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+  }

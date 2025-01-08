@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../images/cloud.png';
 import './Header.css';
+import LogoutButton from './Logout';
 import CategoryPopup from '../component/CategoryPopup';
 const Header = ({ userData, onLogout, searchText, setSearchText, onSearch, onMyPageClick }) => {
     const navigate = useNavigate();
@@ -44,18 +45,8 @@ const Header = ({ userData, onLogout, searchText, setSearchText, onSearch, onMyP
           <button className="search-btn" onClick={onSearch}>
             검색
           </button>
-          <button className="mypage-btn" onClick={handleMyPageClick}>
-            마이페이지
-          </button>
         </div>
   
-        <div className="right-section">
-          {userData ? (
-            <button className="header-logout-btn" onClick={onLogout}>로그아웃</button>
-          ) : (
-            <button className="header-login-btn" onClick={() => navigate('/')}>로그인</button>
-          )}
-        </div>
         <CategoryPopup 
         isOpen={isCategoryOpen} 
         onClose={() => setIsCategoryOpen(false)} // 팝업 닫기 핸들러

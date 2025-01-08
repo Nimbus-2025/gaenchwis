@@ -52,20 +52,21 @@ const UserPage = () => {
         {userData ? (
           <div>
             <p>환영합니다, {userData.name}님!</p>
-            <p>이메일: {userData.email}</p>
           </div>
         ) : (
           <p>사용자 정보를 불러오는 중...</p>
         )}
        <div className="job-sections">
           <div className="recommended-jobs">
-            <h2>추천 채용공고</h2>
+          {userData && (
+            <h2>{userData.name} 님을 위한 추천 채용공고 입니다!</h2>
+            )}
             <div className="job-list">
                 <p>공고 1</p>
             </div>
           </div>
           <div className="latest-jobs">
-            <h2>최신 공고</h2>
+            <h2>최근 업데이트된 최신 공고 입니다!</h2>
             <div className="job-list">
                 <p>공고 1</p>
             </div>

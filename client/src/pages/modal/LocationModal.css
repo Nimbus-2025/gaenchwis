@@ -1,0 +1,40 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.location-item {
+    margin: 5px; /* 아이템 간격 */
+    cursor: pointer; 
+    padding: 5px 10px;/* 클릭 가능 표시 */
+}
+/* 추가 스타일 */
+.add-location-button {
+    margin-left: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+.location-list {
+    display: flex; /* Flexbox 사용 */
+    flex-direction: row; /* 수평 정렬 */
+    flex-wrap: wrap; /* 줄 바꿈 */
+    justify-content: flex-start; 
+}
+.location-title {
+    display: flex; /* Flexbox 사용 */
+    align-items: center; /* 수직 중앙 정렬 */
+    margin-bottom: 10px; /* 제목과 지역구 간격 */
+}
