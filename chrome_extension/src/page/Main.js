@@ -6,7 +6,7 @@ import SaveEssay from './SaveEssay';
 
 function Main() {
   const [page,setPage]=useState(<Home />);
-
+  
   useEffect(() => {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.message === 'move_page_main') {

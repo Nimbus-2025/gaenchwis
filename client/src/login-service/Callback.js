@@ -1,0 +1,52 @@
+import React, { useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
+
+function Callback() {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      console.log('Authorization Code:', code);
+      exchangeCodeForToken(code);
+    } else {
+      console.error('No authorization code found.');
+    }
+  }, []);
+
+  const exchangeCodeForToken = async (authorizationCode) => {
+    const tokenUrl = "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/token";
+    const clientId = "72m8d04kfkj5osdsvjtclp2cbb";
+    const redirectUri = 'http://localhost:3000/callback';
+
+    try {
+      const response = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: clientId,
+          code: authorizationCode,
+          redirect_uri: redirectUri,
+        }),
+      });
+
+      const data = await response.json();
+      const idTokenPayload = jwtDecode(data.id_token);
+
+      sessionStorage.setItem('email', idTokenPayload.email);
+      sessionStorage.setItem('name', idTokenPayload.name);
+      sessionStorage.setItem('access_token', data.access_token);
+ 
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to exchange code for token:', error);
+    }
+  };
+
+  return <div>Loading...</div>;
+};
+
+export default Callback;

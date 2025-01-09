@@ -2,19 +2,27 @@ import './App.css';
 import React from 'react';
 import Footer from './component/Footer';
 import Main from './page/Main';
+import User from './component/User';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
+
   return (
-    <div className="App">
-      <header>
-      </header>
-      <body>
-        <Main />
-      </body>
-      <footer>
-        <Footer />
-      </footer>
-    </div>
+    <Router>
+      <div className="App">
+        <header>
+         <User />
+        </header>
+        <main>
+          <Routes>
+            <Route exact path="/" element={<Main />} />
+          </Routes>
+        </main>
+        <footer>
+          <Footer />
+        </footer>
+      </div>
+    </Router>
   );
 }
 
