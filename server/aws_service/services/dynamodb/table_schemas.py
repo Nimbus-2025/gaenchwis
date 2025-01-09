@@ -2,11 +2,11 @@ from ..common.constants import TableNames, IndexNames
 
 # 공통 GSI 설정
 COMMON_GSI_SETTINGS = {
-    'Projection': {'ProjectionType': 'ALL'},
-    'ProvisionedThroughput': {
-        'ReadCapacityUnits': 5,
-        'WriteCapacityUnits': 5
-    }
+    'Projection': {'ProjectionType': 'ALL'}
+    # 'ProvisionedThroughput': {
+    #     'ReadCapacityUnits': 5,
+    #     'WriteCapacityUnits': 5
+    # }
 }
 
 # DynamoDB 테이블 스키마 정의
@@ -32,11 +32,11 @@ COMPANIES_TABLE = {
             **COMMON_GSI_SETTINGS
         }
     ],
-    'BillingMode': 'PAY_PER_REQUEST',
-    'TimeToLiveSpecification': {
-        'Enabled': True,
-        'AttributeName': 'TTL'
-    }
+    'BillingMode': 'PAY_PER_REQUEST'
+    # 'TimeToLiveSpecification': {
+    #     'Enabled': True,
+    #     'AttributeName': 'TTL'
+    # }
 }
 
 JOB_POSTINGS_TABLE = {
@@ -69,15 +69,15 @@ JOB_POSTINGS_TABLE = {
                 {'AttributeName': 'GSI2SK', 'KeyType': 'RANGE'}
             ],
             **COMMON_GSI_SETTINGS
-        },
-        {
-            'IndexName': 'LocationIndex',
-            'KeySchema': [
-                {'AttributeName': 'GSI3PK', 'KeyType': 'HASH'},  
-                {'AttributeName': 'GSI3SK', 'KeyType': 'RANGE'} 
-            ],
-            **COMMON_GSI_SETTINGS
         }
+        # {
+        #     'IndexName': 'LocationIndex',
+        #     'KeySchema': [
+        #         {'AttributeName': 'GSI3PK', 'KeyType': 'HASH'},  
+        #         {'AttributeName': 'GSI3SK', 'KeyType': 'RANGE'} 
+        #     ],
+        #     **COMMON_GSI_SETTINGS
+        # }
     ],
     'BillingMode': 'PAY_PER_REQUEST'
 }

@@ -9,7 +9,7 @@ def setup_dynamodb(dynamodb: ServiceResource, region: Optional[str] = None):
         existing_tables = dynamodb.meta.client.list_tables()['TableNames']
         
         # 2. 테이블 생성
-        for table_schema in TABLES:
+        for table_schema in TABLES:  # 여러 테이블 스키마를 순회
             table_name = table_schema['TableName']
             
             if table_name not in existing_tables:

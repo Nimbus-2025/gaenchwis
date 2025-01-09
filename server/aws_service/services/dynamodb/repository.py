@@ -6,11 +6,12 @@ from ...exceptions import StorageException
 class DynamoDBRepository(BaseRepository):
     def __init__(self, table_name: str):
         super().__init__(table_name)
-        self.client = AWSClient.get_client('dynamodb')
+        self.dynamodb = AWSClient.get_client('dynamodb')
+        self.table = self.dynamodb.Table(self.collection_name)
         
     def health_check(self) -> bool:
         try:
-            self.client.describe_table(TableName=self.collection_name)
+            self.table.table_status
             return True
         except Exception:
             return False
@@ -18,14 +19,14 @@ class DynamoDBRepository(BaseRepository):
     def save(self, item: Union[Dict, List[Dict]]) -> bool:
         try:
             if isinstance(item, list):
-                with self.client.batch_writer(
+                with self.table.batch_writer(
                     TableName=self.collection_name
                 ) as batch:
                     for i in item:
                         batch.put_item(Item=i)
                 return True
             else:
-                response = self.client.put_item(
+                response = self.table.put_item(
                     TableName=self.collection_name,
                     Item=item
                 )
@@ -39,7 +40,7 @@ class DynamoDBRepository(BaseRepository):
         try:
             if id:
                 if isinstance(id, list):
-                    response = self.client.batch_get_item(
+                    response = self.table.batch_get_item(
                         RequestItems={
                             self.collection_name: {
                                 'Keys': [{'id': {'S': i}} for i in id]
@@ -48,13 +49,13 @@ class DynamoDBRepository(BaseRepository):
                     )
                     return response['Responses'][self.collection_name]
                 else:
-                    response = self.client.get_item(
+                    response = self.table.get_item(
                         TableName=self.collection_name,
                         Key={'id': {'S': id}}
                     )
                     return response.get('Item')
             else:
-                response = self.client.scan(
+                response = self.table.scan(
                     TableName=self.collection_name,
                     FilterExpression=query if query else None
                 )
@@ -68,7 +69,7 @@ class DynamoDBRepository(BaseRepository):
             expression_attribute_names = {f"#{k}": k for k in data}
             expression_attribute_values = {f":{k}": v for k, v in data.items()}
             
-            response = self.client.update_item(
+            response = self.table.update_item(
                 TableName=self.collection_name,
                 Key={'id': {'S': id}},
                 UpdateExpression=update_expression,
@@ -82,14 +83,14 @@ class DynamoDBRepository(BaseRepository):
     def delete(self, id: Union[str, List[str]]) -> bool:
         try:
             if isinstance(id, list):
-                with self.client.batch_writer(
+                with self.table.batch_writer(
                     TableName=self.collection_name
                 ) as batch:
                     for i in id:
                         batch.delete_item(Key={'id': {'S': i}})
                 return True
             else:
-                response = self.client.delete_item(
+                response = self.table.delete_item(
                     TableName=self.collection_name,
                     Key={'id': {'S': id}}
                 )

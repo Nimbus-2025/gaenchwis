@@ -11,14 +11,13 @@ class AWSClient:
     def get_client(cls, service_name: str):
         """AWS 서비스 클라이언트 반환"""
         if service_name not in cls._instances:
-            try:
-                config = AWSConfig()
-                cls._instances[service_name] = boto3.client(
+            if service_name == 'dynamodb':
+                cls._instances[service_name] = boto3.resource(
                     service_name,
-                    region_name=config.region,
-                    aws_access_key_id=config.access_key,
-                    aws_secret_access_key=config.secret_key
+                    aws_access_key_id='AKIAWX2IF5YDAMM7FH4V',
+                    aws_secret_access_key='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',
+                    region_name='ap-northeast-2'
                 )
-            except Exception as e:
-                raise StorageException(f"AWS {service_name} 연결 실패: {str(e)}")
+            else: 
+                cls._instances[service_name] = boto3.client(service_name)    
         return cls._instances[service_name]

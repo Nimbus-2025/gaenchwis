@@ -18,7 +18,3 @@ def save_to_csv(data, filename):
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False, encoding='utf-8-sig')
     print(f"데이터가 {filename}에 저장되었습니다.")
-    
-# # 랜덤 시간 대기
-# def random_sleep(min_time=0.5, max_time=2):
-#     time.sleep(random.uniform(min_time, max_time))

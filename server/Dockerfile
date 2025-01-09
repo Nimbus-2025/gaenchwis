@@ -30,6 +30,7 @@ ENV PORT=8000
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
 ENV FLASK_APP=crawler/main.py
+ENV AWS_REGION=ap-northeast-2
 ENV PYTHONUNBUFFERED=1
 ENV DOCKER_CONTAINER=true
 ENV CHROMEDRIVER_DIR=/usr/local/bin/chromedriver
