@@ -39,7 +39,7 @@ class SaraminCrawler(BaseCrawler):
         logger.setLevel(logging.INFO)
         
         # 파일 핸들러 추가
-        fh = logging.FileHandler(os.path.join(self.output_dir, 'saramin_crawler.log'))
+        fh = logging.FileHandler(os.path.join(self.output_dir, 'saramin_crawler.log'), encoding='utf-8')
         fh.setLevel(logging.INFO)
         
         # 포맷터 설정

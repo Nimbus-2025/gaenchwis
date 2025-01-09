@@ -10,7 +10,7 @@ def setup_dynamodb(dynamodb: ServiceResource, region: Optional[str] = None):
         
         # 2. 테이블 생성
         for table_schema in TABLES:  # 여러 테이블 스키마를 순회
-            table_name = table_schema['TableName']
+            table_name = table_schema['TableName'].value
             
             if table_name not in existing_tables:
                 # 2.1 테이블 생성

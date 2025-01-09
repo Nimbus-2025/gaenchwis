@@ -36,10 +36,10 @@ class CrawlerExecutor:
             # 로컬 환경에서는 파일로 로그 출력
             log_dir = os.path.join(current_dir, 'logs')
             os.makedirs(log_dir, exist_ok=True)
-            handler = logging.FileHandler(os.path.join(log_dir, 'crawler_executor.log'))
-            
+            handler = logging.FileHandler(os.path.join(log_dir, 'crawler_executor.log'), encoding='utf-8')
+
         # 파일 핸들러 추가
-        handler = logging.FileHandler('crawler_executor.log')
+        # handler = logging.FileHandler('crawler_executor.log')
         handler.setLevel(logging.INFO)
         
         # 포맷터 설정
