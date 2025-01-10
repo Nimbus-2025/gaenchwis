@@ -10,6 +10,10 @@ import MainPage from './pages/MainPage';
 import MyPage from './pages/MyPage';
 import UserPage from './pages/UserPage';
 import MyPage1 from './pages/MyPage1';
+import Callback from './login-service/Callback';
+import LoginfromChromeExtension from "./login-service/LoginfromChromeExtension"
+
+LoginfromChromeExtension();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -23,6 +27,7 @@ root.render(
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage1" element={<MyPage1 />} />
         <Route path="/userpage" element={<UserPage />} />
+        <Route path="/callback" element={<Callback />} />
       </Routes>
       </BrowserRouter>
       </Provider>

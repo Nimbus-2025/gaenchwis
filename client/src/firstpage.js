@@ -5,6 +5,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import logo from './images/cloud.png'; // 로고 이미지 경로
 import backgroundGif from './images/background.gif'; // 배경 GIF 경로
 import { jwtDecode } from 'jwt-decode';
+import LoginButton from './login-service/LoginButton';
 
 const FirstPage = () => {
     const navigate = useNavigate();
@@ -76,6 +77,7 @@ return (
     <PageWrapper>
       <Logo src={logo} alt="Logo" onClick={handleLogoClick}/>
       <LoginButtonWrapper>
+        <LoginButton />
        <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={handleLoginFailure}

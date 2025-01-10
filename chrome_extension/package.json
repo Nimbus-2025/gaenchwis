@@ -5,6 +5,7 @@
   "dependencies": {
     "copyfiles": "^2.4.1",
     "cra-template": "1.2.0",
+    "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.1",
