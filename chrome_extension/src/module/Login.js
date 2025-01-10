@@ -5,8 +5,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       email: request.data.email,
       name: request.data.name,
       access_token: request.token.access_token,
-      refresh_token: request.token.refresh_token
-     });
+      refresh_token: request.token.refresh_token,
+      id_token: request.token.id_token
+    });
     sendResponse({ message: 'User data saved' });
   }
   return true;

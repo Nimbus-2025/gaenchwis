@@ -1,19 +1,18 @@
 import React from 'react';
 import { jwtDecode } from 'jwt-decode';
+import Config from './Config';
 
 function LoginButton() {
-  const clientId="2utkst2075aft2udaumgb4n156"
-  const redirectUrl=`https://${chrome.runtime.id}.chromiumapp.org`;
+  const clientId=Config.clientId;
+  const redirectUrl=Config.redirectUrl;
   const handleLogin = () => {
-    const domain="https://gaenchwis.auth.ap-northeast-2.amazoncognito.com";
-    const scope="email openid profile"
-    const loginUrl=`${domain}/login?client_id=${clientId}&response_type=code&scope=${scope}&redirect_uri=${redirectUrl}`;
+    const loginUrl=`${Config.domain}/login?client_id=${clientId}&response_type=code&scope=${Config.scope}&redirect_uri=${redirectUrl}`;
     
     chrome.identity.launchWebAuthFlow(
       { url: loginUrl, interactive: true },
       (redirectUrl) => {
         if (chrome.runtime.lastError || !redirectUrl) {
-          chrome.runtime.sendMessage({ message: 'error', error: chrome.runtime.lastError });
+          chrome.runtime.sendMessage({ message: 'error', error: chrome.runtime.lastError});
           return;
         }
     
@@ -29,7 +28,7 @@ function LoginButton() {
     });
   }
   const exchangeCodeForToken = async (authorizationCode) => {
-    const tokenUrl = "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/token";
+    const tokenUrl = Config.tokenUrl;
 
     try {
       const response = await fetch(tokenUrl, {

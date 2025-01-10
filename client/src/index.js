@@ -11,6 +11,9 @@ import MyPage from './pages/MyPage';
 import UserPage from './pages/UserPage';
 import MyPage1 from './pages/MyPage1';
 import Callback from './login-service/Callback';
+import LoginfromChromeExtension from "./login-service/LoginfromChromeExtension"
+
+LoginfromChromeExtension();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

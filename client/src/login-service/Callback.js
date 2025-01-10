@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import Config from './Config';
 
 function Callback() {
   useEffect(() => {
@@ -15,9 +16,9 @@ function Callback() {
   }, []);
 
   const exchangeCodeForToken = async (authorizationCode) => {
-    const tokenUrl = "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/token";
-    const clientId = "72m8d04kfkj5osdsvjtclp2cbb";
-    const redirectUri = 'http://localhost:3000/callback';
+    const tokenUrl = Config.tokenUrl;
+    const clientId = Config.clientId;
+    const redirectUri = Config.redirectUrl;
 
     try {
       const response = await fetch(tokenUrl, {
@@ -39,6 +40,7 @@ function Callback() {
       sessionStorage.setItem('email', idTokenPayload.email);
       sessionStorage.setItem('name', idTokenPayload.name);
       sessionStorage.setItem('access_token', data.access_token);
+      sessionStorage.setItem('id_token', data.id_token);
  
       window.location.href = '/';
     } catch (error) {
