@@ -150,7 +150,7 @@ class SaraminCrawler(BaseCrawler):
             location = location.strip()
             parts = location.split()
             
-            main_region = parts[0].replace('전체', '').replace(' 외', '')
+            main_region = parts[0].replace('전체', '').replace('외', '')
             main_region_name = f"{main_region}전체"
             main_region_id = self._generate_hash(f"location_{main_region}")
 
