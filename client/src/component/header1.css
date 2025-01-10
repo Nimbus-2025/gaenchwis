@@ -1,0 +1,59 @@
+.button-container {
+    display: flex; /* 버튼들을 가로로 나열 */
+    justify-content: center; /* 버튼들을 중앙 정렬 */
+    padding-left: 150px; 
+    gap: 10px; /* 버튼 간 간격 */
+  }
+  .button-logout-container {
+    display: flex; /* 버튼 컨테이너와 로그아웃 컨테이너를 같은 줄에 배치 */
+    justify-content: space-between; /* 두 컨테이너 간 간격을 최대화 */
+    align-items: center; /* 세로 방향으로 중앙 정렬 */
+    width: 100%; /* 부모 요소가 가득 차도록 설정 */
+    height: 30px;
+    margin-top:10px;
+    margin-bottom:40px;
+    
+  }
+  .logout-container {
+    display: flex; /* 로그인 버튼을 수평 중앙 정렬 */
+    padding-right: 100px; 
+    align-items: center; /* 수직 중앙 정렬 */
+    margin-left: auto; /* 오른쪽 끝으로 배치 */
+  }
+  
+  .button-container button {
+    display: flex;
+    flex-direction: row; /* 이미지와 텍스트를 세로로 배치 */
+    border: none; /* 기본 버튼 스타일 제거 */ /* 배경 이미지 설정 */
+    background-size: 30px 30px; /* 이미지 크기 조정 */
+    background-repeat: no-repeat;
+    width: 200px; /* 버튼 너비 */
+    height: 50px; /* 버튼 높이 */
+    cursor: pointer; /* 커서 모양 변경 */
+    color: rgb(0, 10, 16); /* 텍스트 색상 */
+    text-align: center; /* 텍스트 가운데 정렬 */
+    justify-content: center;
+    padding: 0;
+    margin-top: 10px;
+    box-shadow: none; /* 그림자 제거 */
+    outline: none; /* 외곽선 제거 */
+}
+
+  button {
+    height: 30px; 
+    border-radius: 5px;
+    cursor: pointer;
+    justify-content: center; /* 가로 방향 중앙 정렬 */
+    align-items: center; /* 세로 방향 중앙 정렬 */
+    background-color: #ffffff; /* 기본 배경색 */
+    transition: background-color 0.3s; /* 배경색 변화 애니메이션 */
+}
+.button-container button.active {
+  font-weight: bold; /* 텍스트를 진하게 */
+  color: #333; /* 필요시 색상 변경 */
+}
+button:active {
+  font-weight: bold;
+  background-color: #e0e0e0;
+  transform: scale(0.98); /* 버튼 살짝 눌리는 효과 */
+}

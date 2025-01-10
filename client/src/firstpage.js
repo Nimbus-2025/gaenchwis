@@ -10,7 +10,7 @@ import LoginButton from './login-service/LoginButton';
 const FirstPage = () => {
     const navigate = useNavigate();
     const handleLogoClick = () =>{
-        navigate('/mainpage');
+        navigate('/MyPage1');
     }
   
 
@@ -35,7 +35,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
     };
         localStorage.setItem('user', JSON.stringify(userData));
 
-        navigate('/userpage');
+        navigate('/MyPage1');
     } catch (error) {
       console.error('구글 로그인 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');

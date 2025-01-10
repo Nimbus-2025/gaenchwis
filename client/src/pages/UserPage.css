@@ -9,22 +9,15 @@
   }
   
   .recommended-jobs, .latest-jobs {
-    width: 95%;
-    padding: 20px;
+    width: 100%;
+    padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    min-height: 300px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    height: 500px;
   }
-  
-  .recommended-jobs {
-    background-color: #e0f7fa;
-  }
-  
-  .latest-jobs {
-    background-color: #fff3e0;
-  }
-  
+
   .job-list {
     display: flex;
     flex-direction: column;
@@ -38,15 +31,7 @@
     border: 1px solid #ddd;
   }
   
-  .logout-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+
   .info-container {
     display: flex; /* Flexbox 사용 */
     justify-content: space-between; /* 항목 간의 간격을 균등하게 배분 */

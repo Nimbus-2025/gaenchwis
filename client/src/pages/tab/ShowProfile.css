@@ -33,6 +33,7 @@
     gap: 50px; /* 각 박스 사이의 간격 */
     margin-top:150px;
     
+    justify-content: space-between; /* 박스 간 동일한 간격 배분 */
     margin-left:100px;
   }
   Profilebutton {
@@ -64,15 +65,27 @@
     border-radius: 5px; /* 모서리 둥글게 설정 (선택 사항) */
   }
 .profile-info {
-    width: 600px; /* 예시 너비 */
-    height: 400px;
-    padding: 10px;
+    width: 500px; /* 예시 너비 */
+    height: 300px;
+    padding: 15px;
+    margin-top: 20px;
     background-color: #f9f9f9;
     border-radius: 16px;
     box-sizing: border-box;
     position: relative; /* 절대 위치 버튼을 위한 설정 */
-    margin-left: 30px;
     border: 1px solid rgb(170, 168, 168);
+}
+.profile-info1 {
+  width: 800px; /* 예시 너비 */
+  height: 300px;
+  padding: 15px;
+  display: flex; /* Flexbox 사용 */
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  margin-top: 20px; /* 위쪽 여백 */
+  border: 1px solid rgb(170, 168, 168);
+  border-radius: 16px; /* 모서리 둥글게 */
+  background-color: #f9f9f9; /* 배경색 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 .profile-header {
@@ -95,8 +108,10 @@
 
 .tag-list {
   margin-top: 10px;
-  width:800px; /* 제목과 내용 간의 간격 */
+  width:100%; 
+  overflow: hidden;
 }
+
 
 .tag {
     margin-right: 20px;
@@ -115,7 +130,8 @@
   background-color: #f9f9f9; /* 사각형 배경색 */
   border-radius: 16px;/*  모서리 둥글게 */
   padding: 10px; /* 내부 여백 */
-  width: 1000px; /* 각 사각형의 너비 */
+  width: 800px; /* 각 사각형의 너비 */
+  margin: 0;
   height:200px;
   border: 1px solid rgb(170, 168, 168);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
@@ -217,4 +233,42 @@ edit-form {
 .profile-details {
   margin: 5px 0;
   font-size: 20px; 
+}
+.status-box {
+  border: 1px solid #ccc; /* 테두리 */
+  padding: 20px; /* 패딩 */
+  border-radius: 30px; /* 모서리 둥글게 */
+  background-color: #ffffff; /* 배경색 */
+  margin-top: 20px; /* 위쪽 여백 */
+  display: flex; /* Flexbox 사용 */
+  flex-direction: column;
+   /* 세로 방향으로 정렬 */
+}
+.status-container {
+  display: flex; /* 수평 정렬 */
+  justify-content: space-between; /* 항목 간의 공간을 균등하게 배분 */
+  margin-top: 10px; /* 제목과 항목 간의 여백 */
+}
+
+.status-box h4 {
+  margin-bottom: 10px; /* 제목과 항목 간의 여백 */
+}
+
+.status-item {
+  display: flex; /* 수평 정렬 */
+  flex-direction: column;
+  align-items: center; /* 양쪽 정렬 */
+  margin: 10px 0; /* 위아래 여백 */
+  flex: 1; /* 균등하게 공간 배분 */
+}
+
+.status-item span {
+  font-size: 16px; /* 글자 크기 */
+  text-align: center; /* 텍스트 가운데 정렬 */
+}
+.divider {
+  width: 1px; /* 구분선의 너비 */
+  background-color: #ccc; /* 구분선 색상 */
+  height: 50px; /* 구분선의 높이 */
+  align-self: center; /* 가운데 정렬 */
 }

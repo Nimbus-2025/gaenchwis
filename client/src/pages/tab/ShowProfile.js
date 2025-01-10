@@ -51,7 +51,32 @@ const ShowProfile = ({ userData, onSave }) => {
         </div>
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
       </div>
-      <div className="profile-info"></div>
+      <div className="profile-info1">
+      <h4>입사지원 현황</h4>
+        <div className="status-box">
+        <div className="status-container">
+        <div className="status-item">
+            <span>지원완료</span>
+            <span>2</span>
+        </div>
+        <div className="divider"></div>
+        <div className="status-item">
+            <span>서류통과</span>
+            <span>0</span>
+        </div>
+        <div className="divider"></div>
+        <div className="status-item">
+        <span>최종합격</span>
+        <span>0</span>
+        </div>
+        <div className="divider"></div>
+        <div className="status-item">
+         <span>불합격</span>
+         <span>0</span>
+        </div>
+        </div>
+        </div>
+    </div>
     </div>
       <div>
         <div className="info-box-container">
