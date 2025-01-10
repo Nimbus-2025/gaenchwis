@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../images/cloud.png'; // 로고 이미지 경로
 import '../component/Header.css';
 import './UserPage.css';
 import Header from '../component/Header';
 const UserPage = () => {
-  const [searchText, setSearchText] = useState('');
+
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
-  const handleSearch = () => {
-    console.log('검색:', searchText);
-  };
 
   const handleLoginClick = () => {
     navigate('/'); // 로그인 페이지로 이동
@@ -39,23 +35,14 @@ const UserPage = () => {
   }, []);
 
   return (
-    <div>
-      <Header 
-        userData={userData} 
-        onLogout={handleLogoutClick} 
-        searchText={searchText} 
-        setSearchText={setSearchText} 
-        onSearch={handleSearch} 
-        onMyPageClick={handleMyPageClick} 
-      />
-      <div className="user-content">
-        {userData ? (
-          <div>
-            <p>환영합니다, {userData.name}님!</p>
-          </div>
-        ) : (
-          <p>사용자 정보를 불러오는 중...</p>
-        )}
+    //   <div className="user-content">
+    //     {userData ? (
+    //       <div>
+    //         <p>환영합니다, {userData.name}님!</p>
+    //       </div>
+    //     ) : (
+    //       <p>사용자 정보를 불러오는 중...</p>
+    //     )}
        <div className="job-sections">
           <div className="recommended-jobs">
           {userData && (
@@ -73,8 +60,7 @@ const UserPage = () => {
             {/* 최신 공고 목록을 여기에 추가 */}
           </div>
         </div>
-      </div>
-    </div>
+      
     
   );
 };

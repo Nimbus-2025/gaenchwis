@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../images/cloud.png';
 import './Header.css';
-import LogoutButton from './Logout';
 import CategoryPopup from '../component/CategoryPopup';
-const Header = ({ userData, onLogout, searchText, setSearchText, onSearch, onMyPageClick }) => {
+import SearchResult from '../pages/tab/SearchResult';
+
+const Header = ({ userData, onLogout, searchText, setSearchText, onSearch }) => {
     const navigate = useNavigate();
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const toggleCategoryPopup = () => {
@@ -12,38 +13,46 @@ const Header = ({ userData, onLogout, searchText, setSearchText, onSearch, onMyP
       };
       const handleLogoClick = () => {
         if (userData) { // 로그인 상태일 때만 유저 페이지로 이동
-          navigate('/userpage'); // 유저 페이지로 이동
+          navigate('/mypage1'); // 유저 페이지로 이동
         }
       };
-      const handleMyPageClick = () => {
-        navigate('/mypage1'); // 마이페이지로 이동
+      const handleSearchClick = () => {
+        onSearch(); // Call the onSearch function passed as a prop
       };
-  
+    
     return (
       <header className="header">
+        
+    
         <div className="left-section">
           <img src={logo} alt="로고" className="header-logo"
           onClick={handleLogoClick}
           style={{ cursor: 'pointer' }}
            />
-          <button 
+        
+        </div>
+        
+        <div className="search-section">
+        <button 
             className="category-btn"
             onClick={toggleCategoryPopup}
           >
             카테고리
           </button>
-        </div>
-        
-        <div className="search-section">
           <input
             type="text"
             placeholder="검색어를 입력하세요"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearchClick(); // 엔터 키가 눌리면 검색 실행
+              }
+            }}
             className="search-input"
           />
-          <button className="search-btn" onClick={onSearch}>
-            검색
+          <button className="header-search-btn" onClick={handleSearchClick}>
+          
           </button>
         </div>
   
