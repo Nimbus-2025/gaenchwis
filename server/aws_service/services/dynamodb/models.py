@@ -29,6 +29,7 @@ class JobPosting(TypedDict):
     company_name: str     
     is_closed: datetime   
     post_url: str         
+    rec_id: str
     status: JobStatus           
     created_at: datetime  
     updated_at: datetime  

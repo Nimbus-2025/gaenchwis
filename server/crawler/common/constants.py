@@ -1,3 +1,5 @@
+import os
+
 # 공통으로 사용되는 상수들 
 USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -13,8 +15,12 @@ OUTPUT_DIRS = {
     'jobkorea': 'jobkorea_crawling_results'
 }
 
+# 모든 출력 디렉토리 생성
+for dir_path in OUTPUT_DIRS.values():
+    os.makedirs(dir_path, exist_ok=True)
+
 # URL 상수
 URLS = {
-    'saramin': 'https://www.saramin.co.kr/zf_user/jobs/list/job-category?cat_mcls=2&loc_mcd=101000&panel_type=&search_optional_item=n&search_done=y&panel_count=y&preview=y',
+    'saramin': 'https://www.saramin.co.kr/zf_user/jobs/list/job-category?cat_mcls=2&loc_mcd=101000%2C102000%2C108000&panel_type=&search_optional_item=n&search_done=y&panel_count=y&preview=y&page=1&sort=RD&page_count=100',
     'jobkorea': 'https://www.jobkorea.co.kr/recruit/joblist?menucode=duty'
 }
