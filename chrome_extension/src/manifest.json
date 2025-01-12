@@ -15,6 +15,9 @@
   "background": {
     "service_worker": "module/Background.js"
   },
+  "host_permissions": [
+    "https://*.amazoncognito.com/*"
+  ],
   "permissions": [
     "storage", 
     "contextMenus", 
