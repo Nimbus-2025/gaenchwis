@@ -18,7 +18,7 @@ const UserPage = () => {
   };
   const handleLogoutClick = () => {
     // 로그아웃 처리
-    localStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
+    sessionStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
     navigate('/'); // 메인 페이지로 이동
   };
 

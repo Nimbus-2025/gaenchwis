@@ -5,15 +5,14 @@ import SearchResult from './tab/SearchResult';
 import Modal from './modal/Edit';
 import ShowProfile from './tab/ShowProfile';
 import ShowEssay from './tab/ShowEssay';
+import ShowBookmark from './tab/ShowBookmark'; 
 import Calendar from '../calendar';
-import heartImage from '../images/heart.png';
-import starImage from '../images/star.png';
 import './MyPage1.css';
 import LogoutButton from '../component/Logout';
 import Jobposting from './UserPage'
 
-const MyPage1 = () => {
-  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('user')) || {});
+const MyPage1 = ({bookmarkedJobs}) => {
+  const [userData, setUserData] = useState(JSON.parse(sessionStorage.getItem('user')) || {});
   const [selectedButton, setSelectedButton] = useState('profile');
   const [content, setContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +22,7 @@ const MyPage1 = () => {
   const [searchText, setSearchText] = useState('');
   
   useEffect(() => {
-    const storedUserData = localStorage.getItem('user');
+    const storedUserData = sessionStorage.getItem('user');
     if (storedUserData) {
       try {
         const parsedData = JSON.parse(storedUserData);
@@ -47,7 +46,7 @@ const MyPage1 = () => {
   };
   const handleSaveClick = (updatedUserData) => {
     setUserData(updatedUserData);
-    localStorage.setItem('user', JSON.stringify(updatedUserData));
+    sessionStorage.setItem('user', JSON.stringify(updatedUserData));
     setIsModalOpen(false);
   };
   const confirmPopup = () => {
@@ -64,55 +63,36 @@ const MyPage1 = () => {
       setSelectedButton('profile');
       setContent(<ShowProfile userData={userData} onSave={handleSaveClick} />);
     }
+
+  const handleShowBookmarks = () => {
+    if (!userData?.email) {
+      setIsPopupOpen(true); // 팝업 표시
+    } else {
+      setContent(<ShowBookmark bookmarkedJobs={bookmarkedJobs} />); // 북마크된 공고 표시
+    }
+  };
   };
   const showEssay = () => {
     setSelectedButton('essay');
     setContent(<ShowEssay userData={userData} onSave={handleSaveClick} />);
   };
-
-  const showBookmarks = () => {
+  const handleShowBookmarks = () => {
     if (!userData?.email) {
       setIsPopupOpen(true); // 팝업 표시
     } else {
-    setSelectedButton('bookmarks');
-    setContent(
-      <div className="bookmark-interest-container">
-        <div className="section">
-          <h2 className="title">북마크 공고 <img src={starImage} alt="북마크" className="star-icon" /></h2>
-          <div className="bookmark-box"></div>
-        </div>
-        <div className="section">
-          <h2 className="title">관심기업 공고 <img src={heartImage} alt="관심기업" className="heart-icon" /></h2>
-          <div className="bookmark-box"></div>
-        </div>
-      </div>
-    );
-  }
+      setContent(<ShowBookmark bookmarkedJobs={bookmarkedJobs} />);
+    }
   };
-  const showCoverLetter = () => {
-    setSelectedButton('coverLetter'); 
-    setContent(
-      <div style={{ marginTop: '20px', width: '100%' }}>
-          <textarea
-              rows="4"
-              cols="50"
-              placeholder="자기소개서를 입력하세요..."
-              value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
-              style={{ width: '100%', marginBottom: '10px' }} // 텍스트 영역 스타일
-          />
-          <button onClick={saveCoverLetter}>저장</button>
-      </div>
-  );
-  };
-  
-  const saveCoverLetter = () => {
-    setSelectedButton('coverLetter');
-    localStorage.setItem('coverLetter', coverLetter); // 로컬 스토리지에 자기소개서 저장
-          setCoverLetter(''); // 입력 필드 초기화
-          setContent(null); // 
+  const showBookmark = () => {
+     if (!userData?.email) {
+      setIsPopupOpen(true); // 팝업 표시
+    } else {
+    setSelectedButton('bookmark');
+    setContent(<ShowBookmark userData={userData} onSave={handleSaveClick} />);
+    }
   };
 
+ 
   const showCalendar = () => {
     setSelectedButton('calendar');
     setContent(<Calendar />);
@@ -144,8 +124,8 @@ const MyPage1 = () => {
           </button>
 
           <button
-            className={selectedButton === 'bookmarks' ? 'active' : ''}
-            onClick={showBookmarks}
+            className={selectedButton === 'bookmark' ? 'active' : ''}
+            onClick={showBookmark}
           >
             북마크 / 관심기업
           </button>
