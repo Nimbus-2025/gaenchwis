@@ -1,4 +1,4 @@
-from ..common.constants import TableNames, IndexNames
+from aws_service.services.dynamodb.common.constants import TableNames, IndexNames
 
 # 공통 GSI 설정
 COMMON_GSI_SETTINGS = {
@@ -55,7 +55,7 @@ JOB_POSTINGS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.STATUS_GSI,  
+            'IndexName': IndexNames.DynamoDB.STATUS_GSI,  
             'KeySchema': [
                 {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
                 {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
@@ -63,7 +63,7 @@ JOB_POSTINGS_TABLE = {
             **COMMON_GSI_SETTINGS
         },
         {
-            'IndexName': IndexNames.DATE_GSI,  
+            'IndexName': IndexNames.DynamoDB.DATE_GSI,  
             'KeySchema': [
                 {'AttributeName': 'GSI2PK', 'KeyType': 'HASH'},
                 {'AttributeName': 'GSI2SK', 'KeyType': 'RANGE'}
@@ -96,7 +96,7 @@ TAGS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.TAG_GSI,
+            'IndexName': IndexNames.DynamoDB.TAG_GSI,
             'KeySchema': [
                 {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
                 {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
@@ -121,7 +121,7 @@ JOB_TAGS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.TAG_GSI,  # 태그별 공고 조회를 위한 인덱스
+            'IndexName': IndexNames.DynamoDB.TAG_GSI,  # 태그별 공고 조회를 위한 인덱스
             'KeySchema': [
                 {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
                 {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}

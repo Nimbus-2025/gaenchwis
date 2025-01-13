@@ -135,3 +135,14 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*$py.class
+.Python
+
+# Virtual Environment
+venv/
+myenv/
+.env/
+env/
+.venv/
+ENV/

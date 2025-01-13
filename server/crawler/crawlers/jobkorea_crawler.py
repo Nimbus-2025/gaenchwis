@@ -19,8 +19,9 @@ from common.constants import URLS
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(PROJECT_ROOT)
 
-from aws_service.factory import create_repository
-from aws_service.services.common.constants import TableNames
+from aws_service.services.dynamodb.common.factory import create_repository
+from aws_service.services.dynamodb.common.constants import TableNames
+from aws_service.services.dynamodb.common.setup import setup_dynamodb
 
 class JobKoreaCrawler(BaseCrawler):
     def __init__(self, output_dir: str) -> None:
