@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 from boto3.resources.base import ServiceResource
-from .table_schemas import TABLES
+from aws_service.services.dynamodb.crawling.table_schemas import TABLES as CRAWLING_TABLES
+from aws_service.services.dynamodb.user.table_schemas import TABLES as USER_TABLES
+from aws_service.services.dynamodb.essay.table_schemas import TABLES as ESSAY_TABLES
 
 def setup_dynamodb(dynamodb: ServiceResource, region: Optional[str] = None):
     """DynamoDB 테이블들을 생성합니다."""
@@ -8,15 +10,22 @@ def setup_dynamodb(dynamodb: ServiceResource, region: Optional[str] = None):
         # 1. 기존 테이블 확인
         existing_tables = dynamodb.meta.client.list_tables()['TableNames']
         
-        # 2. 테이블 생성
-        for table_schema in TABLES:  # 여러 테이블 스키마를 순회
+        # 2. 모든 테이블 스키마 합치기
+        all_tables: List[dict] = []
+        all_tables.extend(CRAWLING_TABLES)
+        all_tables.extend(USER_TABLES)
+        all_tables.extend(ESSAY_TABLES)
+        
+        
+        # 3. 테이블 생성
+        for table_schema in all_tables:  # 여러 테이블 스키마를 순회
             table_name = table_schema['TableName'].value
             
             if table_name not in existing_tables:
-                # 2.1 테이블 생성
+                # 3.1 테이블 생성
                 table = dynamodb.create_table(**table_schema)
                 
-                # 2.2 테이블 생성 완료 대기
+                # 3.2 테이블 생성 완료 대기
                 waiter = table.meta.client.get_waiter('table_exists')
                 waiter.wait(
                     TableName=table_name,

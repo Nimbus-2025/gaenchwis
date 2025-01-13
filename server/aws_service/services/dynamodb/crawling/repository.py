@@ -1,100 +1,119 @@
 from typing import Dict, List, Union, Optional
-from datetime import datetime
-from ..common.base_repository import BaseRepository
-from ..common.constants import TableNames
-from .models import Company, JobPosting, Tag, JobTag
+from botocore.exceptions import ClientError
+from ....services.dynamodb.common.base_repository import BaseRepository
+from ....services.dynamodb.common.exceptions import (
+    ValidationException,
+    OperationException
+)
 
-class DynamoDBRepository(BaseRepository):
-    def __init__(self, table_name: str):
-        super().__init__(table_name)
-        self.dynamodb = AWSClient.get_client('dynamodb')
-        self.table = self.dynamodb.Table(self.collection_name)
-        
-    def health_check(self) -> bool:
+class CrawlingRepository(BaseRepository):
+    def _create_key_condition_expression(self, pk: str, sk: Optional[str] = None) -> Dict:
+        """키 조건 표현식 생성"""
         try:
-            self.table.table_status
-            return True
-        except Exception:
-            return False
-    
-    def save(self, item: Union[Dict, List[Dict]]) -> bool:
-        try:
-            if isinstance(item, list):
-                with self.table.batch_writer(
-                    TableName=self.collection_name
-                ) as batch:
-                    for i in item:
-                        batch.put_item(Item=i)
-                return True
-            else:
-                response = self.table.put_item(
-                    TableName=self.collection_name,
-                    Item=item
-                )
-                return response['ResponseMetadata']['HTTPStatusCode'] == 200
-        except Exception as e:
-            raise StorageException(f"DynamoDB 저장 실패: {str(e)}")
-    
-    def get(self, 
-            id: Optional[Union[str, List[str]]] = None,
-            query: Optional[Dict] = None) -> Union[Dict, List[Dict]]:
-        try:
-            if id:
-                if isinstance(id, list):
-                    response = self.table.batch_get_item(
-                        RequestItems={
-                            self.collection_name: {
-                                'Keys': [{'id': {'S': i}} for i in id]
-                            }
-                        }
-                    )
-                    return response['Responses'][self.collection_name]
-                else:
-                    response = self.table.get_item(
-                        TableName=self.collection_name,
-                        Key={'id': {'S': id}}
-                    )
-                    return response.get('Item')
-            else:
-                response = self.table.scan(
-                    TableName=self.collection_name,
-                    FilterExpression=query if query else None
-                )
-                return response['Items']
-        except Exception as e:
-            raise StorageException(f"DynamoDB 조회 실패: {str(e)}")
-    
-    def update(self, id: str, data: Dict) -> bool:
-        try:
-            update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in data)
-            expression_attribute_names = {f"#{k}": k for k in data}
-            expression_attribute_values = {f":{k}": v for k, v in data.items()}
+            if not pk:
+                raise ValidationException("파티션 키는 필수입니다.")
             
+            if sk:
+                return {
+                    'KeyConditionExpression': 'PK = :pk AND SK = :sk',
+                    'ExpressionAttributeValues': {':pk': pk, ':sk': sk}
+                }
+            return {
+                'KeyConditionExpression': 'PK = :pk',
+                'ExpressionAttributeValues': {':pk': pk}
+            }
+        except Exception as e:
+            if isinstance(e, ValidationException):
+                raise
+            raise OperationException(f"키 조건식 생성 중 오류 발생: {str(e)}")
+
+    def batch_create(self, items: List[Dict]) -> bool:
+        """여러 아이템 일괄 생성"""
+        try:
+            if not isinstance(items, list):
+                raise ValidationException("items는 리스트 형태여야 합니다")
+                
+            with self.table.batch_writer() as batch:
+                for item in items:
+                    if not isinstance(item, dict):
+                        raise ValidationException("모든 아이템은 딕셔너리 형태여야 합니다")
+                    batch.put_item(Item=item)
+            return True
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "일괄 생성")
+        except Exception as e:
+            if isinstance(e, ValidationException):
+                raise
+            raise OperationException(f"일괄 생성 중 오류 발생: {str(e)}")
+
+    def get_by_keys(self, pk: str, sk: Optional[str] = None) -> Union[Dict, List[Dict]]:
+        """키를 사용한 아이템 조회"""
+        try:
+            key_condition = self._create_key_condition_expression(pk, sk)
+            response = self.table.query(**key_condition)
+            return response.get('Items', [])
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "키 조회")
+        except Exception as e:
+            raise OperationException(f"키 조회 중 오류 발생: {str(e)}")
+
+    def get_by_index(self, index_name: str, pk: str, sk: Optional[str] = None) -> List[Dict]:
+        """인덱스를 사용한 아이템 조회"""
+        try:
+            key_condition = self._create_key_condition_expression(pk, sk)
+            response = self.table.query(
+                IndexName=index_name,
+                **key_condition
+            )
+            return response.get('Items', [])
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "인덱스 조회")
+        except Exception as e:
+            raise OperationException(f"인덱스 조회 중 오류 발생: {str(e)}")
+
+    def conditional_update(self, pk: str, sk: str, data: Dict, condition_expression: str) -> bool:
+        """조건부 아이템 업데이트"""
+        try:
+            update_expression = self._create_update_expression(data)
             response = self.table.update_item(
-                TableName=self.collection_name,
-                Key={'id': {'S': id}},
-                UpdateExpression=update_expression,
-                ExpressionAttributeNames=expression_attribute_names,
-                ExpressionAttributeValues=expression_attribute_values
+                Key={'PK': pk, 'SK': sk},
+                ConditionExpression=condition_expression,
+                **update_expression
             )
             return response['ResponseMetadata']['HTTPStatusCode'] == 200
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "조건부 업데이트")
         except Exception as e:
-            raise StorageException(f"DynamoDB 수정 실패: {str(e)}")
-    
-    def delete(self, id: Union[str, List[str]]) -> bool:
+            if isinstance(e, ValidationException):
+                raise
+            raise OperationException(f"조건부 업데이트 중 오류 발생: {str(e)}")
+
+    def conditional_delete(self, pk: str, sk: str, condition_expression: str) -> bool:
+        """조건부 아이템 삭제"""
         try:
-            if isinstance(id, list):
-                with self.table.batch_writer(
-                    TableName=self.collection_name
-                ) as batch:
-                    for i in id:
-                        batch.delete_item(Key={'id': {'S': i}})
-                return True
-            else:
-                response = self.table.delete_item(
-                    TableName=self.collection_name,
-                    Key={'id': {'S': id}}
-                )
-                return response['ResponseMetadata']['HTTPStatusCode'] == 200
+            response = self.table.delete_item(
+                Key={'PK': pk, 'SK': sk},
+                ConditionExpression=condition_expression
+            )
+            return response['ResponseMetadata']['HTTPStatusCode'] == 200
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "조건부 삭제")
         except Exception as e:
-            raise StorageException(f"DynamoDB 삭제 실패: {str(e)}")
+            raise OperationException(f"조건부 삭제 중 오류 발생: {str(e)}")
+
+    def batch_delete(self, items: List[Dict[str, str]]) -> bool:
+        """여러 아이템 일괄 삭제"""
+        try:
+            with self.table.batch_writer() as batch:
+                for item in items:
+                    if 'PK' not in item or 'SK' not in item:
+                        raise ValidationException("모든 아이템은 PK와 SK를 포함해야 합니다")
+                    batch.delete_item(Key={'PK': item['PK'], 'SK': item['SK']})
+            return True
+        except ClientError as e:
+            self._handle_dynamodb_error(e, "일괄 삭제")
+        except Exception as e:
+            if isinstance(e, ValidationException):
+                raise
+            raise OperationException(f"일괄 삭제 중 오류 발생: {str(e)}")
+        

@@ -1,7 +1,7 @@
 import boto3
 from typing import Dict, Any
 from .config import AWSConfig
-from .exceptions import StorageException
+from .services.dynamodb.common.exceptions import DynamoDBException
 
 class AWSClient:
     _instances: Dict[str, Any] = {}
@@ -26,5 +26,5 @@ class AWSClient:
                         region_name=config.region
                     )
             except Exception as e:
-                raise StorageException(f"AWS 클라이언트 생성 실패: {str(e)}")
+                raise DynamoDBException(f"AWS 클라이언트 생성 실패: {str(e)}")
         return cls._instances[service_name]

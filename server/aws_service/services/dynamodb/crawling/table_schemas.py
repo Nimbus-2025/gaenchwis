@@ -1,4 +1,4 @@
-from ..common.constants import TableNames, IndexNames
+from aws_service.services.dynamodb.common.constants import TableNames, IndexNames
 
 # 공통 GSI 설정
 COMMON_GSI_SETTINGS = {

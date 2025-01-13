@@ -1,4 +1,3 @@
-from .mongodb.repository import MongoDBRepository
-from .dynamodb.repository import DynamoDBRepository
+from .dynamodb import *
 
-__all__ = ['MongoDBRepository', 'DynamoDBRepository']
+__all__ = []

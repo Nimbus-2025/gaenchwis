@@ -1,11 +1,11 @@
 from typing import Dict, Type
-from ..common.base_repository import BaseRepository
-from ..common.exceptions import DynamoDBException
-from ..common.constants import TableNames
-from ..common.enums import RepositoryType
-from ..crawling.repository import CrawlingRepository
-from ..user.repository import UserRepository
-from ..essay.repository import EssayRepository
+from aws_service.services.dynamodb.common.base_repository import BaseRepository
+from aws_service.services.dynamodb.common.exceptions import DynamoDBException
+from aws_service.services.dynamodb.common.constants import TableNames
+from aws_service.services.dynamodb.common.enums import RepositoryType
+from aws_service.services.dynamodb.crawling.repository import CrawlingRepository
+from aws_service.services.dynamodb.user.repository import UserRepository
+from aws_service.services.dynamodb.essay.repository import EssayRepository
 
 REPOSITORIES: Dict[str, Type[BaseRepository]] = {
     RepositoryType.CRAWLING.value: CrawlingRepository,
