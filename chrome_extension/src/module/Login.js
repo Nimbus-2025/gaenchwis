@@ -9,6 +9,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       id_token: request.token.id_token
     });
     sendResponse({ message: 'User data saved' });
+    chrome.runtime.sendMessage({ message: 'login_success' });
   }
   return true;
 });

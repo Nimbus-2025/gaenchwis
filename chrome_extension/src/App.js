@@ -8,21 +8,21 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
 
   return (
-    <Router>
-      <div className="App">
-        <header>
-         <User />
-        </header>
-        <main>
+    <div className="App">
+      <header className="App-header">
+       <User />
+      </header>
+      <main className="App-body">
+        <Router>
           <Routes>
             <Route exact path="/" element={<Main />} />
           </Routes>
-        </main>
-        <footer>
-          <Footer />
-        </footer>
-      </div>
-    </Router>
+        </Router>
+      </main>
+      <footer className="App-footer">
+        <Footer />
+      </footer>
+    </div>
   );
 }
 

@@ -1,0 +1,19 @@
+.textbutton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.loginbutton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loginbutton:hover {
+  color: red;
+  transform: scale(1.1);
+}

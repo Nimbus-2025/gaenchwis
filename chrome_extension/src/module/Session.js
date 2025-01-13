@@ -19,7 +19,7 @@ async function refreshTokens() {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Origin": "https://llpcplgopabccjbnnnmjgdmbbhikdofk.chromiumapp.org"
+        "Origin": Config.redirectUrl
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
