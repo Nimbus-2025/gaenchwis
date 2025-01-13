@@ -142,6 +142,73 @@ export const ButtonWrapper = styled.div`
       background-color: #7ac7e6;
     }
   }
+
+  .filter-buttons {
+    position: absolute;
+    left: calc(100% + 5mm);
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .filterBtn:hover ~ .filter-buttons,
+  .filter-buttons:hover {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .filter-button {
+    background-color: #ff9aa3;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    
+    &:hover {
+      background-color: #ff8591;
+    }
+  }
+
+  .filter-buttons {
+    position: absolute;
+    left: calc(100% + 5mm);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .filterBtn:hover ~ .filter-buttons,
+  .filter-buttons:hover {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .filter-button {
+    background-color: #ff9aa3;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    
+    &:hover {
+      background-color: #ff8591;
+    }
+  }
 `;
 
 export const CalendarWrapper = styled.div`
@@ -164,6 +231,65 @@ export const YearDisplay = styled.div`
   font-size: 0.8em;
   margin-bottom: 5px;
   margin-left: 10px;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+export const MonthDisplay = styled.span`
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+export const SelectDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  min-width: 100px;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.4);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+`;
+
+export const SelectOption = styled.div`
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.35)' : 'white'};
+  color: ${props => props.selected ? '#333' : '#666'};
+  font-size: ${props => props.isMonth ? '0.85em' : '0.9em'};
+  white-space: nowrap;
+  
+  &:hover {
+    background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.35)' : '#f5f5f5'};
+  }
 `;
 
 export const HeaderContent = styled.div`
