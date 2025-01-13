@@ -7,8 +7,8 @@ from datetime import datetime
 import logging 
 from functools import wraps
 # 현재 스크립트의 디렉토리를 Python 경로에 추가
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
 # 로컬 임포트
 from crawlers.jobkorea_crawler import JobKoreaCrawler
 from crawlers.saramin_crawler import SaraminCrawler
@@ -29,6 +29,9 @@ class CrawlerExecutor:
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
 
+        # 현재 디렉토리 경로 설정
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+
         # Docker 환경에서는 stdout으로 로그 출력
         if os.environ.get('DOCKER_CONTAINER'):
             handler = logging.StreamHandler(sys.stdout)
@@ -38,10 +41,6 @@ class CrawlerExecutor:
             os.makedirs(log_dir, exist_ok=True)
             handler = logging.FileHandler(os.path.join(log_dir, 'crawler_executor.log'), encoding='utf-8')
 
-        # 파일 핸들러 추가
-        # handler = logging.FileHandler('crawler_executor.log')
-        handler.setLevel(logging.INFO)
-        
         # 포맷터 설정
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)

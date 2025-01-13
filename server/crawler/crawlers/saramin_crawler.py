@@ -11,15 +11,16 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 # 로컬 애플리케이션
-from base.base_crawler import BaseCrawler
-from common.utils import save_to_csv
-from common.constants import URLS
+from crawler.base.base_crawler import BaseCrawler
+from crawler.common.utils import save_to_csv
+from crawler.common.constants import URLS
 # AWS 서비스 관련
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PROJECT_ROOT)
-from aws_service.factory import create_repository
-from aws_service.services.common.constants import TableNames
-from aws_service.services.dynamodb.setup import setup_dynamodb
+from aws_service.services.dynamodb.common.factory import create_repository
+from aws_service.services.dynamodb.common.constants import TableNames
+from aws_service.services.dynamodb.common.enums import RepositoryType, TagCategory
+from aws_service.services.dynamodb.common.setup import setup_dynamodb
 
 class SaraminCrawler(BaseCrawler):
     def __init__(self, output_dir: str) -> None:
@@ -36,6 +37,9 @@ class SaraminCrawler(BaseCrawler):
         # 로깅 설정
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
+        
+        # 현재 디렉토리 경로 설정
+        current_dir = os.path.dirname(os.path.abspath(__file__))
         
         # 파일 핸들러 추가
         fh = logging.FileHandler(os.path.join(self.output_dir, 'saramin_crawler.log'), encoding='utf-8')
@@ -69,10 +73,10 @@ class SaraminCrawler(BaseCrawler):
     def _initialize_repositories(self) -> None:
         # Repository 객체들 초기화 
         try:
-            self.company_repo = create_repository('dynamodb', TableNames.COMPANIES)
-            self.job_repo = create_repository('dynamodb', TableNames.JOB_POSTINGS)
-            self.tag_repo = create_repository('dynamodb', TableNames.TAGS)
-            self.job_tag_repo = create_repository('dynamodb', TableNames.JOB_TAGS)
+            self.company_repo = create_repository(RepositoryType.CRAWLING.value, TableNames.COMPANIES.value)
+            self.job_repo = create_repository(RepositoryType.CRAWLING.value, TableNames.JOB_POSTINGS.value)
+            self.tag_repo = create_repository(RepositoryType.CRAWLING.value, TableNames.TAGS.value)
+            self.job_tag_repo = create_repository(RepositoryType.CRAWLING.value, TableNames.JOB_TAGS.value)
             
             self.logger.info("모든 Repository 초기화 완료")
             
@@ -97,7 +101,7 @@ class SaraminCrawler(BaseCrawler):
                 
                 # 회사 정보 저장
                 try: 
-                    self._save_compnay_info(company_id, job_data)
+                    self._save_company_info(company_id, job_data)
                 except Exception as e:
                     print(f"회사 정보 저장 실패: {str(e)}")
                     raise
@@ -128,7 +132,7 @@ class SaraminCrawler(BaseCrawler):
                 continue                
                 
                 
-    def _save_compnay_info(self, company_id: str, job_data: Dict) -> None:
+    def _save_company_info(self, company_id: str, job_data: Dict) -> None:
         # 1. 기업 정보 저장
         company_data = {
             'PK': f"COMPANY#{company_id}",  # 직접 값 할당
@@ -141,7 +145,7 @@ class SaraminCrawler(BaseCrawler):
             'GSI1SK': job_data['회사명']
         }
                 
-        self.company_repo.save(company_data)
+        self.company_repo.create(company_data)
         print(f"기업 정보 저장: {job_data['회사명']}")
 
     def _process_location_tag(self, location: str) -> List[str]:
@@ -168,7 +172,7 @@ class SaraminCrawler(BaseCrawler):
                 'GSI1PK': "TAG#ALL",
                 'GSI1SK': f"1#{main_region_id}"
             }
-            self.tag_repo.save(main_tag_data)
+            self.tag_repo.create(main_tag_data)
             tags.append(main_region_id)
             
             if len(parts) > 1:
@@ -190,7 +194,7 @@ class SaraminCrawler(BaseCrawler):
                     'GSI1PK': "TAG#ALL",
                     'GSI1SK': f"2#{district_id}"                    
                 }
-                self.tag_repo.save(district_tag_data)
+                self.tag_repo.create(district_tag_data)
                 tags.append(district_id)
                 
             return tags
@@ -202,48 +206,48 @@ class SaraminCrawler(BaseCrawler):
         # 2. 모든 태그 처리 
         tags = []
         
-        # (1) 직무분야 태그 처리
+        # (1) 직무분야 태그 처리 (skill)
         if job_data.get('직무분야'):
-            position_tags = self._process_position_tags(job_data['직무분야'])
-            tags.extend(position_tags)
+            skill_tags = self._process_skill_tags(job_data['직무분야'])
+            tags.extend(skill_tags)
             
-        # (2) 경력/고용형태 태그 처리
+        # (2) 경력/고용형태 태그 처리 (position)
         if job_data.get('경력/고용형태'):
             career_type_tags = self._process_career_type_tags(job_data['경력/고용형태'])
             tags.extend(career_type_tags)
             
-        # (3) 학력 태그 처리 
+        # (3) 학력 태그 처리 (education)
         if job_data.get('학력'):
             education_tag = self._process_education_tag(job_data['학력'])
             if education_tag:
                 tags.append(education_tag)
 
-        # (4) 지역 태그 처리 
+        # (4) 지역 태그 처리 (location)
         if job_data.get('근무지'):
             location_tags = self._process_location_tag(job_data['근무지'])
             tags.extend(location_tags)
         
         return tags
     
-    def _process_position_tags(self, position_str: str) -> List[str]:
+    def _process_skill_tags(self, skill_str: str) -> List[str]:
         # 직무분야 태그 처리 
         tags = []
-        if not position_str:
+        if not skill_str:
             return tags
         
-        positions = [pos.strip() for pos in position_str.split(',')]
+        skills = [sks.strip() for sks in skill_str.split(',')]
         
-        for position in positions:
-            if not position:
+        for skill in skills:
+            if not skill:
                 continue
         
-            tag_id = self._generate_hash(f"position_{position}")
+            tag_id = self._generate_hash(f"{TagCategory.SKILL.value}_{skill}")
             tag_data = {
                 'PK': f"TAG#position",
                 'SK': f"TAG#{tag_id}",
                 'tag_id': tag_id,
-                'category': 'position',
-                'name': position,
+                'category': TagCategory.SKILL.value,
+                'name': skill,
                 'level': 1,
                 'parent_id': None,
                 'count': 1,
@@ -252,7 +256,7 @@ class SaraminCrawler(BaseCrawler):
                 'GSI1PK': "TAG#ALL",
                 'GSI1SK': f"1#{tag_id}"
             }
-            self.tag_repo.save(tag_data)
+            self.tag_repo.create(tag_data)
             tags.append(tag_id)
     
         return tags
@@ -266,16 +270,16 @@ class SaraminCrawler(BaseCrawler):
         career_types = [ct.strip() for ct in career_type_str.split(' · ')]
         
         for career_type in career_types:
-            career_type = career_type.replace(' 외', '').strip()
+            career_type = career_type.replace('외', '').strip()
             if not career_type:
                 continue
     
-            tag_id = self._generate_hash(f"skill_{career_type}")
+            tag_id = self._generate_hash(f"{TagCategory.POSITION.value}_{career_type}")
             tag_data = {
                 'PK': f"TAG#skill",
                 'SK': f"TAG#{tag_id}",
                 'tag_id': tag_id,
-                'category': 'skill',
+                'category': TagCategory.POSITION.value,
                 'name': career_type,
                 'level': 1,
                 'parent_id': None,
@@ -285,7 +289,7 @@ class SaraminCrawler(BaseCrawler):
                 'GSI1PK': "TAG#ALL",
                 'GSI1SK': f"1#{tag_id}"
             }
-            self.tag_repo.save(tag_data)
+            self.tag_repo.create(tag_data)
             tags.append(tag_id)
         
         return tags            
@@ -298,12 +302,12 @@ class SaraminCrawler(BaseCrawler):
         if not education:
             return None
 
-        tag_id = self._generate_hash(f"skill_{education}")
+        tag_id = self._generate_hash(f"{TagCategory.EDUCATION.value}_{education}")
         tag_data = {
             'PK': f"TAG#skill",
             'SK': f"TAG#{tag_id}",
             'tag_id': tag_id,
-            'category': 'skill',
+            'category': TagCategory.EDUCATION.value,
             'name': education,
             'level': 1,
             'parent_id': None,
@@ -313,7 +317,7 @@ class SaraminCrawler(BaseCrawler):
             'GSI1PK': "TAG#ALL",
             'GSI1SK': f"1#{tag_id}"
         }
-        self.tag_repo.save(tag_data)
+        self.tag_repo.create(tag_data)
         return tag_id
 
     def _save_job_posting(self, company_id: str, post_id: str, job_data: Dict) -> None:
@@ -339,7 +343,7 @@ class SaraminCrawler(BaseCrawler):
             'GSI2PK': "JOB#ALL",
             'GSI2SK': datetime.now().isoformat()
         }
-        self.job_repo.save(job_data_processed)
+        self.job_repo.create(job_data_processed)
         self.logger.info(f"채용공고 저장: {job_data['공고제목']}")
         print(f"채용공고 저장: {job_data['공고제목']}")
 
@@ -359,7 +363,7 @@ class SaraminCrawler(BaseCrawler):
                     'GSI1SK': f"JOB#{post_id}"
                 }
             
-            self.job_tag_repo.save(mapping_data)
+            self.job_tag_repo.create(mapping_data)
             
     def _parse_deadline(self, deadline_str: str) -> str:
         from common.utils import parsse_deadline_date
