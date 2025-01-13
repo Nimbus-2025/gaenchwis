@@ -37,11 +37,13 @@ function Callback() {
       const data = await response.json();
       const idTokenPayload = jwtDecode(data.id_token);
 
-      sessionStorage.setItem('email', idTokenPayload.email);
-      sessionStorage.setItem('name', idTokenPayload.name);
-      sessionStorage.setItem('access_token', data.access_token);
-      sessionStorage.setItem('id_token', data.id_token);
- 
+      const user = {
+        email: idTokenPayload.email,
+        name: idTokenPayload.name,
+        access_token: data.access_token,
+        id_token: data.id_token
+      }
+      sessionStorage.setItem('user', JSON.stringify(user));
       window.location.href = '/';
     } catch (error) {
       console.error('Failed to exchange code for token:', error);
