@@ -55,7 +55,7 @@ function LoginButton() {
   };
 
   return (
-    <TextButton title="Login" onClick={handleLogin} />
+    <TextButton title="Login" onClick={handleLogin} login={true} />
   );
 };
 

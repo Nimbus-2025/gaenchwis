@@ -1,9 +1,9 @@
 import React from 'react';
 import "../style/button.css";
 
-const TextButton = ({ title, onClick}) => {
+const TextButton = ({ title, onClick, login}) => {
   return (
-    <span className={title==="Login" ? "loginbutton":"textbutton" } onClick={onClick}>
+    <span className={login ? "loginbutton":"textbutton" } onClick={onClick}>
       {title}
     </span>
   );

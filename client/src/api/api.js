@@ -1,46 +1,29 @@
-import axios from "axios";
-import LoginfromChromeExtension from "../login-service/LoginfromChromeExtension"
-
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000", // 기본 API URL
-  timeout: 5000, // 요청 타임아웃
-});
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const access_token = localStorage.getItem("access_token");
-    const id_token = localStorage.getItem("id_token");
-    if (access_token) {
-      config.headers.accessToken = access_token;
-      config.headers.idToken = id_token;
-    }
-    return config;
+async function Api(url, method, body){
+  try{
+    const access_token=sessionStorage.getItem("user")["access_token"];
+    const id_token=sessionStorage.getItem("user")["id_token"];
+    body["access_token"]=access_token;
+    body["id_token"]=id_token;
+  }catch(error){}
+  
+  try{
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    return await response.json();
+  } catch(error){
+    console.error(error);
+    return error;
   }
-);
+  
+}
 
-axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response.status === 401) {
-      console.error("Unauthorized, refreshing token...");
-      localStorage.clear();
-      LoginfromChromeExtension();
-      const access_token = localStorage.getItem("access_token");
-      const id_token = localStorage.getItem("id_token");
-      if (access_token) {
-        originalRequest.headers.accessToken = access_token;
-        originalRequest.headers.idToken = id_token;
-        return axiosInstance(originalRequest);
-      }
-      else{
-        return originalRequest
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+function invalid_login(){
+  sessionStorage.clear();
+}
 
-export default axiosInstance;
+export default Api;

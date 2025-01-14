@@ -1,5 +1,5 @@
 import React from 'react';
-import Config from './Config';
+import Config from '../api/Config';
 
 function LoginButton() {
   const loginRedirect = () => {

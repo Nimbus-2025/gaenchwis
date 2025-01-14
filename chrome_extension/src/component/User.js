@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import LoginButton from './LoginButton';
+import TextButton from './TextButton';
 import "../style/background.css";
 
 function User() {
   const [login, setLogin]=useState(0);
   const [name, setName]=useState("");
+  const [logoutPopup, setLogoutPopup]=useState(false);
+
+  const togglePopup = () => {
+    setLogoutPopup(!logoutPopup);
+  };
+
+  const handleLogout = () => {
+    setLogoutPopup(false);
+    chrome.runtime.sendMessage({ message: "logout" });
+  };
+
   useEffect(() => {
     chrome.storage.local.get("access_token",(result)=>{
       if (result.access_token){
@@ -36,8 +48,21 @@ function User() {
 
   return (
     <div className="header-div">
-      {login===1 && <p>환영합니다! {name}님</p>}
+      {login===1 && <TextButton 
+        title={`환영합니다! ${name}님`} 
+        onClick={togglePopup} 
+        login={true} 
+      />}
       {login===2 && <LoginButton />}
+      {logoutPopup && (
+        <div className="popup">
+          <TextButton
+            title="Logout"
+            onClick={handleLogout}
+            login={true} 
+          />
+        </div>
+      )}
     </div>
   );
 }
