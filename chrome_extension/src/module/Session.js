@@ -1,8 +1,9 @@
 importScripts("Config.js");
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type === "refresh_tokens") {
-    sendResponse({ success: refreshToken() });
+    const response = await refreshToken()
+    sendResponse({ ...response });
   }
   return true;
 });
@@ -17,22 +18,22 @@ async function refreshTokens() {
     const response = await fetch(Config.tokenUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": Config.redirectUrl
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        client_id: Config.cliendId,
+        client_id: Config.clientId,
         refresh_token: refreshToken
       }),
     });
-
     if (!response.ok) {
       return {status: false, response: response};
     }
-
-    const tokens = await response.json();
-
-    return {status: true, token: tokens};
+    else{
+      const tokens = await response.json();
+      return {status: true, tokens: tokens};
+    }
   } catch (error) {
     return {status: false, error: error};
   }

@@ -8,9 +8,9 @@ const Logout = () => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'logout'){
-    console.log(request)
     Logout();
     sendResponse({ message: 'Logout' });
+    chrome.runtime.sendMessage({ message: 'logout_success' });
   }
   return true;
 });

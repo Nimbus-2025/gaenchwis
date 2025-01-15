@@ -2,18 +2,39 @@ import React, { useState, useEffect } from 'react';
 import LocationModal from '../modal/LocationModal';
 import Modal from '../modal/Edit';
 import './ShowProfile.css';
+import Config from '../../api/Config';
+import { jwtDecode } from 'jwt-decode';
+import Api from '../../api/Api';
 
-const ShowProfile = ({ userData, onSave }) => {
-  const [phoneNumber, setPhoneNumber] = useState(userData?.phoneNumber || '');
+const ShowProfile = ({ userData }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDistricts, setSelectedDistricts] = useState({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
+  const [phone, setPhone]=useState(userData?.phone || '등록되지 않음')
+  const [email, setEmail]=useState(userData?.email || '정보 없음')
+  const [name, setName]=useState(userData?.name || '정보 없음')
+  const handleSave = async (name, email, phone) =>{
+    setName(name);
+    setEmail(email);
+    setPhone(phone);
+    userData.phone=phone;
+    userData.email=email;
+    userData.name=name;
+    sessionStorage.setItem('user', JSON.stringify(userData));
 
-  const handleSaveClick = () => {
-    const updatedUserData = { ...userData, phoneNumber };
-    onSave(updatedUserData);
-  };
+    const idTokenPayload = jwtDecode(userData.id_token);
+    const userId = idTokenPayload["cognito:username"];
+    const body = {
+      userId: userId,
+      name: name,
+      email: email,
+      phone: phone
+    }
+    const response = await Api(`${Config.server}/user_save`,"POST",body);
+    console.log(response);
+  }
+
   const handleLocationSelect = (district) => {
     setSelectedDistricts((prev) => {
       const isSelected = prev[district]?.includes(district);
@@ -44,9 +65,9 @@ const ShowProfile = ({ userData, onSave }) => {
             <img src={userData.profileImage || ''} alt="Profile" className="profile-image" />
           </div>
           <div className="profile-details">
-            <p>이름: {userData?.name || '정보 없음'}</p>
-            <p>전화번호: {phoneNumber || '등록되지 않음'}</p>
-            <p>이메일 주소: {userData?.email || '정보 없음'}</p>
+            <p>이름: {name}</p>
+            <p>전화번호: {phone}</p>
+            <p>이메일 주소: {email}</p>
           </div>
         </div>
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
@@ -120,8 +141,7 @@ const ShowProfile = ({ userData, onSave }) => {
        <Modal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
-                userData={userData} 
-                // 필요한 다른 props 추가
+                onSave={handleSave}
             />
     </div>
   );

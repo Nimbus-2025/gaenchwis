@@ -6,14 +6,14 @@ importScripts(
   'Logout.js',
   'Session.js'
 )
-console.log(refreshTokens());
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.message === 'error'){
     console.log(request.error)
     sendResponse({ message: 'Error received' });
   }
   else if (request.message === "web_login_request") {
-    const refresh=refreshTokens();
+    const refresh=await refreshTokens();
     console.log(refresh);
     if (refresh.status){
       chrome.storage.local.set({

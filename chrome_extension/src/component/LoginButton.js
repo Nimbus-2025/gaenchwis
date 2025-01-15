@@ -1,6 +1,7 @@
 import React from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Config from './Config';
+import TextButton from './TextButton';
 
 function LoginButton() {
   const clientId=Config.clientId;
@@ -54,7 +55,7 @@ function LoginButton() {
   };
 
   return (
-    <button onClick={handleLogin}>로그인</button>
+    <TextButton title="Login" onClick={handleLogin} login={true} />
   );
 };
 
