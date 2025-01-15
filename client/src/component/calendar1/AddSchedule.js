@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import moment from 'moment';
-import { createSchedule } from './redux/modules/schedule';  // 경로 수정
+import { 
+  createSchedule,
+  updateSchedule  // updateSchedule 추가
+} from './redux/modules/schedule';
 
 const QuestionSet = styled.div`
   margin-bottom: 30px;
@@ -74,19 +77,29 @@ const ResumePopupWrapper = styled.div`
   position: relative;
 `;
 
-const AddSchedule = ({ onClose, type }) => {
+const AddSchedule = ({ 
+  onClose, 
+  type, 
+  initialData = null, 
+  isEditing = false,
+  currentSchedule = null  // currentSchedule 추가
+}) => {
   const dispatch = useDispatch();
-  const [scheduleData, setScheduleData] = useState({
-    title: '',
-    company: '',
-    tag: '',
-    date: moment().format('YYYY-MM-DD'),
-    deadlineDate: moment().format('YYYY-MM-DD'),
-    interviewDate: moment().format('YYYY-MM-DD'),
-    finalDate: moment().format('YYYY-MM-DD'),
-    content: '',
-    completed: false
-  });
+  const currentYear = moment().format('YYYY');
+  const [scheduleData, setScheduleData] = useState(
+    initialData || {
+      title: '',
+      company: '',
+      tag: '',
+      date: `${currentYear}-`,
+      deadlineDate: `${currentYear}-`,
+      interviewDate: `${currentYear}-`,
+      finalDate: `${currentYear}-`,
+      content: '',
+      completed: false
+    }
+  );
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,64 +113,101 @@ const AddSchedule = ({ onClose, type }) => {
     e.preventDefault();
     
     if (type === 'announcement') {
-      dispatch(createSchedule({
-        ...scheduleData,
-        date: moment(scheduleData.date).format('YYYYMMDD'),
-        type: type
-      }));
-
-      // 공고 마감일 일정 추가
-      dispatch(createSchedule({
-        title: `${scheduleData.company} 공고 마감`,
-        date: moment(scheduleData.deadlineDate).format('YYYYMMDD'),
-        content: `${scheduleData.company} 공고 마감일입니다.`,
-        type: 'schedule'
-      }));
-
-      // 서류 합격 발표 일정 추가 (마감일 +7일로 설정)
-      dispatch(createSchedule({
-        title: `${scheduleData.company} 서류 합격 발표`,
-        date: moment(scheduleData.deadlineDate).add(7, 'days').format('YYYYMMDD'),
-        content: `${scheduleData.company} 서류 합격 발표일입니다.`,
-        type: 'schedule'
-      }));
-
-      // 면접일 일정 추가
-      if (scheduleData.interviewDate) {
-        dispatch(createSchedule({
-          title: `${scheduleData.company} 면접일`,
-          date: moment(scheduleData.interviewDate).format('YYYYMMDD'),
-          content: `${scheduleData.company} 면접일입니다.`,
-          type: 'schedule'
-        }));
+      // 최소 하나의 날짜가 선택되었는지 확인
+      const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
+                        scheduleData.deadlineDate.length > currentYear.length + 1 ||
+                        scheduleData.interviewDate.length > currentYear.length + 1 ||
+                        scheduleData.finalDate.length > currentYear.length + 1;
+  
+      if (!hasAnyDate) {
+        alert('최소 하나의 날짜를 선택해주세요.');
+        return;
       }
-
-      // 최종 발표일 일정 추가
-      if (scheduleData.finalDate) {
-        dispatch(createSchedule({
-          title: `${scheduleData.company} 최종 발표`,
-          date: moment(scheduleData.finalDate).format('YYYYMMDD'),
-          content: `${scheduleData.company} 최종 발표일입니다.`,
-          type: 'schedule'
+  
+      if (isEditing && currentSchedule) {
+        // 수정 모드일 때는 기존 일정 업데이트
+        dispatch(updateSchedule({
+          ...currentSchedule,
+          title: `${scheduleData.company} ${scheduleData.title}`,
+          date: scheduleData.date ? moment(scheduleData.date).format('YYYYMMDD') : '',
+          deadlineDate: scheduleData.deadlineDate ? moment(scheduleData.deadlineDate).format('YYYYMMDD') : '',
+          interviewDate: scheduleData.interviewDate ? moment(scheduleData.interviewDate).format('YYYYMMDD') : '',
+          finalDate: scheduleData.finalDate ? moment(scheduleData.finalDate).format('YYYYMMDD') : '',
+          content: scheduleData.content || '',
+          company: scheduleData.company,
+          tag: scheduleData.tag,
+          type: 'announcement'  // type을 명시적으로 지정
         }));
+      } else {
+        // 새로운 일정 추가
+        if (scheduleData.date.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 공고 마감`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.deadlineDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 서류 합격 발표`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.interviewDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 면접일`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.finalDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 최종 발표`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
       }
-
     } else {
-      dispatch(createSchedule({
-        ...scheduleData,
-        date: moment(scheduleData.date).format('YYYYMMDD'),
-        type: type
-      }));
+      // 일반 일정
+      if (isEditing && currentSchedule) {
+        dispatch(updateSchedule({
+          ...currentSchedule,
+          ...scheduleData,
+          date: moment(scheduleData.date).format('YYYYMMDD'),
+          type: 'schedule'  // 일반 일정 type 지정
+        }));
+      } else {
+        dispatch(createSchedule({
+          ...scheduleData,
+          date: moment(scheduleData.date).format('YYYYMMDD'),
+          content: scheduleData.content || '',
+          type: 'schedule'  // 일반 일정 type 지정
+        }));
+      }
     }
     
     onClose();
   };
 
+
   return (
     <PopupOverlay onClick={onClose}>
       <PopupWrapper onClick={e => e.stopPropagation()}>
         <PopupHeader>
-          <h2>{type === 'schedule' ? '일정 추가' : '공고 추가'}</h2>
+          <h2>{isEditing ? '공고 수정' : (type === 'schedule' ? '일정 추가' : '공고 추가')}</h2>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </PopupHeader>
         <PopupContent>
@@ -204,7 +254,6 @@ const AddSchedule = ({ onClose, type }) => {
                         name="date"
                         value={scheduleData.date}
                         onChange={handleChange}
-                        required
                       />
                     </DateItem>
                     <DateItem>
@@ -214,7 +263,6 @@ const AddSchedule = ({ onClose, type }) => {
                         name="deadlineDate"
                         value={scheduleData.deadlineDate}
                         onChange={handleChange}
-                        required
                       />
                     </DateItem>
                     <DateItem>
@@ -268,13 +316,12 @@ const AddSchedule = ({ onClose, type }) => {
                 name="content"
                 value={scheduleData.content}
                 onChange={handleChange}
-                required
               />
             </FormGroup>
             <ButtonGroup>
               <div>
                 <SubmitButton type="submit">
-                  {type === 'schedule' ? '일정 추가' : '공고 추가'}
+                  {isEditing ? '수정하기' : (type === 'schedule' ? '일정 추가' : '공고 추가')}
                 </SubmitButton>
                 <CancelButton type="button" onClick={onClose}>
                   취소
@@ -299,7 +346,7 @@ const PopupOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;  // EditSchedule의 z-index보다 높게 설정
 `;
 
 const PopupWrapper = styled.div`

@@ -17,6 +17,9 @@ const ShowEssay = () => {
   const [searchType, setSearchType] = useState('title');
   const [searchTerm, setSearchTerm] = useState('');  // 추가
   const [filteredEssays, setFilteredEssays] = useState([]); // 추가
+  const [searchResults, setSearchResults] = useState([]);  // 검색 결과를 위한 상태
+  const [splitView, setSplitView] = useState(false);      // 분할 뷰 상태
+  
 
   
 
@@ -186,6 +189,40 @@ const toggleBookmark = (essayId, e) => {
 
 
 
+
+const handleSearch = (e) => {
+  const term = e.target.value;
+  setSearchTerm(term);
+
+  if (!term.trim()) {
+    setFilteredEssays(essays);
+    setSearchResults([]);
+    setSplitView(false);
+    return;
+  }
+
+  const filtered = essays.filter(essay => {
+    const searchTermLower = term.toLowerCase();
+    
+    if (searchType === 'question') {
+      return essay.questions.some(q => 
+        q.question.toLowerCase().includes(searchTermLower)
+      );
+    }
+    else if (searchType === 'content') {
+      return essay.questions.some(q => 
+        q.answer.toLowerCase().includes(searchTermLower)
+      );
+    }
+    return false;
+  });
+
+  setFilteredEssays(filtered);
+  setSearchResults(filtered);
+  setSplitView(filtered.length > 0);
+};
+
+
   // 검색어 하이라이트 함수
 const highlightText = (text, searchTerm) => {
   if (!searchTerm) return text;
@@ -198,72 +235,60 @@ const highlightText = (text, searchTerm) => {
 };
 
 
-
-// 검색 처리 함수
-const handleSearch = (e) => {
-  const term = e.target.value;
-  setSearchTerm(term);
-
-  if (!term.trim()) {
-    setFilteredEssays(essays);
-    return;
+// renderEssayItem 함수
+const renderEssayItem = (essay) => {
+  if (searchTerm) {
+    return (
+      <div className="essay-content">
+        {essay.questions.map((q, idx) => {
+          const searchText = searchType === 'question' ? q.question : q.answer;
+          
+          if (searchText.toLowerCase().includes(searchTerm.toLowerCase())) {
+            return (
+              <div key={idx}>
+                <div className="question-text">
+                  {searchType === 'question' ? 
+                    highlightText(q.question, searchTerm) : 
+                    q.question
+                  }
+                </div>
+                <div className="content-preview">
+                  {searchType === 'content' ? 
+                    highlightText(q.answer, searchTerm) : 
+                    q.answer
+                  }
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    );
+  } else {
+    return (
+      <div className="essay-content">
+        <h3>{essay.title}</h3>
+      </div>
+    );
   }
-
-  const filtered = essays.filter(essay => {
-    if (searchType === 'question') {
-      // 문항 기반 검색
-      return essay.questions.some(q => 
-        q.question.toLowerCase().includes(term.toLowerCase())
-      );
-    } else {
-      // 내용 기반 검색
-      return essay.questions.some(q => 
-        q.answer.toLowerCase().includes(term.toLowerCase())
-      );
-    }
-  });
-  
-  setFilteredEssays(filtered);
 };
 
-  // useEffect로 초기 필터링된 에세이 설정
-  useEffect(() => {
-    setFilteredEssays(essays);
-  }, [essays]);
+
+// useEffect 설정
+useEffect(() => {
+  setFilteredEssays(essays);
+  setSearchResults([]);
+}, [essays]);
+
+useEffect(() => {
+  if (searchResults.length === 0) {
+    setSelectedEssay(null);
+    setSplitView(false);
+  }
+}, [searchResults]);
 
 
-  const renderEssayItem = (essay) => {
-    if (searchTerm) {
-      // 검색 결과 표시
-      return (
-        <div className="essay-content">
-          {essay.questions.map((q, idx) => {
-            const text = searchType === 'question' ? q.question : q.answer;
-            if (text.toLowerCase().includes(searchTerm.toLowerCase())) {
-              return (
-                <div key={idx}>
-                  <div className="question-text">
-                    {searchType === 'question' ? highlightText(q.question, searchTerm) : q.question}
-                  </div>
-                  <div className="content-preview">
-                    {searchType === 'answer' ? highlightText(q.answer, searchTerm) : q.answer}
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-      );
-    } else {
-      // 일반 리스트 표시 - 제목만
-      return (
-        <div className="essay-content">
-          <h3>{essay.title}</h3>
-        </div>
-      );
-    }
-  };
 
 
 
@@ -346,61 +371,42 @@ const handleSearch = (e) => {
           오래된순
         </button>
       </div>
-
-      <div className={`content-wrapper ${selectedEssay ? 'split' : ''}`}>
-        <div className={`essay-list ${selectedEssay ? 'collapsed' : ''}`}>
-          {/* 기존 리스트 내용 */}
-        </div>
-        {/* 나머지 내용 */}
-      </div>
       <div className={`content-wrapper ${selectedEssay ? 'split' : ''}`}>
         <div className={`essay-list ${selectedEssay ? 'collapsed' : ''} ${searchTerm ? 'search-results' : ''}`}>
-          {filteredEssays.length > 0 ? (
-            filteredEssays.map((essay) => (
-              <div 
-                key={essay.id} 
-                className={`essay-rectangle ${selectedEssay?.id === essay.id ? 'selected' : ''} 
-                  ${searchTerm ? 'search-view' : 'normal-view'}`}
-                onClick={() => handleEssayClick(essay)}
+        {filteredEssays.length > 0 ? (
+          filteredEssays.map((essay) => (
+            <div 
+              key={essay.id} 
+              className={`essay-rectangle ${selectedEssay?.id === essay.id ? 'selected' : ''} 
+                ${searchTerm ? 'search-view' : 'normal-view'}`}
+              onClick={() => handleEssayClick(essay)}
+            >
+              {renderEssayItem(essay)} {/* 여기를 수정 */}
+              <button 
+                className={`bookmark-button ${essay.isBookmarked ? 'bookmarked' : ''}`}
+                onClick={(e) => toggleBookmark(essay.id, e)}
               >
-                <div className="essay-content">
-                  <h3>{essay.questions[0].question}</h3>
-                  {searchTerm && (
-                    <div className="content-preview">
-                      <div className="preview-text">
-                        {essay.questions[0].answer}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <button 
-                  className={`bookmark-button ${essay.isBookmarked ? 'bookmarked' : ''}`}
-                  onClick={(e) => toggleBookmark(essay.id, e)}
-                >
-                  <svg 
-                    viewBox="0 0 24 24" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"/>
-                  </svg>
-                </button>
-                <button 
-                  className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteEssay(essay.id);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z"/>
-                  </svg>
-                </button>
-              </div>
-            ))
-          ) : (
-            <div className="no-essay-message">
-              {searchTerm ? "검색 결과가 없습니다." : "등록된 자기소개서가 없습니다."}
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"/>
+                </svg>
+              </button>
+              <button 
+                className="delete-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteEssay(essay.id);
+                }}
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z"/>
+                </svg>
+              </button>
             </div>
+          ))
+        ) : (
+          <div className="no-essay-message">
+            {searchTerm ? "검색 결과가 없습니다." : "등록된 자기소개서가 없습니다."}
+          </div>
           )}
         </div>
 
@@ -440,7 +446,6 @@ const handleSearch = (e) => {
                 {selectedEssay.questions[0].answer}
               </div>
             </div>
-            {/* 연결된 공고 섹션 추가 */}
             {selectedEssay.relatedPostings && selectedEssay.relatedPostings.length > 0 && (
               <div className="essay-detail-related">
                 <h3>연결된 공고</h3>
@@ -457,80 +462,80 @@ const handleSearch = (e) => {
             )}
           </div>
         )}
-      </div>
 
-      {isPopupOpen && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>자기소개서 추가</h2>
-            <form onSubmit={handleSubmit}>
-              {questions.map((item, index) => (
-                <div key={index} className="question-section">
-                  <div className="form-group">
-                    <label>문항 {index + 1}</label>
-                    <input
-                      type="text"
-                      placeholder="자기소개서 문항 내용을 입력하세요"
-                      value={item.question}
-                      onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
-                      required
-                    />
+        {isPopupOpen && (
+          <div className="popup-overlay">
+            <div className="popup-content">
+              <h2>자기소개서 추가</h2>
+              <form onSubmit={handleSubmit}>
+                {questions.map((item, index) => (
+                  <div key={index} className="question-section">
+                    <div className="form-group">
+                      <label>문항 {index + 1}</label>
+                      <input
+                        type="text"
+                        placeholder="자기소개서 문항 내용을 입력하세요"
+                        value={item.question}
+                        onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>답변</label>
+                      <textarea
+                        placeholder="문항에 대한 내용을 입력하세요"
+                        value={item.answer}
+                        onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
+                        rows="6"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>답변</label>
-                    <textarea
-                      placeholder="문항에 대한 내용을 입력하세요"
-                      value={item.answer}
-                      onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
-                      rows="6"
-                      required
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <button
-                type="button"
-                className="add-question-button"
-                onClick={addQuestion}
-              >
-                + 문항 추가하기
-              </button>
-
-              <div className="related-posting-section">
-                <div className="related-posting-header">
-                  <h3 className="related-posting-title">관련 공고 연결하기</h3>
-                  <button 
-                    type="button"
-                    className="add-posting-button"
-                    onClick={addPostingSelect}
-                  >
-                    +
-                  </button>
-                </div>
-                {postingSelects.map((select) => (
-                  <select key={select.id} className="posting-select">
-                    <option value="">공고를 선택해주세요</option>
-                  </select>
                 ))}
-              </div>
 
-              <div className="popup-buttons">
-                <button type="submit" className="submit-button">추가</button>
                 <button
                   type="button"
-                  className="cancel-button"
-                  onClick={resetPopup}
+                  className="add-question-button"
+                  onClick={addQuestion}
                 >
-                  취소
+                  + 문항 추가하기
                 </button>
-              </div>
-            </form>
+
+                <div className="related-posting-section">
+                  <div className="related-posting-header">
+                    <h3 className="related-posting-title">관련 공고 연결하기</h3>
+                    <button 
+                      type="button"
+                      className="add-posting-button"
+                      onClick={addPostingSelect}
+                    >
+                      +
+                    </button>
+                  </div>
+                  {postingSelects.map((select) => (
+                    <select key={select.id} className="posting-select">
+                      <option value="">공고를 선택해주세요</option>
+                    </select>
+                  ))}
+                </div>
+
+                <div className="popup-buttons">
+                  <button type="submit" className="submit-button">추가</button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={resetPopup}
+                  >
+                    취소
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    </div> 
+  );  
+}  
 
 export default ShowEssay;

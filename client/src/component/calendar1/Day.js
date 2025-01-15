@@ -7,7 +7,7 @@ import { holidays } from './holidays';
 // 스타일 컴포넌트 정의
 const D = styled.div`
   padding-top: 4px;
-  height: 12vh;
+  height: 16vh;
   display: flex;
   align-items: center;
   width: 100%;
@@ -70,15 +70,27 @@ const D = styled.div`
 
 const Plan = styled.span`
   text-align: center;
-  font-size: 0.8em;
+  font-size: 0.7em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   margin: 1px 0;
-  height: 20px;
+  height: 15px;
+  min-height: 15px;
   width: calc(100% - 8px);
   border-radius: 4px;
-  background-color: #ff9aa3;
+  background-color: ${props => {
+    // 일반 일정인 경우
+    if (props.scheduleType === 'schedule' && 
+        !props.scheduleTitle?.includes('공고 마감') && 
+        !props.scheduleTitle?.includes('서류 합격 발표') && 
+        !props.scheduleTitle?.includes('면접') && 
+        !props.scheduleTitle?.includes('최종 발표')) {
+      return '#74c0fc';  // 하늘색
+    }
+    // 취업 관련 일정인 경우
+    return '#ff9aa3';    // 핑크색
+  }};
   color: white;
   cursor: pointer;
   display: flex;
@@ -104,21 +116,23 @@ const ScheduleContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: calc(100% - 30px);
+  height: calc(100% - 20px);
   padding: 0 4px;
-  gap: 2px;
+  gap: 1px;
 `;
 
 const MoreButton = styled.div`
-  font-size: 0.8em;
+  font-size: 0.7em;
   color: #666;
   cursor: pointer;
-  padding: 2px 4px;
-  margin-top: 2px;
+  padding: 1px 4px;
+  margin-top: 1px;
   background-color: #f5f5f5;
   border-radius: 4px;
   width: fit-content;
-  
+  height: 16px;    // 높이 고정
+  line-height: 16px;  // 텍스트 세로 중앙 정렬
+
   &:hover {
     background-color: #e0e0e0;
   }
@@ -185,7 +199,7 @@ const Day = ({ dateInfo, className }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const schedule = dateInfo.currentSch;
   const dispatch = useDispatch();
-  const maxVisibleSchedules = 3;
+
   // 요일과 공휴일 확인
   const isHoliday = holidays[dateInfo.fullDate];
   const isSunday = dateInfo.dow === 0;
@@ -200,13 +214,10 @@ const Day = ({ dateInfo, className }) => {
   schedule.sort((a, b) => a.time - b.time);
   
   const renderSchedules = (schedules, limit = null) => {
-    // 일정 정렬: 공고 관련 일정을 상단으로
     const sortedSchedules = [...schedules].sort((a, b) => {
-      // 공고 타입 일정을 우선 순위로
       if (a.type === 'announcement' && b.type !== 'announcement') return -1;
       if (a.type !== 'announcement' && b.type === 'announcement') return 1;
       
-      // 공고 관련 일정(서류발표, 면접, 최종발표)을 그 다음 순위로
       const isAnnouncementRelated = (schedule) => 
         schedule.title?.includes('공고 마감') ||
         schedule.title?.includes('서류 합격 발표') ||
@@ -216,16 +227,18 @@ const Day = ({ dateInfo, className }) => {
       if (isAnnouncementRelated(a) && !isAnnouncementRelated(b)) return -1;
       if (!isAnnouncementRelated(a) && isAnnouncementRelated(b)) return 1;
       
-      // 나머지는 기존 순서 유지
       return 0;
     });
 
-    const items = limit ? sortedSchedules.slice(0, limit) : sortedSchedules;
-    return items.map((s, idx) => (
+
+    const displaySchedules = limit ? sortedSchedules.slice(0, limit) : sortedSchedules;
+
+    return displaySchedules.map((s, idx) => (
       <Plan
         key={`${s.id || idx}`}
         className={`${s.completed ? 'completed' : ''}`}
-        data={s}
+        scheduleType={s.type}
+        scheduleTitle={s.title}
         onClick={e => {
           e.stopPropagation();
           openPopup(s);
@@ -236,10 +249,11 @@ const Day = ({ dateInfo, className }) => {
           s.title?.includes('서류 합격 발표') || s.title?.includes('면접') || 
           s.title?.includes('최종 발표')) && s.company && (
             <div className="announcement-title">{s.company}</div>
-          )}
+        )}
       </Plan>
     ));
   };
+
 
   return (
     <>
@@ -247,20 +261,20 @@ const Day = ({ dateInfo, className }) => {
         <span className={titleClassName}>{dateInfo.day}</span>
         {isHoliday && <span className="holiday-name">{holidays[dateInfo.fullDate]}</span>}
         <ScheduleContainer>
-          {renderSchedules(schedule, 1)}
-          {schedule.length > 0 && 
+          {renderSchedules(schedule, 2)}
+          {schedule && schedule.length > 0 && (
             <MoreButton 
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 setIsModalOpen(true);
               }}
             >
-              + 더보기
+              {schedule.length > 2 ? `+${schedule.length - 2}` : '더보기'}
             </MoreButton>
-          }
+          )}
         </ScheduleContainer>
       </D>
-
+  
       {isModalOpen && (
         <>
           <ModalOverlay onClick={() => setIsModalOpen(false)} />

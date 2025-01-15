@@ -8,6 +8,7 @@ import {
   deleteSchedule 
 } from './redux/modules/schedule';  // 경로 수정
 import moment from 'moment';
+import AddSchedule from './AddSchedule';  
 
 
 // 자기소개서 확인 팝업 컴포넌트
@@ -41,6 +42,8 @@ const EditSchedule = ({ history }) => {
   const { currentSchedule } = useSelector((state) => state.schedule);
   const [isEditing, setIsEditing] = useState(false);
   const [showResumePopup, setShowResumePopup] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   
   const [formData, setFormData] = useState({
     title: '',
@@ -195,7 +198,13 @@ const EditSchedule = ({ history }) => {
             <ActionButtonGroup>
               {!isEditing ? (
                 <>
-                  <Button onClick={() => setIsEditing(true)}>
+                  <Button onClick={() => {
+                    if (isAnnouncementRelated) {
+                      setShowEditModal(true);
+                    } else {
+                      setIsEditing(true);
+                    }
+                  }}>
                     수정
                   </Button>
                   {currentSchedule.type !== 'announcement' && (
@@ -228,6 +237,30 @@ const EditSchedule = ({ history }) => {
         <ResumeViewPopup 
           onClose={() => setShowResumePopup(false)}
           content={formData.resume || '자기소개서가 없습니다.'}
+        />
+      )}
+
+
+      {/* AddSchedule 모달 추가 */}
+      {showEditModal && (
+        <AddSchedule
+          type="announcement"
+          onClose={() => {
+            setShowEditModal(false);
+            dispatch(openEditPopup({ isOpen: false }));
+          }}
+          initialData={{
+            title: currentSchedule.title.split(' ')[1],
+            company: currentSchedule.title.split(' ')[0],
+            tag: currentSchedule.tag || '',
+            date: formData.date,
+            deadlineDate: formData.deadlineDate,
+            interviewDate: formData.interviewDate,
+            finalDate: formData.finalDate,
+            content: formData.content,
+          }}
+          isEditing={true}
+          currentSchedule={currentSchedule}
         />
       )}
     </>
