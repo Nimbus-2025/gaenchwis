@@ -91,6 +91,32 @@ services:
   #     - '8005:8000'
   #   restart: unless-stopped
 
+  migration:
+    build:
+      context: ./db_migration
+      dockerfile: Dockerfile
+    container_name: db-migration-service
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      # DynamoDB 테이블 이름들
+      # Crawling related tables
+      - DYNAMODB_COMPANIES_TABLE=${DYNAMODB_COMPANIES_TABLE:-companies}
+      - DYNAMODB_JOB_POSTINGS_TABLE=${DYNAMODB_JOB_POSTINGS_TABLE:-job_postings}
+      - DYNAMODB_TAGS_TABLE=${DYNAMODB_TAGS_TABLE:-tags}
+      - DYNAMODB_JOB_TAGS_TABLE=${DYNAMODB_JOB_TAGS_TABLE:-job_tags}
+      # User related tables
+      - DYNAMODB_USERS_TABLE=${DYNAMODB_USERS_TABLE:-users}
+      - DYNAMODB_USER_TAGS_TABLE=${DYNAMODB_USER_TAGS_TABLE:-user_tags}
+      - DYNAMODB_SCHEDULES_TABLE=${DYNAMODB_SCHEDULES_TABLE:-schedules}
+      - DYNAMODB_BOOKMARKS_TABLE=${DYNAMODB_BOOKMARKS_TABLE:-bookmarks}
+      - DYNAMODB_APPLIES_TABLE=${DYNAMODB_APPLIES_TABLE:-applies}
+      - DYNAMODB_INTEREST_COMPANIES_TABLE=${DYNAMODB_INTEREST_COMPANIES_TABLE:-interest_companies}
+      # Essay related tables
+      - DYNAMODB_ESSAYS_TABLE=${DYNAMODB_ESSAYS_TABLE:-essays}
+      - DYNAMODB_ESSAY_JOB_POSTINGS_TABLE=${DYNAMODB_ESSAY_JOB_POSTINGS_TABLE:-essay_job_postings}
+
 networks:
   default:
     name: gaenchwis-network

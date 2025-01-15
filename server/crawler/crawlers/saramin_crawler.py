@@ -147,8 +147,8 @@ class SaraminCrawler(BaseCrawler):
             main_region_id = self._generate_hash(f"location_{main_region}")
 
             main_tag_data = {
-                'PK': f"TAG#location",
-                'SK': f"TAG#{main_region_id}",
+                'PK': f"TAG#{main_region_id}",  # TAG#<tag_id>로 변경
+                'SK': f"TAG#location",          # TAG#<category>로 변경
                 'tag_id': main_region_id,
                 'category': 'location',
                 'name': main_region_name,  # 예: '서울전체', '경기전체', '인천전체'
@@ -169,8 +169,8 @@ class SaraminCrawler(BaseCrawler):
                 district_id = self._generate_hash(f"location_{district_full_name}")
                 
                 district_tag_data = {
-                    'PK': f"TAG#location",
-                    'SK': f"TAG#{district_id}",
+                    'PK': f"TAG#{district_id}",     # TAG#<tag_id>로 변경
+                    'SK': f"TAG#location",          # TAG#<category>로 변경
                     'tag_id': district_id,
                     'category': 'location',
                     'name': district_full_name,
@@ -231,8 +231,8 @@ class SaraminCrawler(BaseCrawler):
         
             tag_id = self._generate_hash(f"{TagCategory.SKILL.value}_{skill}")
             tag_data = {
-                'PK': f"TAG#position",
-                'SK': f"TAG#{tag_id}",
+                'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
+                'SK': f"TAG#position",   # TAG#<category>로 변경
                 'tag_id': tag_id,
                 'category': TagCategory.SKILL.value,
                 'name': skill,
@@ -264,8 +264,8 @@ class SaraminCrawler(BaseCrawler):
     
             tag_id = self._generate_hash(f"{TagCategory.POSITION.value}_{career_type}")
             tag_data = {
-                'PK': f"TAG#skill",
-                'SK': f"TAG#{tag_id}",
+                'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
+                'SK': f"TAG#skill",     # TAG#<category>로 변경
                 'tag_id': tag_id,
                 'category': TagCategory.POSITION.value,
                 'name': career_type,
@@ -292,8 +292,8 @@ class SaraminCrawler(BaseCrawler):
 
         tag_id = self._generate_hash(f"{TagCategory.EDUCATION.value}_{education}")
         tag_data = {
-            'PK': f"TAG#skill",
-            'SK': f"TAG#{tag_id}",
+            'PK': f"TAG#{tag_id}",      # TAG#<tag_id>로 변경
+            'SK': f"TAG#education",      # TAG#<category>로 변경
             'tag_id': tag_id,
             'category': TagCategory.EDUCATION.value,
             'name': education,
