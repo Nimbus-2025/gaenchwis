@@ -351,7 +351,7 @@ class SaraminCrawler(BaseCrawler):
                     'GSI1SK': f"JOB#{post_id}"
                 }
             
-            self.job_tag_repo.put_item(Item=mapping_data)
+                self.job_tag_repo.put_item(Item=mapping_data)
             
     def _parse_deadline(self, deadline_str: str) -> str:
         from common.utils import parsse_deadline_date

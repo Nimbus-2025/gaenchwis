@@ -17,26 +17,12 @@ class MigrationManager:
                 return False
             raise
 
-    def wait_for_table_deletion(self, table_name: str, max_attempts: int = 10) -> None:
-        """테이블이 완전히 삭제될 때까지 대기"""
-        for _ in range(max_attempts):
-            try:
-                self.dynamodb.describe_table(TableName=table_name)
-                print(f"Waiting for {table_name} to be deleted...")
-                time.sleep(5)  # 5초 대기
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'ResourceNotFoundException':
-                    return  # 테이블이 완전히 삭제됨
-                raise
-        raise Exception(f"Table {table_name} deletion timeout")
-
     def delete_table(self, table_name: str) -> None:
         """테이블 삭제"""
         try:
             if self.table_exists(table_name):
                 self.dynamodb.Table(table_name).delete()
                 print(f"Deleted table: {table_name}")
-                self.wait_for_table_deletion(table_name)  
         except ClientError as e:
             print(f"Error deleting table {table_name}: {str(e)}")
             raise
