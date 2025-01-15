@@ -7,6 +7,8 @@ import {
   updateSchedule, 
   deleteSchedule 
 } from './redux/modules/schedule';  // 경로 수정
+import moment from 'moment';
+import AddSchedule from './AddSchedule';  
 
 
 // 자기소개서 확인 팝업 컴포넌트
@@ -40,6 +42,8 @@ const EditSchedule = ({ history }) => {
   const { currentSchedule } = useSelector((state) => state.schedule);
   const [isEditing, setIsEditing] = useState(false);
   const [showResumePopup, setShowResumePopup] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   
   const [formData, setFormData] = useState({
     title: '',
@@ -109,6 +113,11 @@ const EditSchedule = ({ history }) => {
     }));
   };
 
+  const isAnnouncementRelated = currentSchedule.title?.includes('공고 마감') ||
+    currentSchedule.title?.includes('서류 합격 발표') ||
+    currentSchedule.title?.includes('면접') ||
+    currentSchedule.title?.includes('최종 발표');
+
   if (!currentSchedule) return null;
 
   return (
@@ -116,111 +125,58 @@ const EditSchedule = ({ history }) => {
       <Popup>
         <Header>
           <MdChevronLeft onClick={() => dispatch(openEditPopup({ isOpen: false }))} />
-          {currentSchedule.type === 'announcement' ? '공고 보기' : '일정 보기'}
+          {formData.title}
           <i />
         </Header>
         <Body>
-          {currentSchedule.type === 'announcement' ? (
-            <>
-              <FormGroup>
-                <Label>공고명</Label>
-                <Input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>기업명</Label>
-                <Input
-                  type="text"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>태그</Label>
-                <Input
-                  type="text"
-                  name="tag"
-                  value={formData.tag}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <DateSection>
-                <Label>날짜</Label>
-                <DateGroup>
-                  <DateItem>
-                    <SubLabel>공고 추가 일자</SubLabel>
-                    <Input
-                      type="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      readOnly={!isEditing}
-                    />
-                  </DateItem>
-                  <DateItem>
-                    <SubLabel>공고 마감 일자</SubLabel>
-                    <Input
-                      type="date"
-                      name="deadlineDate"
-                      value={formData.deadlineDate}
-                      onChange={handleChange}
-                      readOnly={!isEditing}
-                    />
-                  </DateItem>
-                  <DateItem>
-                    <SubLabel>면접 일자</SubLabel>
-                    <Input
-                      type="date"
-                      name="interviewDate"
-                      value={formData.interviewDate}
-                      onChange={handleChange}
-                      readOnly={!isEditing}
-                    />
-                  </DateItem>
-                  <DateItem>
-                    <SubLabel>최종 발표 날짜</SubLabel>
-                    <Input
-                      type="date"
-                      name="finalDate"
-                      value={formData.finalDate}
-                      onChange={handleChange}
-                      readOnly={!isEditing}
-                    />
-                  </DateItem>
-                </DateGroup>
-              </DateSection>
-            </>
-          ) : (
-            <>
-              <FormGroup>
-                <Label>제목</Label>
-                <Input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>날짜</Label>
-                <Input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-            </>
+          <FormGroup>
+            <Label>{isAnnouncementRelated ? '공고명' : '제목'}</Label>
+            <Input
+              type="text"
+              name="title"
+              value={isAnnouncementRelated ? formData.title.split(' ')[0] : formData.title}
+              onChange={handleChange}
+              readOnly={!isEditing}
+            />
+            {isAnnouncementRelated && (
+              <SubTitle>
+                <div className="company">{currentSchedule.company}</div>
+                <div className="announcement">{formData.title}</div>
+              </SubTitle>
+            )}
+          </FormGroup>
+          <FormGroup>
+            <Label>날짜</Label>
+            <Input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              readOnly={!isEditing}
+            />
+          </FormGroup>
+          {isAnnouncementRelated && (
+            <RelatedDates>
+              <h4>관련 중요 일자</h4>
+              <div className="date-row">
+                <span className="label">서류 합격 발표</span>
+                <span className="value">
+                  {formData.deadlineDate ? moment(formData.deadlineDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
+                </span>
+              </div>
+              <div className="date-row">
+                <span className="label">면접 일자</span>
+                <span className="value">
+                  {formData.interviewDate ? moment(formData.interviewDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
+                </span>
+              </div>
+              <div className="date-row">
+                <span className="label">최종 발표 일자</span>
+                <span className="value">
+                  {formData.finalDate ? moment(formData.finalDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
+                </span>
+              </div>
+            </RelatedDates>
           )}
           <FormGroup>
             <Label>내용</Label>
@@ -232,7 +188,7 @@ const EditSchedule = ({ history }) => {
             />
           </FormGroup>
           <ButtonContainer>
-            {!isEditing && currentSchedule.type === 'announcement' && (
+            {isAnnouncementRelated && (
               <ActionButtonGroup>
                 <Button onClick={() => setShowResumePopup(true)}>
                   자기소개서 확인
@@ -242,7 +198,13 @@ const EditSchedule = ({ history }) => {
             <ActionButtonGroup>
               {!isEditing ? (
                 <>
-                  <Button onClick={() => setIsEditing(true)}>
+                  <Button onClick={() => {
+                    if (isAnnouncementRelated) {
+                      setShowEditModal(true);
+                    } else {
+                      setIsEditing(true);
+                    }
+                  }}>
                     수정
                   </Button>
                   {currentSchedule.type !== 'announcement' && (
@@ -275,6 +237,30 @@ const EditSchedule = ({ history }) => {
         <ResumeViewPopup 
           onClose={() => setShowResumePopup(false)}
           content={formData.resume || '자기소개서가 없습니다.'}
+        />
+      )}
+
+
+      {/* AddSchedule 모달 추가 */}
+      {showEditModal && (
+        <AddSchedule
+          type="announcement"
+          onClose={() => {
+            setShowEditModal(false);
+            dispatch(openEditPopup({ isOpen: false }));
+          }}
+          initialData={{
+            title: currentSchedule.title.split(' ')[1],
+            company: currentSchedule.title.split(' ')[0],
+            tag: currentSchedule.tag || '',
+            date: formData.date,
+            deadlineDate: formData.deadlineDate,
+            interviewDate: formData.interviewDate,
+            finalDate: formData.finalDate,
+            content: formData.content,
+          }}
+          isEditing={true}
+          currentSchedule={currentSchedule}
         />
       )}
     </>
@@ -359,7 +345,7 @@ const Textarea = styled.textarea`
   border: 1px solid #ddd;
   border-radius: 4px;
   resize: vertical;
-  min-height: 100px;
+  min-height: 10px;
   
   &:focus {
     outline: none;
@@ -497,6 +483,56 @@ const PopupHeader = styled.div`
   h2 {
     margin: 0;
     font-size: 1.2rem;
+  }
+`;
+
+const SubTitle = styled.div`
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  padding-left: 4px;
+  
+  .company {
+    margin-bottom: 2px;
+  }
+  
+  .announcement {
+    color: #868e96;
+  }
+`;
+
+const RelatedDates = styled.div`
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .date-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      width: 120px;
+      color: #868e96;
+      flex-shrink: 0;
+    }
+    
+    .value {
+      color: #495057;
+    }
   }
 `;
 

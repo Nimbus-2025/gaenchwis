@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import moment from 'moment';
-import { createSchedule } from './redux/modules/schedule';  // 경로 수정
+import { 
+  createSchedule,
+  updateSchedule  // updateSchedule 추가
+} from './redux/modules/schedule';
 
 const QuestionSet = styled.div`
   margin-bottom: 30px;
@@ -74,85 +77,29 @@ const ResumePopupWrapper = styled.div`
   position: relative;
 `;
 
-// 자기소개서 입력 팝업 컴포넌트
-const ResumePopup = ({ onClose, onSave }) => {
-  const [questions, setQuestions] = useState([{ title: '', content: '' }]);
-
-  const handleQuestionChange = (index, field, value) => {
-    const newQuestions = [...questions];
-    newQuestions[index][field] = value;
-    setQuestions(newQuestions);
-  };
-
-  const addQuestionSet = () => {
-    setQuestions([...questions, { question: '', answer: '' }]);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({ content: questions });
-    onClose();
-  };
-
-  return (
-    <PopupOverlay onClick={onClose}>
-      <PopupWrapper onClick={e => e.stopPropagation()}>
-        <PopupHeader>
-          <h2>자기소개서 입력</h2>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </PopupHeader>
-        <PopupContent>
-          <Form onSubmit={handleSubmit}>
-            {questions.map((q, index) => (
-              <QuestionSet key={index}>
-                <TextAreaWrapper>
-                  <textarea
-                    placeholder="문항을 입력하세요"
-                    value={q.title}
-                    onChange={(e) => handleQuestionChange(index, 'title', e.target.value)}
-                    className="fixed-height"
-                  />
-                </TextAreaWrapper>
-                <TextAreaWrapper>
-                  <textarea
-                    placeholder="자기소개서 내용을 입력하세요"
-                    value={q.content}
-                    onChange={(e) => handleQuestionChange(index, 'content', e.target.value)}
-                    className="fixed-height"
-                  />
-                </TextAreaWrapper>
-              </QuestionSet>
-            ))}
-            <AddButton type="button" onClick={addQuestionSet}>
-              + 문항 추가하기
-            </AddButton>
-            <ActionButtonGroup>
-              <SubmitButton type="submit">저장</SubmitButton>
-              <CancelButton type="button" onClick={onClose}>취소</CancelButton>
-            </ActionButtonGroup>
-          </Form>
-        </PopupContent>
-      </PopupWrapper>
-    </PopupOverlay>
-  );
-};
-
-const AddSchedule = ({ onClose, type }) => {
+const AddSchedule = ({ 
+  onClose, 
+  type, 
+  initialData = null, 
+  isEditing = false,
+  currentSchedule = null  // currentSchedule 추가
+}) => {
   const dispatch = useDispatch();
-  const [showResumePopup, setShowResumePopup] = useState(false);
-  const [resumeContent, setResumeContent] = useState('');
-  const [scheduleData, setScheduleData] = useState({
-    title: '',
-    company: '',
-    tag: '',
-    date: moment().format('YYYY-MM-DD'),
-    deadlineDate: moment().format('YYYY-MM-DD'),
-    interviewDate: moment().format('YYYY-MM-DD'),
-    finalDate: moment().format('YYYY-MM-DD'),
-    content: '',
-    resume: '',
-    completed: false
-  });
+  const currentYear = moment().format('YYYY');
+  const [scheduleData, setScheduleData] = useState(
+    initialData || {
+      title: '',
+      company: '',
+      tag: '',
+      date: `${currentYear}-`,
+      deadlineDate: `${currentYear}-`,
+      interviewDate: `${currentYear}-`,
+      finalDate: `${currentYear}-`,
+      content: '',
+      completed: false
+    }
+  );
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -162,214 +109,229 @@ const AddSchedule = ({ onClose, type }) => {
     }));
   };
 
-  const handleResumeSubmit = (data) => {
-    setResumeContent(data.content);
-    setShowResumePopup(false);
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (type === 'announcement') {
-      dispatch(createSchedule({
-        ...scheduleData,
-        resume: resumeContent,
-        date: moment(scheduleData.date).format('YYYYMMDD'),
-        type: type
-      }));
-
-      // 공고 마감일 일정 추가
-      dispatch(createSchedule({
-        title: `${scheduleData.company} 공고 마감`,
-        date: moment(scheduleData.deadlineDate).format('YYYYMMDD'),
-        content: `${scheduleData.company} 공고 마감일입니다.`,
-        type: 'schedule'
-      }));
-
-      // 서류 합격 발표 일정 추가 (마감일 +7일로 설정)
-      dispatch(createSchedule({
-        title: `${scheduleData.company} 서류 합격 발표`,
-        date: moment(scheduleData.deadlineDate).add(7, 'days').format('YYYYMMDD'),
-        content: `${scheduleData.company} 서류 합격 발표일입니다.`,
-        type: 'schedule'
-      }));
-
-      // 면접일 일정 추가
-      if (scheduleData.interviewDate) {
-        dispatch(createSchedule({
-          title: `${scheduleData.company} 면접일`,
-          date: moment(scheduleData.interviewDate).format('YYYYMMDD'),
-          content: `${scheduleData.company} 면접일입니다.`,
-          type: 'schedule'
-        }));
+      // 최소 하나의 날짜가 선택되었는지 확인
+      const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
+                        scheduleData.deadlineDate.length > currentYear.length + 1 ||
+                        scheduleData.interviewDate.length > currentYear.length + 1 ||
+                        scheduleData.finalDate.length > currentYear.length + 1;
+  
+      if (!hasAnyDate) {
+        alert('최소 하나의 날짜를 선택해주세요.');
+        return;
       }
-
-      // 최종 발표일 일정 추가
-      if (scheduleData.finalDate) {
-        dispatch(createSchedule({
-          title: `${scheduleData.company} 최종 발표`,
-          date: moment(scheduleData.finalDate).format('YYYYMMDD'),
-          content: `${scheduleData.company} 최종 발표일입니다.`,
-          type: 'schedule'
+  
+      if (isEditing && currentSchedule) {
+        // 수정 모드일 때는 기존 일정 업데이트
+        dispatch(updateSchedule({
+          ...currentSchedule,
+          title: `${scheduleData.company} ${scheduleData.title}`,
+          date: scheduleData.date ? moment(scheduleData.date).format('YYYYMMDD') : '',
+          deadlineDate: scheduleData.deadlineDate ? moment(scheduleData.deadlineDate).format('YYYYMMDD') : '',
+          interviewDate: scheduleData.interviewDate ? moment(scheduleData.interviewDate).format('YYYYMMDD') : '',
+          finalDate: scheduleData.finalDate ? moment(scheduleData.finalDate).format('YYYYMMDD') : '',
+          content: scheduleData.content || '',
+          company: scheduleData.company,
+          tag: scheduleData.tag,
+          type: 'announcement'  // type을 명시적으로 지정
         }));
+      } else {
+        // 새로운 일정 추가
+        if (scheduleData.date.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 공고 마감`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.deadlineDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 서류 합격 발표`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.interviewDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 면접일`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
+  
+        if (scheduleData.finalDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            title: `${scheduleData.company} 최종 발표`,
+            date: moment(scheduleData.date).format('YYYYMMDD'),
+            content: scheduleData.content || '',
+            type: 'announcement',  // type을 명시적으로 지정
+            company: scheduleData.company
+          }));
+        }
       }
-
     } else {
-      dispatch(createSchedule({
-        ...scheduleData,
-        date: moment(scheduleData.date).format('YYYYMMDD'),
-        type: type
-      }));
+      // 일반 일정
+      if (isEditing && currentSchedule) {
+        dispatch(updateSchedule({
+          ...currentSchedule,
+          ...scheduleData,
+          date: moment(scheduleData.date).format('YYYYMMDD'),
+          type: 'schedule'  // 일반 일정 type 지정
+        }));
+      } else {
+        dispatch(createSchedule({
+          ...scheduleData,
+          date: moment(scheduleData.date).format('YYYYMMDD'),
+          content: scheduleData.content || '',
+          type: 'schedule'  // 일반 일정 type 지정
+        }));
+      }
     }
     
     onClose();
   };
 
+
   return (
-    <>
-      <PopupOverlay onClick={onClose}>
-        <PopupWrapper onClick={e => e.stopPropagation()}>
-          <PopupHeader>
-            <h2>{type === 'schedule' ? '일정 추가' : '공고 추가'}</h2>
-            <CloseButton onClick={onClose}>&times;</CloseButton>
-          </PopupHeader>
-          <PopupContent>
-            <Form onSubmit={handleSubmit}>
-              {type === 'announcement' ? (
-                <>
-                  <FormGroup>
-                    <Label>공고명</Label>
-                    <Input
-                      type="text"
-                      name="title"
-                      value={scheduleData.title}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <Label>기업명</Label>
-                    <Input
-                      type="text"
-                      name="company"
-                      value={scheduleData.company}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <Label>태그</Label>
-                    <Input
-                      type="text"
-                      name="tag"
-                      value={scheduleData.tag}
-                      onChange={handleChange}
-                      placeholder="예: #IT #개발자 #신입"
-                    />
-                  </FormGroup>
-                  <DateSection>
-                    <Label>날짜</Label>
-                    <DateGroup>
-                      <DateItem>
-                        <SubLabel>공고 추가 일자</SubLabel>
-                        <Input
-                          type="date"
-                          name="date"
-                          value={scheduleData.date}
-                          onChange={handleChange}
-                          required
-                        />
-                      </DateItem>
-                      <DateItem>
-                        <SubLabel>공고 마감 일자</SubLabel>
-                        <Input
-                          type="date"
-                          name="deadlineDate"
-                          value={scheduleData.deadlineDate}
-                          onChange={handleChange}
-                          required
-                        />
-                      </DateItem>
-                      <DateItem>
-                        <SubLabel>면접 일자</SubLabel>
-                        <Input
-                          type="date"
-                          name="interviewDate"
-                          value={scheduleData.interviewDate}
-                          onChange={handleChange}
-                        />
-                      </DateItem>
-                      <DateItem>
-                        <SubLabel>최종 발표 날짜</SubLabel>
-                        <Input
-                          type="date"
-                          name="finalDate"
-                          value={scheduleData.finalDate}
-                          onChange={handleChange}
-                        />
-                      </DateItem>
-                    </DateGroup>
-                  </DateSection>
-                </>
-              ) : (
-                <>
-                  <FormGroup>
-                    <Label>제목</Label>
-                    <Input
-                      type="text"
-                      name="title"
-                      value={scheduleData.title}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <Label>날짜</Label>
-                    <Input
-                      type="date"
-                      name="date"
-                      value={scheduleData.date}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormGroup>
-                </>
-              )}
-              <FormGroup>
-                <Label>내용</Label>
-                <Textarea
-                  name="content"
-                  value={scheduleData.content}
-                  onChange={handleChange}
-                  required
-                />
-              </FormGroup>
-              <ButtonGroup>
-                {type === 'announcement' && (
-                  <Button type="button" onClick={() => setShowResumePopup(true)}>
-                    자기소개서 입력
-                  </Button>
-                )}
-                <div>
-                  <SubmitButton type="submit">
-                    {type === 'schedule' ? '일정 추가' : '공고 추가'}
-                  </SubmitButton>
-                  <CancelButton type="button" onClick={onClose}>
-                    취소
-                  </CancelButton>
-                </div>
-              </ButtonGroup>
-            </Form>
-          </PopupContent>
-        </PopupWrapper>
-      </PopupOverlay>
-      {showResumePopup && (
-        <ResumePopup 
-          onClose={() => setShowResumePopup(false)}
-          onSave={handleResumeSubmit}
-        />
-      )}
-    </>
+    <PopupOverlay onClick={onClose}>
+      <PopupWrapper onClick={e => e.stopPropagation()}>
+        <PopupHeader>
+          <h2>{isEditing ? '공고 수정' : (type === 'schedule' ? '일정 추가' : '공고 추가')}</h2>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
+        </PopupHeader>
+        <PopupContent>
+          <Form onSubmit={handleSubmit}>
+            {type === 'announcement' ? (
+              <>
+                <FormGroup>
+                  <Label>공고명</Label>
+                  <Input
+                    type="text"
+                    name="title"
+                    value={scheduleData.title}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>기업명</Label>
+                  <Input
+                    type="text"
+                    name="company"
+                    value={scheduleData.company}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>태그</Label>
+                  <Input
+                    type="text"
+                    name="tag"
+                    value={scheduleData.tag}
+                    onChange={handleChange}
+                    placeholder="예: #IT #개발자 #신입"
+                  />
+                </FormGroup>
+                <DateSection>
+                  <Label>날짜</Label>
+                  <DateGroup>
+                    <DateItem>
+                      <SubLabel>공고 마감 일자</SubLabel>
+                      <Input
+                        type="date"
+                        name="date"
+                        value={scheduleData.date}
+                        onChange={handleChange}
+                      />
+                    </DateItem>
+                    <DateItem>
+                      <SubLabel>서류 합격 발표</SubLabel>
+                      <Input
+                        type="date"
+                        name="deadlineDate"
+                        value={scheduleData.deadlineDate}
+                        onChange={handleChange}
+                      />
+                    </DateItem>
+                    <DateItem>
+                      <SubLabel>면접 일자</SubLabel>
+                      <Input
+                        type="date"
+                        name="interviewDate"
+                        value={scheduleData.interviewDate}
+                        onChange={handleChange}
+                      />
+                    </DateItem>
+                    <DateItem>
+                      <SubLabel>최종 발표 일자</SubLabel>
+                      <Input
+                        type="date"
+                        name="finalDate"
+                        value={scheduleData.finalDate}
+                        onChange={handleChange}
+                      />
+                    </DateItem>
+                  </DateGroup>
+                </DateSection>
+              </>
+            ) : (
+              <>
+                <FormGroup>
+                  <Label>제목</Label>
+                  <Input
+                    type="text"
+                    name="title"
+                    value={scheduleData.title}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>날짜</Label>
+                  <Input
+                    type="date"
+                    name="date"
+                    value={scheduleData.date}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormGroup>
+              </>
+            )}
+            <FormGroup>
+              <Label>내용</Label>
+              <Textarea
+                name="content"
+                value={scheduleData.content}
+                onChange={handleChange}
+              />
+            </FormGroup>
+            <ButtonGroup>
+              <div>
+                <SubmitButton type="submit">
+                  {isEditing ? '수정하기' : (type === 'schedule' ? '일정 추가' : '공고 추가')}
+                </SubmitButton>
+                <CancelButton type="button" onClick={onClose}>
+                  취소
+                </CancelButton>
+              </div>
+            </ButtonGroup>
+          </Form>
+        </PopupContent>
+      </PopupWrapper>
+    </PopupOverlay>
   );
 };
 
@@ -384,7 +346,7 @@ const PopupOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;  // EditSchedule의 z-index보다 높게 설정
 `;
 
 const PopupWrapper = styled.div`

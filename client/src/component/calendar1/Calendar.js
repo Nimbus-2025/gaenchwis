@@ -29,7 +29,10 @@ import {
   HeaderContent,
   DateContainer,
   Weekend,
-  Dow
+  Dow,
+  SelectDropdown,
+  SelectOption,
+  MonthDisplay
 } from './styles/CalendarStyles';
 
 // 캘린더 렌더링
@@ -37,9 +40,33 @@ const Calendar = () => {
   const { thisMonth, isOpenEditPopup, isFilter, isOpenAddPopup } = useSelector(
     (state) => state.schedule
   );
+  const dispatch = useDispatch();
   const [current, setCurrent] = useState(moment());
   const [activePopup, setActivePopup] = useState(null);
-  const dispatch = useDispatch();
+  const [filterType, setFilterType] = useState('all');
+  const [showYearSelect, setShowYearSelect] = useState(false);
+  const [showMonthSelect, setShowMonthSelect] = useState(false);
+
+  // 년도 선택 옵션 생성 (1950년부터 현재 년도까지)
+  const yearOptions = Array.from(
+    { length: moment().year() - 1950 + 1 }, 
+    (_, i) => 1950 + i
+  );
+
+  // 월 선택 옵션 생성
+  const monthOptions = Array.from({ length: 12 }, (_, i) => i);
+
+  // 년도 변경 핸들러
+  const handleYearChange = (year) => {
+    setCurrent(current.clone().year(year));
+    setShowYearSelect(false);
+  };
+
+  // 월 변경 핸들러
+  const handleMonthChange = (month) => {
+    setCurrent(current.clone().month(month));
+    setShowMonthSelect(false);
+  };
 
   useEffect(() => {
     const startDay = current.clone().startOf('month').format('YYYYMMDD');
@@ -53,6 +80,33 @@ const Calendar = () => {
 
   const moveNextMonth = () => {
     setCurrent(current.clone().add(1, 'month'));
+  };
+
+  const getFilteredSchedules = (schedules) => {
+    switch (filterType) {
+      case 'normal':
+        return schedules.filter(s => 
+          s.type === 'schedule' && 
+          !s.title?.includes('공고 마감') && 
+          !s.title?.includes('서류 합격 발표') && 
+          !s.title?.includes('면접') && 
+          !s.title?.includes('최종 발표')
+        );
+        
+      case 'announcement':
+        return schedules.filter(s => 
+          s.type === 'announcement' || 
+          (s.type === 'schedule' && (
+            s.title?.includes('공고 마감') ||
+            s.title?.includes('서류 합격 발표') ||
+            s.title?.includes('면접') ||
+            s.title?.includes('최종 발표')
+          ))
+        );
+        
+      default:
+        return schedules;
+    }
   };
 
   const generate = () => {
@@ -88,7 +142,7 @@ const Calendar = () => {
                   ? ''
                   : 'grayed';
 
-              const currentSch = thisMonth.filter((s) => s.date === fullDate);
+              const currentSch = getFilteredSchedules(thisMonth.filter((s) => s.date === fullDate));
 
               const dateInfo = { day, fullDate, dow: idx, currentSch };
               return (
@@ -121,10 +175,47 @@ const Calendar = () => {
           />
         )}
         <Header>
-          <YearDisplay>{current.format('YYYY')}</YearDisplay>
+          <YearDisplay onClick={() => setShowYearSelect(!showYearSelect)}>
+            {current.format('YYYY')}
+            {showYearSelect && (
+              <SelectDropdown>
+                {yearOptions.map(year => (
+                  <SelectOption 
+                    key={year}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleYearChange(year);
+                    }}
+                    selected={year === current.year()}
+                  >
+                    {year}
+                  </SelectOption>
+                ))}
+              </SelectDropdown>
+            )}
+          </YearDisplay>
           <HeaderContent>
             <MdChevronLeft className="dir" onClick={movePrevMonth} />
-            <span>{current.format('MMMM')}</span>
+            <MonthDisplay onClick={() => setShowMonthSelect(!showMonthSelect)}>
+              {current.format('MMMM')}
+              {showMonthSelect && (
+                <SelectDropdown>
+                  {monthOptions.map(month => (
+                    <SelectOption 
+                      key={month}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMonthChange(month);
+                      }}
+                      selected={month === current.month()}
+                      isMonth={true}
+                    >
+                      {moment().month(month).format('MMMM')}
+                    </SelectOption>
+                  ))}
+                </SelectDropdown>
+              )}
+            </MonthDisplay>
             <MdChevronRight className="dir" onClick={moveNextMonth} />
           </HeaderContent>
         </Header>
@@ -142,23 +233,36 @@ const Calendar = () => {
         </DateContainer>
       </CalendarWrapper>
       <ButtonWrapper onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
-        {isFilter ? (
-          <MdCheck
+        <MdDoneAll className="filterBtn subBtn" />
+        <div className="filter-buttons">
+          <div 
+            className="filter-button"
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(setIsFilter(false));
+              setFilterType('all');
             }}
-            className="filterBtn subBtn"
-          />
-        ) : (
-          <MdDoneAll
+          >
+            모두 보기
+          </div>
+          <div 
+            className="filter-button"
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(setIsFilter(true));
+              setFilterType('normal');
             }}
-            className="filterBtn subBtn"
-          />
-        )}
+          >
+            일반 일정
+          </div>
+          <div 
+            className="filter-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilterType('announcement');
+            }}
+          >
+            취업 일정
+          </div>
+        </div>
         <MdEdit className="writeBtn subBtn" />
         <div className="popup-buttons">
           <div 
