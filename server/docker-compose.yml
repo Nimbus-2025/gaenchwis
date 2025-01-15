@@ -3,23 +3,20 @@ version: '3.8'
 services:
   crawler:
     build:
-      context: .
+      context: ./crawler
       dockerfile: Dockerfile
     container_name: crawler-service
     ports:
       - '8000:8000'
     volumes:
-      - ./crawler/output:/app/crawler/output
-      - ./crawler/logs:/app/crawler/logs # 로그 볼륨 추가
+      - ./crawler/output:/app/output
+      - ./crawler/logs:/app/logs # 로그 볼륨 추가
     environment:
       - FLASK_ENV=development
       - DOCKER_CONTAINER=true
       - API_KEY=${API_KEY:-default_api_key}
       # 스토리지 타입은 .env 파일에서 관리
       - STORAGE_TYPE=${STORAGE_TYPE:-dynamodb}
-      # # MongoDB 연결 정보
-      # - MONGODB_URI=mongodb://admin:password@mongodb:27017/crawler_db?authSource=admin
-      # - MONGODB_DB=crawler_db
       # AWS 관련 환경변수
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -33,30 +30,10 @@ services:
       - DYNAMODB_JOB_TAGS_TABLE=${DYNAMODB_JOB_TAGS_TABLE:-job_tags}
     healthcheck: # 크롤러 서비스 헬스체크
       test: ['CMD', 'curl', '-f', 'http://localhost:8000/healthcheck']
-      interval: 600s
+      interval: 1m30s
       timeout: 10s
       retries: 3
     restart: unless-stopped
-
-  # mongodb:
-  #   image: mongo:latest
-  #   container_name: mongodb-service
-  #   ports:
-  #     - '27017:27017'
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #     # - ./mongodb/init-scripts:/docker-entrypoint-initdb.d # 초기화 스크립트
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME:-admin}
-  #     - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-password}
-  #     - MONGO_INITDB_DATABASE=crawler_db
-  #   healthcheck: # MongoDB 헬스체크
-  #     test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-  #     interval: 600s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 40s
-  #   restart: unless-stopped
 
   # alarm:
   #   build: ./alarm
@@ -65,33 +42,80 @@ services:
   #     - '8001:8000'
   #   restart: unless-stopped
 
-  # essay:
-  #   build: ./essay
-  #   container_name: essay-service
-  #   ports:
-  #     - '8002:8000'
-  #   restart: unless-stopped
+  essay:
+    build:
+      context: ./essay_service
+      dockerfile: Dockerfile
+    container_name: essay-service
+    ports:
+      - '8002:8000'
+    environment:
+      - FLASK_ENV=development
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      # DynamoDB 테이블 이름들
+      - DYNAMODB_ESSAYS_TABLE=${DYNAMODB_ESSAYS_TABLE:-essays}
+      - DYNAMODB_ESSAY_JOB_POSTINGS_TABLE=${DYNAMODB_ESSAY_JOB_POSTINGS_TABLE:-essay_job_postings}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/v1/healthcheck']
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+    restart: unless-stopped
 
   # job-posting:
-  #   build: ./job_posting
+  #   build:
+  #     context: ./server/job_posting
+  #     dockerfile: Dockerfile
   #   container_name: job-posting-service
   #   ports:
   #     - '8003:8000'
   #   restart: unless-stopped
 
   # job-posting-recommend:
-  #   build: ./job_posting
+  #   build:
+  #     context: ./server/job_posting_recommend
+  #     dockerfile: Dockerfile
   #   container_name: job-posting-recommend-service
   #   ports:
   #     - '8004:8000'
   #   restart: unless-stopped
 
   # user:
-  #   build: ./user
+  #   build:
+  #     context: ./server/user
+  #     dockerfile: Dockerfile
   #   container_name: user-service
   #   ports:
   #     - '8005:8000'
   #   restart: unless-stopped
+
+  migration:
+    build:
+      context: ./db_migration
+      dockerfile: Dockerfile
+    container_name: db-migration-service
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      # DynamoDB 테이블 이름들
+      # Crawling related tables
+      - DYNAMODB_COMPANIES_TABLE=${DYNAMODB_COMPANIES_TABLE:-companies}
+      - DYNAMODB_JOB_POSTINGS_TABLE=${DYNAMODB_JOB_POSTINGS_TABLE:-job_postings}
+      - DYNAMODB_TAGS_TABLE=${DYNAMODB_TAGS_TABLE:-tags}
+      - DYNAMODB_JOB_TAGS_TABLE=${DYNAMODB_JOB_TAGS_TABLE:-job_tags}
+      # User related tables
+      - DYNAMODB_USERS_TABLE=${DYNAMODB_USERS_TABLE:-users}
+      - DYNAMODB_USER_TAGS_TABLE=${DYNAMODB_USER_TAGS_TABLE:-user_tags}
+      - DYNAMODB_SCHEDULES_TABLE=${DYNAMODB_SCHEDULES_TABLE:-schedules}
+      - DYNAMODB_BOOKMARKS_TABLE=${DYNAMODB_BOOKMARKS_TABLE:-bookmarks}
+      - DYNAMODB_APPLIES_TABLE=${DYNAMODB_APPLIES_TABLE:-applies}
+      - DYNAMODB_INTEREST_COMPANIES_TABLE=${DYNAMODB_INTEREST_COMPANIES_TABLE:-interest_companies}
+      # Essay related tables
+      - DYNAMODB_ESSAYS_TABLE=${DYNAMODB_ESSAYS_TABLE:-essays}
+      - DYNAMODB_ESSAY_JOB_POSTINGS_TABLE=${DYNAMODB_ESSAY_JOB_POSTINGS_TABLE:-essay_job_postings}
 
 networks:
   default:

@@ -1,18 +1,18 @@
 # Python 내장 라이브러리 
 from flask import Flask, jsonify, request, Response
+import traceback
 import os
 import sys
 from typing import Dict, Any
 from datetime import datetime
 import logging 
 from functools import wraps
-# 현재 스크립트의 디렉토리를 Python 경로에 추가
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(PROJECT_ROOT)
-# 로컬 임포트
-from crawlers.jobkorea_crawler import JobKoreaCrawler
+# 현재 디렉토리를 Python 경로에 추가
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)# 로컬 임포트
+# from crawlers.jobkorea_crawler import JobKoreaCrawler
 from crawlers.saramin_crawler import SaraminCrawler
-from common.constants import OUTPUT_DIRS
+from common.constants import CrawlerConfig
 from common.config import Config
 
 
@@ -51,8 +51,8 @@ class CrawlerExecutor:
     def execute_crawler(self, crawler_name: str) -> Dict[str, Any]:
         # 크롤러 실행 로직 
         crawlers = {
-            'jobkorea': lambda: JobKoreaCrawler(OUTPUT_DIRS['jobkorea']),
-            'saramin': lambda: SaraminCrawler(OUTPUT_DIRS['saramin']),
+            # 'jobkorea': lambda: JobKoreaCrawler(CrawlerConfig.OUTPUT_DIRS['jobkorea']),
+            'saramin': lambda: SaraminCrawler(CrawlerConfig.OUTPUT_DIRS['saramin']),
         }
         
         if crawler_name not in crawlers:
@@ -104,20 +104,41 @@ class APIServer:
         try:
             start_time = datetime.now()
             result = self.crawler_executor.execute_crawler(crawler_name)
+            
+            # 디버깅을 위한 로그 추가
+            print(f"Crawler result type: {type(result)}")
+            print(f"Crawler result content: {result}")
+            
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
             
-            return jsonify({
-                "status": "success",
-                "crawler": crawler_name,
-                "result": result,
-                "metadata": {
-                    "start_time": start_time.isoformat(),
-                    "end_time": end_time.isoformat(),
-                    "duration_seconds": duration,
-                    "items_count": len(result.get('jobs', [])) if result.get('jobs') else 0
+            # result가 직렬화 가능한 형태인지 확인하고 변환
+            try:
+                response_data = {
+                    "status": "success",
+                    "crawler": crawler_name,
+                    "result": result if isinstance(result, (dict, list)) else str(result),
+                    "metadata": {
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat(),
+                        "duration_seconds": duration,
+                        "items_count": len(result.get('jobs', [])) if isinstance(result, dict) and result.get('jobs') else 0
+                    }
                 }
-            })
+                return jsonify(response_data)
+            except TypeError as e:
+                print(f"JSON Serialization Error: {str(e)}")
+                # 직렬화 할 수 없는 경우 문자열로 변환
+                return jsonify({
+                    "status": "success",
+                    "crawler": crawler_name,
+                    "result": str(result),
+                    "metadata": {
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat(),
+                        "duration_seconds": duration
+                    }
+                })
         except ValueError as e:
             return jsonify({
                 "status": "error", 
@@ -126,6 +147,8 @@ class APIServer:
                 "timestamp": datetime.now().isoformat()
             }), 400
         except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            print(traceback.format_exc())  # 스택 트레이스 출력
             return jsonify({
                 "status": "error",
                 "message": str(e),
@@ -175,6 +198,8 @@ class CLI:
                 print(f"크롤링 완료: {result}")
         except Exception as e:
             print(f"에러 발생: {str(e)}")
+            print("상세 에러:")
+            print(traceback.format_exc())  # 이 줄 추가
             sys.exit(1)
             
 def main():

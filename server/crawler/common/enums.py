@@ -1,7 +1,6 @@
 from enum import Enum
 
 class StorageType(str, Enum):
-    # MONGODB = 'mongodb'
     DYNAMODB = 'dynamodb'
     
 class RepositoryType(Enum):
@@ -73,12 +72,3 @@ class UserTagCategory(str, Enum):
     @classmethod
     def is_valid(cls, category: str) -> bool:
         return category in [item.value for item in cls]
-
-# class ImageType(str, Enum):
-#     PROFILE = "profile"
-#     PORTFOLIO = "portfolio"
-#     CERTIFICATE = "certificate"
-    
-#     @classmethod
-#     def is_valid(cls, type: str) -> bool:
-#         return type in [item.value for item in cls]

@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.service import Service
 # WebDriver 매니저 
 from webdriver_manager.chrome import ChromeDriverManager
 # 로컬 상수
-from .constants import USER_AGENTS
+from .constants import CrawlerConfig
 
 def get_chrome_version():
     try:
@@ -51,7 +51,7 @@ def setup_driver():
     options.add_argument('--disable-features=NetworkService')
     
     # 1. 랜덤 User-Agent 설정
-    options.add_argument(f'user-agent={random.choice(USER_AGENTS)}')    # 랜덤 User-Agent로 봇 감지 방지 
+    options.add_argument(f'user-agent={random.choice(CrawlerConfig.USER_AGENTS)}')    # 랜덤 User-Agent로 봇 감지 방지 
     
     # 2. 자동화 흔적 제거 
     options.add_argument('--disable-blink-features=AutomationControlled')   # 자동화 감지 플래그 제거

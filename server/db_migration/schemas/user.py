@@ -1,4 +1,5 @@
-from aws_service.services.dynamodb.common.constants import TableNames, IndexNames
+from constants.table import TableNames
+from constants.index import IndexNames
 
 # 공통 GSI 설정
 COMMON_GSI_SETTINGS = {
@@ -29,31 +30,6 @@ USERS_TABLE = {
     ],
     'BillingMode': 'PAY_PER_REQUEST'
 }
-
-# USER_IMAGES_TABLE = {
-#     'TableName': TableNames.USER_IMAGES,
-#     'KeySchema': [
-#         {'AttributeName': 'PK', 'KeyType': 'HASH'},
-#         {'AttributeName': 'SK', 'KeyType': 'RANGE'}
-#     ],
-#     'AttributeDefinitions': [
-#         {'AttributeName': 'PK', 'AttributeType': 'S'},
-#         {'AttributeName': 'SK', 'AttributeType': 'S'},
-#         {'AttributeName': 'GSI1PK', 'AttributeType': 'S'},
-#         {'AttributeName': 'GSI1SK', 'AttributeType': 'S'}
-#     ],
-#     'GlobalSecondaryIndexes': [
-#         {
-#             'IndexName': IndexNames.DynamoDB.IMAGE_GSI,
-#             'KeySchema': [
-#                 {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-#                 {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
-#             ],
-#             **COMMON_GSI_SETTINGS
-#         }
-#     ],
-#     'BillingMode': 'PAY_PER_REQUEST'
-# }
 
 USER_TAGS_TABLE = {
     'TableName': TableNames.USER_TAGS,
