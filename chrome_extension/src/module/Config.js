@@ -3,6 +3,7 @@ const Config = {
   tokenUrl: "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/token",
   domain: "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com",
   redirectUrl: `https://${chrome.runtime.id}.chromiumapp.org`,
-  scope: "email openid profile"
+  scope: "email openid profile",
+  server: "https://gaenchwis.click"
 }
 
