@@ -1,5 +1,3 @@
-importScripts("Config.js");
-
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.type === "refresh_tokens") {
     const response = await refreshToken()

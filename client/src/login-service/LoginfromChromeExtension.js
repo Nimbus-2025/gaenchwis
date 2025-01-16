@@ -6,10 +6,12 @@ function LoginfromChromeExtension() {
         console.log(event.data.success)
         console.log("Response from extension:", event.data);
         const user = {
+          phone: event.data.data.phone,
           email: event.data.data.email,
           name: event.data.data.name,
           access_token: event.data.data.access_token,
-          id_token: event.data.data.id_token
+          id_token: event.data.data.id_token,
+          user_id: event.data.data.user_id
         }
         sessionStorage.setItem('user', JSON.stringify(user));
       }

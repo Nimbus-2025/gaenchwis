@@ -21,8 +21,8 @@ function User() {
     chrome.storage.local.get("access_token",(result)=>{
       if (result.access_token){
         setLogin(1);
-        chrome.storage.local.get("name",(result)=>{
-          setName(result.name);
+        chrome.runtime.sendMessage({ message: "userdata_load" },(response) =>{
+          setName(response.name);
         });
       }
       else{
