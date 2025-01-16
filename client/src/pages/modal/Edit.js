@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './Modal.css'; // 스타일을 위한 CSS 파일
 
-const Modal = ({ isOpen, onClose, onSave }) => {
-    const [editphone, setEditPhone]=useState("")
-    const [editemail, setEditEmail]=useState("")
-    const [editname, setEditName]=useState("")
+const Modal = ({ isOpen, onClose, onSave, name, email, phone }) => {
+    const [editphone, setEditPhone]=useState(phone);
+    const [editemail, setEditEmail]=useState(email);
+    const [editname, setEditName]=useState(name);
 
     if (!isOpen) return null;
 
