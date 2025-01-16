@@ -54,10 +54,11 @@ function Callback() {
         name: userData.name,
         phone: userData.phone,
         access_token: data.access_token,
-        id_token: data.id_token
+        id_token: data.id_token,
+        user_id: userId
       }
       sessionStorage.setItem('user', JSON.stringify(user));
-      //window.location.href = '/';
+      window.location.href = '/';
     }).catch(error => {
       console.error('Failed to exchange code for token:', error);
     })

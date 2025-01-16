@@ -3,7 +3,6 @@ import LocationModal from '../modal/LocationModal';
 import Modal from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
-import { jwtDecode } from 'jwt-decode';
 import Api from '../../api/Api';
 
 const ShowProfile = ({ userData }) => {
@@ -23,10 +22,8 @@ const ShowProfile = ({ userData }) => {
     userData.name=name;
     sessionStorage.setItem('user', JSON.stringify(userData));
 
-    const idTokenPayload = jwtDecode(userData.id_token);
-    const userId = idTokenPayload["cognito:username"];
     const body = {
-      userId: userId,
+      userId: userData.user_id,
       name: name,
       email: email,
       phone: phone
@@ -142,6 +139,9 @@ const ShowProfile = ({ userData }) => {
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
                 onSave={handleSave}
+                name={name}
+                email={email}
+                phone={phone}
             />
     </div>
   );
