@@ -1,19 +1,25 @@
-async function Api(url, method, body){
+async function Api(url, method, body={}){
+  const header = {
+    "Content-Type": "application/json"
+  }
   try{
     const access_token=sessionStorage.getItem("user")["access_token"];
     const id_token=sessionStorage.getItem("user")["id_token"];
-    body["access_token"]=access_token;
-    body["id_token"]=id_token;
+    const user_id=sessionStorage.getItem("user")["user_id"];
+    header["access_token"]=access_token;
+    header["id_token"]=id_token;
+    header["user_id"]=user_id;
   }catch(error){}
   
   try{
-    const response = await fetch(url, {
+    const request = {
       method: method,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+      headers: header
+    }
+    if (method==="POST"){
+      request["body"]=JSON.stringify(body)
+    }
+    const response = await fetch(url, );
     return await response.json();
   } catch(error){
     console.error(error);

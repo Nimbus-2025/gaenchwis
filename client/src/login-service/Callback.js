@@ -42,12 +42,8 @@ function Callback() {
       console.log(data)
       const idTokenPayload = jwtDecode(data.id_token);
       const userId = idTokenPayload["cognito:username"];
-      const body = {
-        userId: userId,
-        accessToken: data.access_token,
-        idToken: data.id_token
-      };
-      const userData = await Api(`${Config.server}/user_load`,"POST",body);
+
+      const userData = await Api(`${Config.server}/user_load`,"GET");
       console.log(userData);
       const user = {
         email: userData.email,

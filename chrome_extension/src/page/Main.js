@@ -3,6 +3,7 @@ import Home from './Home';
 import DetectEssay from './DetectEssay';
 import LoadEssay from './LoadEssay'
 import SaveEssay from './SaveEssay';
+import '../style/background.css';
 
 function Main() {
   const [page,setPage]=useState(<Home />);
@@ -29,7 +30,7 @@ function Main() {
     });
   }, []);
 
-  return (<div>{page}</div>);
+  return (<div className="full">{page}</div>);
 }
 
 export default Main;

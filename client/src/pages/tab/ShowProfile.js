@@ -10,6 +10,9 @@ const ShowProfile = ({ userData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDistricts, setSelectedDistricts] = useState({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
+  const [phone, setPhone]=useState(userData?.phone || '등록되지 않음')
+  const [email, setEmail]=useState(userData?.email || '정보 없음')
+  const [name, setName]=useState(userData?.name || '정보 없음')
   const [positionTags, setPositionTags] = useState([]);
   const [educationTags, setEducationTags] = useState([]);
   const [error, setError] = useState(null);
@@ -20,30 +23,49 @@ const ShowProfile = ({ userData }) => {
     '석사': 4,
     '박사': 5,
     '학력무관': 6
-};
-
-useEffect(() => {
-  const fetchEducationTags = async () => {
-      try {
-          const response = await fetch('http://localhost:5001/api/tags/education');
-          if (!response.ok) {
-              throw new Error('Failed to fetch education tags');
-          }
-          const data = await response.json();
-          
-          // 태그 정렬
-          const sortedTags = data.sort((a, b) => 
-              (tagOrder[a] || 999) - (tagOrder[b] || 999)
-          );
-          
-          setEducationTags(sortedTags);
-      } catch (error) {
-          console.error('Error fetching education tags:', error);
-      }
   };
 
-  fetchEducationTags();
-}, []);
+  useEffect(() => {
+    const fetchEducationTags = async () => {
+        try {
+            const response = await fetch('http://localhost:5001/api/tags/education');
+            if (!response.ok) {
+                throw new Error('Failed to fetch education tags');
+            }
+            const data = await response.json();
+            
+            // 태그 정렬
+            const sortedTags = data.sort((a, b) => 
+                (tagOrder[a] || 999) - (tagOrder[b] || 999)
+            );
+            
+            setEducationTags(sortedTags);
+        } catch (error) {
+            console.error('Error fetching education tags:', error);
+        }
+    };
+
+    fetchEducationTags();
+  }, []);
+  
+  const handleSave = async (name, email, phone) =>{
+    setName(name);
+    setEmail(email);
+    setPhone(phone);
+    userData.phone=phone;
+    userData.email=email;
+    userData.name=name;
+    sessionStorage.setItem('user', JSON.stringify(userData));
+
+    const body = {
+      userId: userData.user_id,
+      name: name,
+      email: email,
+      phone: phone
+    }
+    const response = await Api(`${Config.server}/user_save`,"POST",body);
+    console.log(response);
+  }
 
   const handleLocationSelect = (district) => {
     setSelectedDistricts((prev) => {

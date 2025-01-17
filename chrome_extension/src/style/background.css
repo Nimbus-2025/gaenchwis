@@ -6,6 +6,12 @@
   width: 100%;
 }
 
+.full {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
 .column-div {
   display: flex;
   justify-content: center;
