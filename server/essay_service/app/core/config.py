@@ -12,6 +12,8 @@ class AWSConfig:
 class DynamoDBConfig:
     essays_table: str = os.getenv('DYNAMODB_ESSAYS_TABLE', 'essays')
     essay_job_postings_table: str = os.getenv('DYNAMODB_ESSAY_JOB_POSTINGS_TABLE', 'essay_job_postings')
+    applies: str = os.getenv('DYNAMODB_APPLIES', 'applies')
+    job_postings: str = os.getenv('DYNAMODB_JOB_POSTINGS', 'job_postings')
 
 @dataclass
 class Config:
