@@ -3,7 +3,7 @@ import LocationModal from '../modal/LocationModal';
 import Modal from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
-import Api from '../../api/Api';
+import Api from '../../api/api';
 
 const ShowProfile = ({ userData }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -75,9 +75,9 @@ useEffect(() => {
             <img src={userData.profileImage || ''} alt="Profile" className="profile-image" />
           </div>
           <div className="profile-details">
-            <p>이름: {name}</p>
-            <p>전화번호: {phone}</p>
-            <p>이메일 주소: {email}</p>
+            {/* <p>이름: {name}</p>
+            {/* <p>전화번호: {phone}</p>
+            <p>이메일 주소: {email}</p> */} 
           </div>
         </div>
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
@@ -151,14 +151,14 @@ useEffect(() => {
         onClose={() => setIsModalOpen(false)}
         onApply={handleApplyLocations}
       />
-       <Modal 
+       {/* <Modal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
                 onSave={handleSave}
                 name={name}
                 email={email}
                 phone={phone}
-            />
+            /> */}
     </div>
   );
 };

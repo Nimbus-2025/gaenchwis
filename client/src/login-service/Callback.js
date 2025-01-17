@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Config from '../api/Config';
-import Api from '../api/Api';
+import Api from '../api/api';
 
 function Callback() {
   let first=true;
-  useEffect(() => {
+  useEffect(() => { 
     if (first){
       first = !first;
       const urlParams = new URLSearchParams(window.location.search);
