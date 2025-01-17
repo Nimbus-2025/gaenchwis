@@ -40,8 +40,9 @@ class EssayListResponse(BaseModel):
     
 class JobPosting(BaseModel):
     job_posting_id: str
-    company_name: str  # 이 필드들은 예시입니다
+    company_name: str  
     position_name: str
+    post_id: Optional[str] = None
 
 class EssayDetailResponse(BaseModel):
     essay_id: str

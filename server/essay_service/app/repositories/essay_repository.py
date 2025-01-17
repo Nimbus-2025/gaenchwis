@@ -46,7 +46,7 @@ class EssayRepository:
         self, 
         user_id: str, 
         questions: List[dict], 
-        job_posting_ids: List[str] = None
+        job_posting_ids: List[str] = None,
     ) -> List[str]:
         try: 
             essay_ids = []
@@ -82,6 +82,7 @@ class EssayRepository:
                             'GSI1PK': f"JOB#{job_posting_id}",
                             'GSI1SK': f"ESSAY#{essay_id}",
                             'user_id': user_id,
+                            'post_id': job_posting_id,  
                             'created_at': current_time                            
                         }
                         essay_job_postings_table.put_item(Item=link_item)
@@ -293,7 +294,8 @@ class EssayRepository:
                         job_postings.append({
                             'job_posting_id': job_posting_id,
                             'company_name': job_posting.get('company_name'),
-                            'position_name': job_posting.get('position_name')
+                            'position_name': job_posting.get('position_name'),
+                            'post_id': link.get('post_id')
                         })
                 except ClientError:
                     continue
