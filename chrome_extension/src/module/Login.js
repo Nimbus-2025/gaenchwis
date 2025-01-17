@@ -2,15 +2,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'login_data'){
     console.log(request);
     fetch(`${Config.server}/user_load`, {
-      method: "POST",
+      method: "GET",
       headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        userId: request.data["cognito:username"],
-        access_token: request.token.access_token,
-        id_token: request.token.id_token
-      })
+        "Content-Type": "application/json",
+        "access_token": request.token.access_token,
+        "id_token": request.token.id_token,
+        "user_id": request.data["cognito:username"]
+      }
     }).then(async (response) => {
       const userData=await response.json();
       console.log(userData);
@@ -32,15 +30,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.message === 'userdata_load'){
     chrome.storage.local.get(null, (result)=>{
       fetch(`${Config.server}/user_load`, {
-        method: "POST",
+        method: "GET",
         headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userId: result.user_id,
-          access_token: result.access_token,
-          id_token: result.id_token
-        })
+          "Content-Type": "application/json",
+          "access_token": result.access_token,
+          "id_token": result.id_token,
+          "user_id": result.user_id
+        }
       }).then(async (response) => {
         const userData=await response.json();
         console.log(userData);

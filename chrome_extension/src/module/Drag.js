@@ -57,7 +57,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           }
           chrome.storage.local.set({ title: title, content: content });
         }
-        else{
+        else if (input_type === "content"){
           content[Number(id)-1]=text;
           chrome.storage.local.set({ content: content });
         }

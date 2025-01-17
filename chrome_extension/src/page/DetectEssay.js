@@ -17,7 +17,7 @@ function DetectEssay() {
   useEffect(() => {
     chrome.runtime.sendMessage({ message: 'crawling' });
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.message === 'detected_essay') {
+      if (request.message === 'detected_post') {
         const essay_num=2;
         setDetect(
           <div>

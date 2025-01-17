@@ -5,13 +5,18 @@ importScripts(
   'Login.js',
   'Logout.js',
   'Session.js',
-  'Config.js'
+  'Config.js',
+  'Essay.js'
 )
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.message === 'error'){
     console.log(request.error)
     sendResponse({ message: 'Error received' });
+  }
+  else if (request.message === 'log'){
+    console.log(request.log)
+    sendResponse({ message: 'Log received' });
   }
   else if (request.message === "web_login_request") {
     const refresh=await refreshTokens();
@@ -24,15 +29,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
       chrome.storage.local.get("user_id", (result) => {
         console.log(result);
         fetch(`${Config.server}/user_load`, {
-          method: "POST",
+          method: "GET",
           headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            userId: result.user_id,
-            access_token: refresh.tokens.access_token,
-            id_token: refresh.tokens.id_token
-          })
+            "Content-Type": "application/json",
+            "access_token": refresh.tokens.access_token,
+            "id_token": refresh.tokens.id_token,
+            "user_id": result.user_id
+          }
         }).then(async (response) => {
           const userData=await response.json();
           console.log(userData);

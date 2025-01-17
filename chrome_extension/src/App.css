@@ -4,6 +4,7 @@
   flex-direction: column;
   height: 100vh;
   width: 100%;
+  position: relative;
   background-color: white;
   box-sizing: border-box;
 }
@@ -14,6 +15,7 @@
   font-size: 14px;
   justify-content: center;
   align-items: center;
+  position: relative;
   height: 6vh;
   width: 100%;
   top: 0;
@@ -26,7 +28,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: auto;
   font-size: calc(10px + 2vmin);
+}
+
+.App-body::-webkit-scrollbar {
+  display: none; 
 }
 
 .App-footer {
@@ -36,6 +44,7 @@
   font-size: calc(10px + 2vmin);
   justify-content: center;
   align-items: center;
+  position: relative;
   width: 100%;
   bottom: 0;
   border-top: 1px solid #999;

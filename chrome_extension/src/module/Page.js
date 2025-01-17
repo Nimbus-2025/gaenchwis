@@ -14,12 +14,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.message === 'page_loadessay') {
     chrome.runtime.sendMessage({ message: 'move_page_loadessay' });
     setTimeout(() => {
-      data="abc"
-      chrome.runtime.sendMessage({ message: 'loaded', data: data },
-        (response) => {
-          console.log(response);
-        }
-      );
+      load_drag_essay()
+      load_essay();
     }, 100);
     page=request.message;
     sendResponse({ message: 'Page LoadEssay' });
