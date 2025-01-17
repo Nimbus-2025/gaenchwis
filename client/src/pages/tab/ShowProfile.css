@@ -107,22 +107,31 @@
 }
 
 .tag-list {
-  margin-top: 10px;
-  width:100%; 
-  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
 }
-
 
 .tag {
     margin-right: 20px;
 }
 
 .tag-item {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin-top: 5px;
+  display: inline-block;
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  margin: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
 }
 
 .info-box {
@@ -271,4 +280,18 @@ edit-form {
   background-color: #ccc; /* 구분선 색상 */
   height: 50px; /* 구분선의 높이 */
   align-self: center; /* 가운데 정렬 */
+}
+.add-tag-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.add-tag-button:hover {
+  background-color: #0056b3;
 }

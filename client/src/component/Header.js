@@ -5,7 +5,8 @@ import './Header.css';
 import CategoryPopup from '../component/CategoryPopup';
 import SearchResult from '../pages/tab/SearchResult';
 
-const Header = ({ userData, onLogout, searchText, setSearchText, onSearch }) => {
+const Header = ({ userData, onSearch }) => {
+  const [searchText, setSearchText] = useState('');
     const navigate = useNavigate();
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const toggleCategoryPopup = () => {
@@ -16,10 +17,13 @@ const Header = ({ userData, onLogout, searchText, setSearchText, onSearch }) => 
           navigate('/mypage1'); // 유저 페이지로 이동
         }
       };
-      const handleSearchClick = () => {
-        onSearch(); // Call the onSearch function passed as a prop
+      const handleSearchClick = (e) => {
+        e.preventDefault(); // 폼 기본 동작 방지
+        if (searchText.trim()) {
+          onSearch(searchText.trim());
+          setSearchText(''); 
+        }
       };
-    
     return (
       <header className="header">
         
@@ -32,37 +36,32 @@ const Header = ({ userData, onLogout, searchText, setSearchText, onSearch }) => 
         
         </div>
         
-        <div className="search-section">
+        <form onSubmit={handleSearchClick} className="search-section">
         <button 
-            className="category-btn"
-            onClick={toggleCategoryPopup}
-          >
-            카테고리
-          </button>
-          <input
-            type="text"
-            placeholder="검색어를 입력하세요"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSearchClick(); // 엔터 키가 눌리면 검색 실행
-              }
-            }}
-            className="search-input"
-          />
-          <button className="header-search-btn" onClick={handleSearchClick}>
-          
-          </button>
-        </div>
-  
-        <CategoryPopup 
+          type="button"
+          className="category-btn"
+          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+        >
+          카테고리
+        </button>
+        <input
+          type="text"
+          placeholder="검색어를 입력하세요"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="search-input"
+        />
+        <button type="submit" className="header-search-btn">
+        </button>
+      </form>
+
+      <CategoryPopup 
         isOpen={isCategoryOpen} 
-        onClose={() => setIsCategoryOpen(false)} // 팝업 닫기 핸들러
+        onClose={() => setIsCategoryOpen(false)}
       />
-      </header>
-    );
-  };
+    </header>
+  );
+};
   
 
 export default Header;

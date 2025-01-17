@@ -1,5 +1,5 @@
 .user-content {
-    margin-top: 50px; /* 헤더와 버튼 간의 간격을 벌리기 위해 상단 여백 추가 */
+    margin-top: 20px; /* 헤더와 버튼 간의 간격을 벌리기 위해 상단 여백 추가 */
   }
   .button-container {
     display: flex; /* 버튼들을 가로로 나열 */
@@ -65,16 +65,14 @@ button:active {
   
   .rectangle-container {
     display: flex; /* Flexbox 사용 */
-    height:1000px;
-    width: 1150px;
+    height:1100px;
+    width: 1250px;
     justify-content: center; /* 가로 방향으로 가운데 정렬 */
     align-items: center; /* 세로 방향으로 가운데 정렬 */
-    margin-top: 30px; /* 버튼과 사각형 간의 간격 설정 */
-    margin-left: 230px;
+   /* 버튼과 사각형 간의 간격 설정 */
+    margin-left: 200px;
     
   }
-  
-
   
 
 
