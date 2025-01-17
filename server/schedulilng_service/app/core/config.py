@@ -10,8 +10,8 @@ class AWSConfig:
 
 @dataclass
 class DynamoDBConfig:
-    essays_table: str = os.getenv('DYNAMODB_SCHEDULES_TABLE', 'schedules')
-    essay_job_postings_table: str = os.getenv()
+    schedules_table: str = os.getenv('DYNAMODB_SCHEDULES_TABLE', 'schedules')
+    schedules_job_postings_table: str = os.getenv('DYNAMODB_SCHEDULES_JOB_POSTINGS_TABLE', 'schedule_job_postings')
 
 @dataclass
 class Config:
