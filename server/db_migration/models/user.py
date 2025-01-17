@@ -58,6 +58,7 @@ class Schedule(TypedDict):
     schedule_date: datetime
     schedule_title: str
     schedule_content: str
+    schedule_complete: bool
     created_at: datetime
     updated_at: datetime
     
@@ -79,7 +80,7 @@ class Bookmark(TypedDict):
     GSI1PK: str          # POST#<post_id>
     GSI1SK: str          # USER#<user_id>
 
-class JobApply(TypedDict):
+class Applies(TypedDict):
     # Primary Key
     PK: str               # USER#<user_id>
     SK: str               # APPLY#<post_id>
@@ -87,9 +88,13 @@ class JobApply(TypedDict):
     # Attributes
     user_id: str
     post_id: str
+    post_name: str
     apply_date: datetime
+    deadline_date: Optional[datetime]
+    document_result_date: Optional[datetime]
     interview_date: Optional[datetime]
     final_date: Optional[datetime]
+    memo: Optional[str]
     is_resulted: bool
     created_at: datetime
     updated_at: datetime

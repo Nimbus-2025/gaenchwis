@@ -232,7 +232,7 @@ class SaraminCrawler(BaseCrawler):
             tag_id = self._generate_hash(f"{TagCategory.SKILL.value}_{skill}")
             tag_data = {
                 'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
-                'SK': f"TAG#position",   # TAG#<category>로 변경
+                'SK': f"TAG#skill",   # TAG#<category>로 변경
                 'tag_id': tag_id,
                 'category': TagCategory.SKILL.value,
                 'name': skill,
@@ -265,7 +265,7 @@ class SaraminCrawler(BaseCrawler):
             tag_id = self._generate_hash(f"{TagCategory.POSITION.value}_{career_type}")
             tag_data = {
                 'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
-                'SK': f"TAG#skill",     # TAG#<category>로 변경
+                'SK': f"TAG#position",     # TAG#<category>로 변경
                 'tag_id': tag_id,
                 'category': TagCategory.POSITION.value,
                 'name': career_type,
@@ -351,7 +351,7 @@ class SaraminCrawler(BaseCrawler):
                     'GSI1SK': f"JOB#{post_id}"
                 }
             
-            self.job_tag_repo.put_item(Item=mapping_data)
+                self.job_tag_repo.put_item(Item=mapping_data)
             
     def _parse_deadline(self, deadline_str: str) -> str:
         from common.utils import parsse_deadline_date

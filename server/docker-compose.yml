@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   crawler:
     build:
@@ -82,16 +80,35 @@ services:
   #     - '8004:8000'
   #   restart: unless-stopped
 
-  # user:
-  #   build:
-  #     context: ./server/user
-  #     dockerfile: Dockerfile
-  #   container_name: user-service
-  #   ports:
-  #     - '8005:8000'
-  #   restart: unless-stopped
+  user:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - '8005:8000'
+    environment:
+      - FLASK_ENV=development
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      # DynamoDB 테이블 이름들
+      - DYNAMODB_APPLIES_TABLE=${DYNAMODB_APPLIES_TABLE:-applies}
+      - DYNAMODB_ESSAYS_TABLE=${DYNAMODB_ESSAYS_TABLE:-essays}
+      - DYNAMODB_ESSAY_JOB_POSTINGS_TABLE=${DYNAMODB_ESSAY_JOB_POSTINGS_TABLE:-essay_job_postings}
+      - DYNAMODB_JOB_POSTINGS_TABLE=${DYNAMODB_JOB_POSTINGS_TABLE:-job_postings}
+      - DYNAMODB_BOOKMARKS_TABLE=${DYNAMODB_BOOKMARKS_TABLE:-bookmarks}
+      - DYNAMODB_INTEREST_COMPANIES_TABLE=${DYNAMODB_INTEREST_COMPANIES_TABLE:-interest_companies}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/v1/healthcheck']
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+    restart: unless-stopped
 
   migration:
+    profiles:
+      - migration
     build:
       context: ./db_migration
       dockerfile: Dockerfile
