@@ -15,7 +15,9 @@ function LoadEssay() {
         setDragLoad(true);
         setDragData(
           <div className="essay-background">
-            <div>드래그한 자기소개서</div>
+            <div>
+              드래그한 자기소개서
+            </div>
             <LoadEssayList 
               data={request.data}
             />

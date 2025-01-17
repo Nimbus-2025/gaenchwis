@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import LoadEssayContent from './LoadEssayContent';
+import DeleteImage from '../image/delete.png'
 import '../style/essay.css';
+import "../style/icon.css";
 
 function LoadEssayList({data}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +38,10 @@ function LoadEssayList({data}) {
               )
             }
           >
-            <div className="essay_text">문항 : {title}</div>
+            
+            <div className="essay_text">문항 : {title} {!data.date && (
+              <img src={DeleteImage} className="delete-icon" />
+            )}</div>
             {data.date && (
               <div className="essay_text">공고 : {data.post ? data.post[idx] : "지원한 공고 없음"}</div>
             )}

@@ -3,9 +3,10 @@ async function Api(url, method, body={}){
     "Content-Type": "application/json"
   }
   try{
-    const access_token=sessionStorage.getItem("user")["access_token"];
-    const id_token=sessionStorage.getItem("user")["id_token"];
-    const user_id=sessionStorage.getItem("user")["user_id"];
+    const data = JSON.parse(sessionStorage.getItem("user"))
+    const access_token=data.access_token;
+    const id_token=data.id_token;
+    const user_id=data.user_id;
     header["access_token"]=access_token;
     header["id_token"]=id_token;
     header["user_id"]=user_id;
@@ -19,7 +20,7 @@ async function Api(url, method, body={}){
     if (method==="POST"){
       request["body"]=JSON.stringify(body)
     }
-    const response = await fetch(url, );
+    const response = await fetch(url, request);
     return await response.json();
   } catch(error){
     console.error(error);

@@ -4,7 +4,6 @@ import Modal from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
 import Api from '../../api/api';
-import Api from '../../api/api';
 
 const ShowProfile = ({ userData }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
