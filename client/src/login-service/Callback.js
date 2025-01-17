@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Config from '../api/Config';
 import Api from '../api/api';
-import Api from '../api/api';
 
 function Callback() {
   let first = true;
@@ -37,8 +36,7 @@ function Callback() {
         code: authorizationCode,
         redirect_uri: redirectUri,
       }),
-    })
-      .then(async (response) => {
+    }).then(async (response) => {
         const data = await response.json();
         console.log(data);
         const idTokenPayload = jwtDecode(data.id_token);

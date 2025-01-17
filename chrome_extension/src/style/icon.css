@@ -4,3 +4,10 @@
   align-items: center;
   height: 8vh;
 }
+
+.delete-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 4vh;
+}
