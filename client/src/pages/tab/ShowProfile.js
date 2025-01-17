@@ -10,27 +10,40 @@ const ShowProfile = ({ userData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDistricts, setSelectedDistricts] = useState({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
-  const [phone, setPhone]=useState(userData?.phone || '등록되지 않음')
-  const [email, setEmail]=useState(userData?.email || '정보 없음')
-  const [name, setName]=useState(userData?.name || '정보 없음')
-  const handleSave = async (name, email, phone) =>{
-    setName(name);
-    setEmail(email);
-    setPhone(phone);
-    userData.phone=phone;
-    userData.email=email;
-    userData.name=name;
-    sessionStorage.setItem('user', JSON.stringify(userData));
+  const [positionTags, setPositionTags] = useState([]);
+  const [educationTags, setEducationTags] = useState([]);
+  const [error, setError] = useState(null);
+  const tagOrder = {
+    '대학교(4년)': 1,
+    '대학(2,3년)': 2,
+    '고졸': 3,
+    '석사': 4,
+    '박사': 5,
+    '학력무관': 6
+};
 
-    const body = {
-      userId: userData.user_id,
-      name: name,
-      email: email,
-      phone: phone
-    }
-    const response = await Api(`${Config.server}/user_save`,"POST",body);
-    console.log(response);
-  }
+useEffect(() => {
+  const fetchEducationTags = async () => {
+      try {
+          const response = await fetch('http://localhost:5001/api/tags/education');
+          if (!response.ok) {
+              throw new Error('Failed to fetch education tags');
+          }
+          const data = await response.json();
+          
+          // 태그 정렬
+          const sortedTags = data.sort((a, b) => 
+              (tagOrder[a] || 999) - (tagOrder[b] || 999)
+          );
+          
+          setEducationTags(sortedTags);
+      } catch (error) {
+          console.error('Error fetching education tags:', error);
+      }
+  };
+
+  fetchEducationTags();
+}, []);
 
   const handleLocationSelect = (district) => {
     setSelectedDistricts((prev) => {
@@ -117,17 +130,20 @@ const ShowProfile = ({ userData }) => {
                         </div>
                     </div>
                     <div className="info-box">
-                        <h4>학력 및 경력</h4>
-                        <div className="tag-list">
-                            {/* 학력 및 경력 내용 추가 */}
-                        </div>
+                    <h4>학력</h4>
+            <div className="tag-list">
+                {educationTags.length > 0 ? (
+                    educationTags.map((tag, index) => (
+                        <span key={index} className="tag-item">
+                            {tag}
+                        </span>
+                    ))
+                ) : (
+                    <span className="no-tags">태그 없음</span>
+                )}
+                </div>
                     </div>
-                    <div className="info-box">
-                        <h4>소유 자격증</h4>
-                        <div className="tag-list">
-                            {/* 소유 자격증 내용 추가 */}
-                        </div>
-                    </div>
+                    
         </div>
       </div>
       <LocationModal

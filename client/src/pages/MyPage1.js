@@ -20,6 +20,8 @@ const MyPage1 = ({bookmarkedJobs}) => {
   const [coverLetter, setCoverLetter] = useState('');
   const [isPopupOpen, setIsPopupOpen] = useState(false); 
   const [searchText, setSearchText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
   
   useEffect(() => {
     const storedUserData = sessionStorage.getItem('user');
@@ -32,12 +34,22 @@ const MyPage1 = ({bookmarkedJobs}) => {
       }
     }
     
-  }, []);
- 
-  const onSearch = () => {
-    setSelectedButton(''); 
-    // 검색 버튼 클릭 시 검색 결과 표시
-    setContent(<SearchResult query={searchText} />); // searchText를 query로 전달
+
+    if (!showSearchResults) {
+      jobposting();
+    }
+  }, []);// content 의존성 제거
+
+  const onSearch = (searchQuery) => {
+    setSearchText(searchQuery);
+    setSelectedButton('search'); // 검색 시 선택된 버튼 상태 변경
+    setShowSearchResults(true);
+    setContent(<SearchResult searchQuery={searchQuery} />);
+  };
+
+const handleSearch = (query) => {
+  setSearchQuery(query);
+  setShowSearchResults(true);
 };
 
   const jobposting = () => {
@@ -105,55 +117,56 @@ const MyPage1 = ({bookmarkedJobs}) => {
   return (
     <div>
       <Header userData={userData}
-        searchText={searchText} 
-        setSearchText={setSearchText} 
-        onSearch={onSearch} //
-          /> {/* Header1 컴포넌트 적용 */}
+        onSearch={onSearch}
+      />
   
       <div className="button-logout-container">
         <div className="button-container">
-        <button
+          <button
             className={selectedButton === 'job' ? 'active' : ''}
-            onClick={jobposting}
+            onClick={jobposting} 
           >
             채용공고
           </button>
           <button
             className={selectedButton === 'profile' ? 'active' : ''}
-            onClick={showProfile}>프로필
+            onClick={showProfile}
+          >
+            프로필
           </button>
-
           <button
             className={selectedButton === 'bookmark' ? 'active' : ''}
             onClick={showBookmark}
           >
             북마크 / 관심기업
-          </button>
+            </button>
           <button
             className={selectedButton === 'calendar' ? 'active' : ''}
             onClick={showCalendar}
           >
             캘린더
           </button>
-          <button
+        
+        <button
             className={selectedButton === 'essay' ? 'active' : ''}
             onClick={showEssay}
           >
             자기소개서
           </button>
-        </div>
+          </div>
   
         <div className="logout-container">
-        
-            <LogoutButton />
-        
+          <LogoutButton />
         </div>
       </div>
+
       <div className="rectangle-container">
-        <div className="rectangle">{content}</div>
+        <div className="rectangle">
+          {content}
+        </div>
       </div>
+
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-        {/* 팝업 */}
       {isPopupOpen && (
         <div className="login-popup">
           <div className="login-popup-content">
@@ -164,7 +177,7 @@ const MyPage1 = ({bookmarkedJobs}) => {
         </div>
       )}
     </div>
-  );
+);
 };
 
 export default MyPage1;

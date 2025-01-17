@@ -1,128 +1,158 @@
 import React, { useEffect, useState } from 'react';
-import dummyJobListings from './DummyData';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { faStar as solidStar } from '@fortawesome/free-solid-svg-icons'; // 별 아이콘
-import { faStar as regularStar } from '@fortawesome/free-regular-svg-icons'; // 빈 별 아이콘
+import { useLocation } from 'react-router-dom';
 import './SearchResult.css';
+import JobCard from '../../component/JobCard';
 
-const ITEMS_PER_PAGE = 2; // 페이지당 공고 
-const SearchResult = ({ query }) => {
+const ITEMS_PER_PAGE = 10; // 페이지당 공고 
+const SearchResult = ({ searchQuery }) => {
   const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); 
+  const [error, setError] = useState(null);  // 에러 상태 추가
+  const location = useLocation();  // location 훅 사용
   const [favoriteCompanies, setFavoriteCompanies] = useState([]); // 관심 기업 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [bookmarkedJobs, setBookmarkedJobs] = useState([]); // 북마크된 공고 상태
+  const [totalPages, setTotalPages] = useState(0);
+  const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
+  const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (query) {
-      fetchResults(query);
-    } else {
-      setResults([]); // 수정된 부분
-    }
-  }, [query]);
-  const fetchResults = (query) => {
-    const filteredResults = dummyJobListings.filter((job) =>
-      job.title.toLowerCase().includes(query.toLowerCase()) || // 제목 검색
-      job.location.toLowerCase().includes(query.toLowerCase()) || // 지역 검색
-      job.description.toLowerCase().includes(query.toLowerCase()) // 설명 검색
+  // ... 기존 코드 ...
+
+  const toggleApplied = (jobId) => {
+    setAppliedJobs((prev) => 
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     );
-    setResults(filteredResults);
-    console.log(results); 
+  };
+  
+
+   // 데이터 가져오기
+
+
+   useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!searchQuery) return;
+      console.log('검색 쿼리:', searchQuery);
+      
+      setIsLoading(true);
+    try {
+      const response = await fetch(`http://localhost:5001/api/jobs?query=${encodeURIComponent(searchQuery)}&page=${currentPage}&per_page=10`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log('받은 데이터:', data);
+      
+      // 데이터가 배열인 경우 직접 설정
+      if (Array.isArray(data)) {
+        setResults(data);
+        setTotalPages(Math.ceil(data.length / 10));
+      } 
+      // 데이터가 객체인 경우 items 배열 확인
+      else if (data && data.items) {
+        setResults(data.items);
+        setTotalPages(data.total_pages);
+        setTotalItems(data.total_items);
+      }
+      // 둘 다 아닌 경우 빈 배열로 설정
+      else {
+        setResults([]);
+        setTotalPages(0);
+      }
+    } catch (err) {
+      console.error('Error fetching results:', err);
+      setError(err.message);
+      setResults([]);
+      setTotalPages(0);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-
+    fetchSearchResults();
+  }, [searchQuery, currentPage]);
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo(0, 0); // 페이지 상단으로 스크롤
+  };
   const toggleFavorite = (company) => {
-    setFavoriteCompanies((prev) => {
-      if (prev.includes(company)) {
-        return prev.filter((c) => c !== company); // 관심 기업에서 제거
-      } else {
-        return [...prev, company]; // 관심 기업에 추가
-      }
-    });
+    setFavoriteCompanies((prev) => 
+      prev.includes(company) ? prev.filter(c => c !== company) : [...prev, company]
+    );
   };
+
   const toggleBookmark = (jobId) => {
-    setBookmarkedJobs((prev) => {
-      if (prev.includes(jobId)) {
-        return prev.filter((id) => id !== jobId); // 북마크에서 제거
-      } else {
-        return [...prev, jobId]; // 북마크에 추가
-      }
-    });
+    setBookmarkedJobs((prev) => 
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
+    );
   };
   // 페이지네이션 로직
-  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentResults = results.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  
+
 
   return (
     <div>
       <h1>공고 검색 결과</h1>
-      <p>검색어: {query}</p>
-      {currentResults.length > 0 ? (
-        <div>
-        {currentResults.map((result) => (
-          <div className="job-card" key={result._id}>
-            <div className="job-header">
-            <p className="job-company">
-              {result.company}
-              <FontAwesomeIcon
-                icon={favoriteCompanies.includes(result.company) ? solidHeart : regularHeart}
-                onClick={() => toggleFavorite(result.company)}
-                style={{ cursor: 'pointer', marginLeft: '10px', color: favoriteCompanies.includes(result.company) ? 'red' : 'gray' }}
-              />
-            </p>
-            <div className="divider"></div>
-        <div className="job-details">
-            <h3 className="job-title">{result.title} 
-                <FontAwesomeIcon 
-               icon={bookmarkedJobs.includes(result._id) ? solidStar : regularStar} // 북마크 아이콘 추가
-            onClick={() => toggleBookmark(result._id)} // 북마크 추가/해제 함수 호출
-            style={{ cursor: 'pointer', marginLeft: '10px', color: bookmarkedJobs.includes(result._id) ? 'gold' : 'gray' }}/>
-            </h3>
-        <div className="job-location-experience">
-        <span className="job-experience">{result.experienceLevel}</span> {/* 신입/경력 정보 추가 */}
-          <p className="job-location">{result.location}</p>
-        
-        </div>
-        <p className="job-description">{result.description}</p>
-          </div>
-          </div>
-          </div>
-        ))}
-        {/* 페이지네이션 버튼 */}
-        <div className="pagination-container">
-          <div className="pagination">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              이전 페이지
-            </button>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                style={{ fontWeight: currentPage === index + 1 ? 'bold' : 'normal' }} // 현재 페이지 강조
-              >
-                {index + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              다음 페이지
-            </button>
-          </div>
-        </div>
+      <div className="search-summary">
+        <p>
+          검색어: {searchQuery}
+          {!isLoading && (
+            <span className="result-count">
+            (총: {totalItems}건)
+            </span>
+          )}
+        </p>
       </div>
+      {isLoading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+      ) : results.length > 0 ? (
+        <div>
+          {results.map((result) => (
+            <JobCard
+              key={result.post_id}
+              job={result}
+              favoriteCompanies={favoriteCompanies}
+              bookmarkedJobs={bookmarkedJobs}
+              appliedJobs={appliedJobs}
+              onToggleFavorite={toggleFavorite}
+              onToggleBookmark={toggleBookmark}
+              onToggleApplied={toggleApplied}
+            />
+          ))}
+          
+          {/* 페이지네이션 버튼 */}
+          <div className="pagination-container">
+            <div className="pagination">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                이전 페이지
+              </button>
+              {Array.from({ length: Math.min(totalPages, 10) }, (_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                  style={{ fontWeight: currentPage === index + 1 ? 'bold' : 'normal' }}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                다음 페이지
+              </button>
+            </div>
+          </div>
+        </div>
       ) : (
         <p>검색 결과가 없습니다.</p>
       )}
     </div>
-);
+  );
 };
 
 export default SearchResult;
