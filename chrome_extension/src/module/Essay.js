@@ -1,3 +1,34 @@
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.message === 'save_dragged_essay') {
+    chrome.storage.local.get(null, (result) => {
+      const headers= {
+        "Content-Type": "application/json",
+        "access_token": result.access_token,
+        "id_token": result.id_token,
+        "user_id": result.user_id
+      }
+      if (result.post_id){
+        headers["post_id"]=result.post_id
+      }
+      fetch(`${Config.server}/chrome_extension/essay_save`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          title: request.title,
+          content: request.content
+        })
+      }).then(async (response) => {
+        const result=await response.json();
+        console.log(result);
+        sendResponse({ success: true, time: result.time });
+      });
+    });
+  }
+  return true;
+});
+
+
+
 function load_essay(){
   chrome.storage.local.get("user_id", (result) => {
     console.log(result)
