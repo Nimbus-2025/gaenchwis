@@ -14,7 +14,7 @@ class Essay(TypedDict):
     created_at: datetime
     updated_at: datetime
     
-    # GSI Keys
+    # GSI Keys: EssayDateIndex
     GSI1PK: str          # ESSAY#ALL
     GSI1SK: str          # <created_at>
 
@@ -28,6 +28,6 @@ class EssayJobPosting(TypedDict):
     post_id: Optional[str]  # post_id(자소서와 연결된 공고 id)
     created_at: datetime
     
-    # GSI Keys
+    # GSI Keys: EssayPostInverseIndex
     GSI1PK: str          # POST#<post_id>
     GSI1SK: str          # ESSAY#<essay_id>

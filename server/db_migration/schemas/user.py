@@ -10,7 +10,6 @@ USERS_TABLE = {
     'TableName': TableNames.USERS,
     'KeySchema': [
         {'AttributeName': 'PK', 'KeyType': 'HASH'}
-        # {'AttributeName': 'SK', 'KeyType': 'RANGE'}
     ],
     'AttributeDefinitions': [
         {'AttributeName': 'PK', 'AttributeType': 'S'},
@@ -158,7 +157,6 @@ INTEREST_COMPANIES_TABLE = {
 # 전체 테이블 리스트
 TABLES = [
     USERS_TABLE,
-    # USER_IMAGES_TABLE,
     USER_TAGS_TABLE,
     SCHEDULES_TABLE,
     BOOKMARKS_TABLE,
