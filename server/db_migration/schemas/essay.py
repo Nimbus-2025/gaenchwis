@@ -20,10 +20,10 @@ ESSAYS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.ESSAY_GSI,
+            'IndexName': IndexNames.DynamoDB.ESSAY_DATE_GSI,             # 생성일자순 전체 조회
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},     # ESSAY#ALL
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}     # <created_at>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -45,10 +45,10 @@ ESSAY_JOB_POSTINGS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.ESSAY_JOB_POSTING_GSI,
+            'IndexName': IndexNames.DynamoDB.ESSAY_POST_INVERSE_GSI,     # 공고별 자소서 조회를 위한 역인덱스
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},         # POST#<post_id>
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}         # ESSAY#<essay_id>
             ],
             **COMMON_GSI_SETTINGS
         }

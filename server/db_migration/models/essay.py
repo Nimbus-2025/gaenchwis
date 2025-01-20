@@ -7,10 +7,10 @@ class Essay(TypedDict):
     SK: str               # ESSAY#<essay_id>
     
     # Attributes
-    essay_id: str
-    user_id: str
-    essay_ask: str
-    essay_content: str
+    essay_id: str         # essay_id
+    user_id: str          # user_id(에세이 작성자)
+    essay_ask: str        # 자소서 질문 
+    essay_content: str    # 자소서 내용 
     created_at: datetime
     updated_at: datetime
     
@@ -24,8 +24,8 @@ class EssayJobPosting(TypedDict):
     SK: str               # POST#<post_id>
     
     # Attributes
-    essay_id: str
-    post_id: str
+    essay_id: str           # essay_id
+    post_id: Optional[str]  # post_id(자소서와 연결된 공고 id)
     created_at: datetime
     
     # GSI Keys
