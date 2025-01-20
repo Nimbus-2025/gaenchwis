@@ -14,16 +14,15 @@ USERS_TABLE = {
     ],
     'AttributeDefinitions': [
         {'AttributeName': 'PK', 'AttributeType': 'S'},
-        # {'AttributeName': 'SK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1PK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1SK', 'AttributeType': 'S'}
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.USER_GSI,
+            'IndexName': IndexNames.DynamoDB.USER_DATA_GSI,          # 가입일자순 전체 유저 조회
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'}, # USER#ALL
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'} # <created_at>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -45,10 +44,10 @@ USER_TAGS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.TAG_GSI,
+            'IndexName': IndexNames.DynamoDB.USER_TAG_INVERSE_GSI,       # 태그별 유저 조회를 위한 역인덱스
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'}, # TAG#<tag_id>
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'} # USER#<user_id>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -70,10 +69,10 @@ SCHEDULES_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.SCHEDULE_GSI,
-            'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+            'IndexName': IndexNames.DynamoDB.SCHEDULE_GSI,      # 일정 날짜순 전체 조회
+            'KeySchema': [  
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'}, # 일정 날짜순 전체 조회
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'} # <schedule_date>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -95,10 +94,10 @@ BOOKMARKS_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.BOOKMARK_GSI,
+            'IndexName': IndexNames.DynamoDB.BOOKMARK_GSI,      # 공고별 북마크한 유저 조회를 위한 역인덱스
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'}, # POST#<post_id>
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'} # USER#<user_id>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -120,10 +119,10 @@ APPLIES_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.APPLY_GSI,
+            'IndexName': IndexNames.DynamoDB.APPLY_GSI,     # 공고별 지원일자순 조회
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},     # POST#<post_id>
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}     # <apply_date>
             ],
             **COMMON_GSI_SETTINGS
         }
@@ -145,10 +144,10 @@ INTEREST_COMPANIES_TABLE = {
     ],
     'GlobalSecondaryIndexes': [
         {
-            'IndexName': IndexNames.DynamoDB.INTEREST_COMPANY_GSI,
+            'IndexName': IndexNames.DynamoDB.INTEREST_COMPANY_GSI,  # 기업별 관심 유저 조회를 위한 역인덱스
             'KeySchema': [
-                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},
-                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}
+                {'AttributeName': 'GSI1PK', 'KeyType': 'HASH'},     # COMPANY#<company_id>
+                {'AttributeName': 'GSI1SK', 'KeyType': 'RANGE'}     # USER#<user_id>
             ],
             **COMMON_GSI_SETTINGS
         }
