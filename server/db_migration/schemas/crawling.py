@@ -43,9 +43,8 @@ JOB_POSTINGS_TABLE = {
         {'AttributeName': 'SK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1PK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1SK', 'AttributeType': 'S'},
-        {'AttributeName': 'GSI2PK', 'AttributeType': 'S'},
-        {'AttributeName': 'GSI2SK', 'AttributeType': 'S'},
-        {'AttributeName': 'rec_idx', 'AttributeType': 'S'}
+        {'AttributeName': 'rec_idx', 'AttributeType': 'S'},
+        {'AttributeName': 'post_id', 'AttributeType': 'S'},
     ],
     'GlobalSecondaryIndexes': [
         {
@@ -67,13 +66,6 @@ JOB_POSTINGS_TABLE = {
             'IndexName': IndexNames.DynamoDB.POST_ID_GSI,  # post_id를 위한 새로운 GSI
             'KeySchema': [
                 {'AttributeName': 'post_id', 'KeyType': 'HASH'}  # post_id를 파티션 키로 사용
-            ],
-            **COMMON_GSI_SETTINGS
-        },
-        {
-            'IndexName': IndexNames.DynamoDB.REC_IDX_GSI,  # rec_idx를 위한 새로운 GSI
-            'KeySchema': [
-                {'AttributeName': 'rec_idx', 'KeyType': 'HASH'}  # rec_idx를 파티션 키로 사용
             ],
             **COMMON_GSI_SETTINGS
         }

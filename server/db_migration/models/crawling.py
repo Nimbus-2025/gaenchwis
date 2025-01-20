@@ -1,4 +1,5 @@
 from typing import TypedDict, Optional
+from typing import TypedDict, Optional
 from datetime import datetime
 from constants.status import JobStatus
 from constants.category import TagCategory
@@ -9,6 +10,8 @@ class Company(TypedDict):
     SK: str                # METADATA#<company_id>
     
     # Attributes
+    company_id: str         # company_id
+    company_name: str       # 회사명
     company_id: str         # company_id
     company_name: str       # 회사명
     created_at: datetime  
@@ -32,6 +35,14 @@ class JobPosting(TypedDict):
     post_url: str         # 공고 URL
     rec_idx: str           # 공고 URL의 식별 값
     status: JobStatus     # 공고 상태 (active / inactive)
+    post_id: str          # post_id
+    post_name: str        # 공고명
+    company_id: str       # company_id 
+    company_name: str     # 회사명
+    deadline: datetime    # 공고 마감일  
+    post_url: str         # 공고 URL
+    rec_id: str           # 공고 URL의 식별 값
+    status: JobStatus     # 공고 상태 (active / inactive)
     created_at: datetime  
     updated_at: datetime  
     
@@ -41,6 +52,7 @@ class JobPosting(TypedDict):
     GSI2PK: str          # JOB#ALL
     GSI2SK: str          # <updated_at>
     rec_idx: str         # rec_idx for PostId GSI
+    post_id: str         # post_id for JobPostId GSI
     post_id: str         # post_id for JobPostId GSI
     
 class Tag(TypedDict):
@@ -55,10 +67,18 @@ class Tag(TypedDict):
     parent_id: Optional[str]    # 지역 레벨 1의 id값 
     tag_level: int              # 지역 레벨 (1-전체구역, 2-시/군/구)
     tag_count: int              # 태그 등장 횟수 (중복 횟수)
+    tag_id: str                 # tag_id
+    tag_category: TagCategory   # 태그 카테고리 (location, skill, position, education)
+    tag_name: str               # 태그명
+    parent_id: Optional[str]    # 지역 레벨 1의 id값 
+    tag_level: int              # 지역 레벨 (1-전체구역, 2-시/군/구)
+    tag_count: int              # 태그 등장 횟수 (중복 횟수)
     created_at: datetime  
     updated_at: datetime  
     
     # GSI Keys
+    GSI1PK: str          # TAG#<category> # 예: TAG#position
+    GSI1SK: str          # <tag_name>     # 예: 신입 
     GSI1PK: str          # TAG#<category> # 예: TAG#position
     GSI1SK: str          # <tag_name>     # 예: 신입 
 
