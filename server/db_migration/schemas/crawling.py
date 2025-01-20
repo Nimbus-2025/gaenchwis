@@ -43,9 +43,8 @@ JOB_POSTINGS_TABLE = {
         {'AttributeName': 'SK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1PK', 'AttributeType': 'S'},
         {'AttributeName': 'GSI1SK', 'AttributeType': 'S'},
-        {'AttributeName': 'GSI2PK', 'AttributeType': 'S'},
-        {'AttributeName': 'GSI2SK', 'AttributeType': 'S'},
-        {'AttributeName': 'rec_idx', 'AttributeType': 'S'}
+        {'AttributeName': 'rec_idx', 'AttributeType': 'S'},
+        {'AttributeName': 'post_id', 'AttributeType': 'S'},
     ],
     'GlobalSecondaryIndexes': [
         {

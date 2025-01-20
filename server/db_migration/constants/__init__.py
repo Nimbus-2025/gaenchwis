@@ -1,20 +1,16 @@
 from .table import TableNames
 from .index import IndexNames
-from .status import JobStatus, EssayStatus, ApplyStatus
-from .category import TagCategory, UserTagCategory
-from .type import StorageType, RepositoryType, ScheduleType
+from .status import JobStatus
+from .category import TagCategory
+from .type import StorageType, RepositoryType
 from .config import DB_CONSTANTS
 
 __all__ = [
     'TableNames',
     'IndexNames',
     'JobStatus',
-    'EssayStatus',
-    'ApplyStatus',
     'TagCategory',
-    'UserTagCategory',
     'StorageType',
     'RepositoryType',
-    'ScheduleType',
     'DB_CONSTANTS'
 ]

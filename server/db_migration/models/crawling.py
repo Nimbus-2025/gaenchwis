@@ -14,7 +14,7 @@ class Company(TypedDict):
     created_at: datetime  
     updated_at: datetime       
     
-    # GSI Keys
+    # GSI Keys: CompanyNameIndex
     GSI1PK: str           # COMPANY#ALL
     GSI1SK: str           # <company_name>
 
@@ -35,12 +35,14 @@ class JobPosting(TypedDict):
     created_at: datetime  
     updated_at: datetime  
     
-    # GSI Keys
+    # GSI Keys: StatusIndex
     GSI1PK: str          # STATUS#<status>
     GSI1SK: str          # <created_at>
     GSI2PK: str          # JOB#ALL
     GSI2SK: str          # <updated_at>
+    # RecIdx
     rec_idx: str         # rec_idx for PostId GSI
+    # JobPostId
     post_id: str         # post_id for JobPostId GSI
     
 class Tag(TypedDict):
@@ -58,7 +60,7 @@ class Tag(TypedDict):
     created_at: datetime  
     updated_at: datetime  
     
-    # GSI Keys
+    # GSI Keys: TagCategoryNameIndex
     GSI1PK: str          # TAG#<category> # 예: TAG#position
     GSI1SK: str          # <tag_name>     # 예: 신입 
 
@@ -73,6 +75,6 @@ class JobTag(TypedDict):
     tag_id: str           
     created_at: datetime  
     
-    # GSI Keys
+    # GSI Keys: JobTagInverseIndex
     GSI1PK: str          # TAG#<tag_id>
     GSI1SK: str          # JOB#<job_id>

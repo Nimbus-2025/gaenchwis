@@ -14,7 +14,7 @@ class User(TypedDict):
     created_at: datetime
     updated_at: datetime
     
-    # GSI Keys
+    # GSI Keys: UserIndex
     GSI1PK: str          # USER#ALL
     GSI1SK: str          # <created_at>
 
@@ -28,7 +28,7 @@ class UserTag(TypedDict):
     tag_id: str             # 유저가 선택한 tag_id
     created_at: datetime
     
-    # GSI Keys
+    # GSI Keys: UserTagIndex
     GSI1PK: str          # TAG#<tag_id>
     GSI1SK: str          # USER#<user_id>
 
@@ -42,7 +42,7 @@ class InterestCompany(TypedDict):
     company_id: str         # 유저의 관심기업 company_id
     created_at: datetime
     
-    # GSI Keys
+    # GSI Keys: InterestCompanyIndex
     GSI1PK: str          # COMPANY#<company_id>
     GSI1SK: str          # USER#<user_id>
 
@@ -61,7 +61,7 @@ class Schedule(TypedDict):
     created_at: datetime
     updated_at: datetime
     
-    # GSI Keys
+    # GSI Keys: ScheduleIndex
     GSI1PK: str          # SCHEDULE#ALL
     GSI1SK: str          # <schedule_date>
 
@@ -75,7 +75,7 @@ class Bookmark(TypedDict):
     post_id: str            # 유저의 북마크 공고 post_id
     created_at: datetime
     
-    # GSI Keys
+    # GSI Keys: BookmarkIndex
     GSI1PK: str          # POST#<post_id>
     GSI1SK: str          # USER#<user_id>
 
@@ -97,6 +97,6 @@ class Applies(TypedDict):
     created_at: datetime
     updated_at: datetime
     
-    # GSI Keys
+    # GSI Keys: ApplyIndex
     GSI1PK: str          # POST#<post_id>
     GSI1SK: str          # <apply_date>
