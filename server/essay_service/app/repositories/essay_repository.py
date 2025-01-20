@@ -5,9 +5,9 @@ import uuid
 from botocore.exceptions import ClientError
 
 from app.core.aws_client import AWSClient
-from app.core.constants import TableNames 
+from app.core.constants import TableNames, IndexNames
 from app.core.enums import EssayStatus
-from app.schemas.essay_schema import SortOrder, SearchType
+from app.schemas.essay_schema import SortOrder, SearchType, EssayJobPosting, JobPostingLink
 
 class EssayItem(TypedDict):
     PK: str
@@ -46,12 +46,13 @@ class EssayRepository:
         self, 
         user_id: str, 
         questions: List[dict], 
-        job_posting_ids: List[str] = None,
+        job_postings: List[dict] = None,  # [{'post_id': str, 'company_id': str}, ...]
     ) -> List[str]:
         try: 
             essay_ids = []
             current_time = datetime.now().isoformat()
-                
+                    
+            # 1. Essays 생성 부분은 동일
             for question in questions:
                 essay_id = str(uuid.uuid4())
                 essay_item: EssayItem = {
@@ -71,22 +72,24 @@ class EssayRepository:
                 self.table.put_item(Item=essay_item)
                 essay_ids.append(essay_id)
                 
-            # 2. 채용공고 연결 (job_posting_ids가 있는 경우에만)
-            if job_posting_ids:
+            # 채용공고 연결 부분 수정
+            if job_postings:
                 essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
                 for essay_id in essay_ids:
-                    for post_id in job_posting_ids:
-                        link_item = {
+                    for posting in job_postings:
+                        link_item: EssayJobPosting = {
                             'PK': f"ESSAY#{essay_id}",
-                            'SK': f"POST#{post_id}",
+                            'SK': f"POST#{posting.post_id}",
                             'essay_id': essay_id,
-                            'post_id': post_id,  
+                            'post_id': posting.post_id,
+                            'company_id': posting.company_id,  # 추가
                             'created_at': current_time,                            
-                            'GSI1PK': f"POST#{post_id}",
+                            'GSI1PK': f"POST#{posting.post_id}",
                             'GSI1SK': f"ESSAY#{essay_id}"
                         }
                         essay_job_postings_table.put_item(Item=link_item)
             return essay_ids
+            
         except ClientError as e:
             error_code = e.response['Error']['Code']
             error_message = e.response['Error']['Message']
@@ -258,6 +261,7 @@ class EssayRepository:
         essay_id: str
     ) -> dict:
         try:
+            # 1. 에세이 기본 정보 조회
             response = self.table.get_item(
                 Key={
                     'PK': f"USER#{user_id}",
@@ -270,6 +274,7 @@ class EssayRepository:
                 
             essay_item = response['Item']
             
+            # 2. 연관된 공고 ID들 조회 
             essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
             links_response = essay_job_postings_table.query(
                 KeyConditionExpression="PK = :pk",
@@ -278,41 +283,55 @@ class EssayRepository:
                 }
             )
             
+            # 디버깅용 로그 추가
+            print(f"Found job posting links: {links_response.get('Items', [])}")
+            
+            # 3. 연관된 공고 정보 조회
             job_postings = []
             for link in links_response.get('Items', []):
                 post_id = link['SK'].split('#')[1]  # POST#<post_id> -> <post_id>
+                company_id = link['company_id']     # 추가된 company_id 필드 사용
+                
                 try:
                     job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
                     post_key = {
-                        'PK': f"COMPANY#ALL",
-                        'SK': f"JOB#{post_id}"
+                        'PK': f"COMPANY#{company_id}",  # 회사 ID로 조회
+                        'SK': f"JOB#{post_id}"         # 공고 ID로 조회
                     }
+                    
+                    print(f"Fetching job posting with key: {post_key}")  # 디버깅용
+                    
                     job_posting_response = job_postings_table.get_item(Key=post_key)
                     
                     if 'Item' in job_posting_response:
                         job_posting = job_posting_response['Item']
                         job_postings.append({
                             'post_id': post_id,
-                            'company_name': job_posting.get('company_name'),
-                            'post_name': job_posting.get('post_name')
+                            'company_name': job_posting.get('company_name', '회사명 없음'),
+                            'post_name': job_posting.get('post_name', '공고명 없음')
                         })
-                except ClientError:
+                        print(f"Found job posting: {job_posting}")  # 디버깅용
+                    else:
+                        print(f"No job posting found for key: {post_key}")  # 디버깅용
+                        
+                except ClientError as e:
+                    print(f"Error fetching job posting {post_id}: {str(e)}")  # 디버깅용
                     continue
             
             return {
                 'essay_id': essay_id,
                 'essay_ask': essay_item['essay_ask'],
-                'essay_content': essay_item.get('essay_content'),
+                'essay_content': essay_item.get('essay_content', ''),
                 'created_at': essay_item['created_at'],
                 'updated_at': essay_item['updated_at'],
-                'related_job_postings': job_postings
+                'related_job_postings': job_postings  # 조회된 공고 정보
             }
             
         except ClientError as e:
             error_code = e.response['Error']['Code']
             error_message = e.response['Error']['Message']
             raise Exception(f"Failed to get essay detail: {error_code} - {error_message}")
-
+    
     def search_essays(
         self,
         user_id: str,

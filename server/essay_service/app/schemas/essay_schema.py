@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, TypedDict
 from datetime import datetime
 
 class EssayQuestion(BaseModel):
@@ -54,3 +54,18 @@ class EssayDetailResponse(BaseModel):
 class SearchType(str, Enum):
     QUESTION = "question"  # 문항 기반 검색
     CONTENT = "content"    # 내용 기반 검색
+
+# DynamoDB 용 TypedDict 추가
+class EssayJobPosting(TypedDict):
+    PK: str               # ESSAY#<essay_id>
+    SK: str               # POST#<post_id>
+    essay_id: str         
+    post_id: str         
+    company_id: str       # 추가
+    created_at: str       
+    GSI1PK: str          
+    GSI1SK: str          
+
+class JobPostingLink(BaseModel):
+    post_id: str
+    company_id: str

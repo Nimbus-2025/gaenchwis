@@ -41,7 +41,6 @@ class UserRepository:
             raise
 
     def create_apply(self, user_id: str, apply_data: ApplyCreate) -> dict:
-        apply_id = str(uuid4())
         now = datetime.utcnow().isoformat()
             
         item = {
@@ -59,7 +58,7 @@ class UserRepository:
             'memo': None,
             'is_resulted': False,
             'created_at': now,
-        'updated_at': now
+            'updated_at': now
         }
             
         self.table.put_item(Item=item)
@@ -136,10 +135,6 @@ class UserRepository:
         try:
             logging.info(f"Querying with PK: USER#{user_id}, SK: APPLY#{post_id}")
             
-            # get_apply() 결과와 비교
-            apply = self.get_apply(user_id, post_id)
-            logging.info(f"get_apply() result: {apply}")
-
             response = self.table.get_item(
                 Key={
                     'PK': f"USER#{user_id}",
@@ -154,7 +149,7 @@ class UserRepository:
                 # 응답 스키마에 맞게 필드를 매핑
                 return {
                     'post_name': item.get('post_name'),
-                    'apply_date': item.get('apply_date'),
+                    'apply_date': item.get('GSI1SK'),
                     'deadline_date': item.get('deadline_date'),
                     'document_result_date': item.get('document_result_date'),
                     'interview_date': item.get('interview_date'),
@@ -176,7 +171,7 @@ class UserRepository:
                 IndexName=IndexNames.ESSAY_POST_INVERSE_GSI,  
                 KeyConditionExpression='GSI1PK = :gsi1pk',
                 ExpressionAttributeValues={
-                    ':gsi1pk': f"JOB#{post_id}"
+                    ':gsi1pk': f"POST#{post_id}"
                 }
             )
             
@@ -215,12 +210,13 @@ class UserRepository:
         
         item = {
             'PK': f"USER#{user_id}",
-            'SK': f"POST#{bookmark_data.post_id}",    # BOOKMARK# -> POST#
+            'SK': f"POST#{bookmark_data.post_id}",  
+            'GSI1PK': f"POST#{bookmark_data.post_id}",
+            'GSI1SK': f"USER#{user_id}",
             'user_id': user_id,
             'post_id': bookmark_data.post_id,
+            'post_name': bookmark_data.post_name,  # BookmarkCreate에서 전달받은 post_name 추가
             'created_at': now,
-            'GSI1PK': f"POST#{bookmark_data.post_id}",
-            'GSI1SK': f"USER#{user_id}"      
         }
         
         self.bookmarks_table.put_item(Item=item)
@@ -230,7 +226,7 @@ class UserRepository:
         response = self.bookmarks_table.get_item(
             Key={
                 'PK': f"USER#{user_id}",
-                'SK': f"POST #{post_id}"
+                'SK': f"POST#{post_id}"
             }
         )
         return response.get('Item')
@@ -270,6 +266,7 @@ class UserRepository:
             'SK': f"COMPANY#{company_data.company_id}",
             'user_id': user_id,
             'company_id': company_data.company_id,
+            'company_name': company_data.company_name,
             'created_at': now,
             'GSI1PK': f"COMPANY#{company_data.company_id}",
             'GSI1SK': f"USER#{user_id}"  

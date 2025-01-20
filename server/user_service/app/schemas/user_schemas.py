@@ -10,7 +10,7 @@ class ApplyResponse(BaseModel):
     user_id: str
     post_id: str
     post_name: str
-    apply_date: datetime
+    apply_date: datetime = Field(alias='GSI1SK')
     deadline_date: Optional[datetime] = None
     document_result_date: Optional[datetime] = None
     interview_date: Optional[datetime] = None
@@ -22,6 +22,7 @@ class ApplyResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        populate_by_name = True
         
 class ApplyUpdate(BaseModel):
     document_result_date: Optional[datetime] = None
@@ -31,7 +32,7 @@ class ApplyUpdate(BaseModel):
     
 class ApplyDetailResponse(BaseModel):
     post_name: str
-    apply_date: datetime
+    apply_date: datetime = Field(alias='GSI1SK')
     deadline_date: Optional[datetime] = None
     document_result_date: Optional[datetime] = None
     interview_date: Optional[datetime] = None
@@ -40,6 +41,7 @@ class ApplyDetailResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        populate_by_name = True
         
 class EssayResponse(BaseModel):
     essay_id: str
@@ -66,7 +68,6 @@ class BookmarkResponse(BaseModel):
     post_id: str
     post_name: str
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -80,7 +81,6 @@ class InterestCompanyResponse(BaseModel):
     company_id: str
     company_name: str
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
