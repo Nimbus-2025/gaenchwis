@@ -48,11 +48,10 @@ class UserRepository:
             'PK': f"USER#{user_id}",
             'SK': f"APPLY#{apply_data.post_id}",
             'GSI1PK': f"POST#{apply_data.post_id}",
-            'GSI1SK': apply_id,
+            'GSI1SK': now,                           # apply_id -> now
             'user_id': user_id,
             'post_id': apply_data.post_id,
             'post_name': apply_data.post_name,
-            'apply_date': now,
             'deadline_date': None,
             'document_result_date': None,
             'interview_date': None,
@@ -60,7 +59,7 @@ class UserRepository:
             'memo': None,
             'is_resulted': False,
             'created_at': now,
-            'updated_at': now
+        'updated_at': now
         }
             
         self.table.put_item(Item=item)
@@ -174,7 +173,7 @@ class UserRepository:
             # 1. 먼저 EssayJobPosting 테이블에서 post_id에 해당하는 essay_id들을 조회
             essay_job_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
             response = essay_job_table.query(
-                IndexName=IndexNames.POST_ESSAY_GSI,  # 'GSI1' 대신 정의된 상수 사용
+                IndexName=IndexNames.ESSAY_POST_INVERSE_GSI,  
                 KeyConditionExpression='GSI1PK = :gsi1pk',
                 ExpressionAttributeValues={
                     ':gsi1pk': f"JOB#{post_id}"
@@ -216,14 +215,12 @@ class UserRepository:
         
         item = {
             'PK': f"USER#{user_id}",
-            'SK': f"BOOKMARK#{bookmark_data.post_id}",
-            'GSI1PK': f"POST#{bookmark_data.post_id}",
-            'GSI1SK': now,
+            'SK': f"POST#{bookmark_data.post_id}",    # BOOKMARK# -> POST#
             'user_id': user_id,
             'post_id': bookmark_data.post_id,
-            'post_name': bookmark_data.post_name,
             'created_at': now,
-            'updated_at': now
+            'GSI1PK': f"POST#{bookmark_data.post_id}",
+            'GSI1SK': f"USER#{user_id}"      
         }
         
         self.bookmarks_table.put_item(Item=item)
@@ -233,7 +230,7 @@ class UserRepository:
         response = self.bookmarks_table.get_item(
             Key={
                 'PK': f"USER#{user_id}",
-                'SK': f"BOOKMARK#{post_id}"
+                'SK': f"POST #{post_id}"
             }
         )
         return response.get('Item')
@@ -243,7 +240,7 @@ class UserRepository:
             self.bookmarks_table.delete_item(
                 Key={
                     'PK': f"USER#{user_id}",
-                    'SK': f"BOOKMARK#{post_id}"
+                    'SK': f"POST#{post_id}"
                 }
             )
             return True
@@ -257,7 +254,7 @@ class UserRepository:
                 KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
                 ExpressionAttributeValues={
                     ':pk': f"USER#{user_id}",
-                    ':sk': "BOOKMARK#"
+                    ':sk': "POST#"
                 }
             )
             return response.get('Items', [])
@@ -271,13 +268,11 @@ class UserRepository:
         item = {
             'PK': f"USER#{user_id}",
             'SK': f"COMPANY#{company_data.company_id}",
-            'GSI1PK': f"COMPANY#{company_data.company_id}",
-            'GSI1SK': now,
             'user_id': user_id,
             'company_id': company_data.company_id,
-            'company_name': company_data.company_name,
             'created_at': now,
-            'updated_at': now
+            'GSI1PK': f"COMPANY#{company_data.company_id}",
+            'GSI1SK': f"USER#{user_id}"  
         }
         
         self.interest_companies_table.put_item(Item=item)

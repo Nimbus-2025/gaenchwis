@@ -39,10 +39,9 @@ class EssayListResponse(BaseModel):
     total_pages: int
     
 class JobPosting(BaseModel):
-    job_posting_id: str
+    post_id: str
     company_name: str  
-    position_name: str
-    post_id: Optional[str] = None
+    post_name: str
 
 class EssayDetailResponse(BaseModel):
     essay_id: str
