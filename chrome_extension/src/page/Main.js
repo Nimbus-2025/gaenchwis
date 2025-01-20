@@ -19,9 +19,6 @@ function Main() {
             setPage(<DetectPost />);
             sendResponse({ move: 'Page DetectPost' });
           }
-          else{
-            alert("로그인이 필요합니다.")
-          }
         })
       }
       else if (request.message === 'move_page_loadessay') {
@@ -29,9 +26,6 @@ function Main() {
           if (result.user_id){
             setPage(<LoadEssay />);
             sendResponse({ move: 'Page LoadEssay' });
-          }
-          else{
-            alert("로그인이 필요합니다.")
           }
         })
       }

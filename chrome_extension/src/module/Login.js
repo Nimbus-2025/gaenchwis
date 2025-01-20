@@ -1,6 +1,5 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'login_data'){
-    console.log(request);
     fetch(`${Config.server}/user_load`, {
       method: "GET",
       headers: {
@@ -11,7 +10,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     }).then(async (response) => {
       const userData=await response.json();
-      console.log(userData);
       const loginData = {
         phone: userData.phone,
         email: userData.email,
@@ -39,7 +37,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       }).then(async (response) => {
         const userData=await response.json();
-        console.log(userData);
         const loginData = {
           phone: userData.phone,
           email: userData.email,
