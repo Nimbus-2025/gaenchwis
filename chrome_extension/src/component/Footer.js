@@ -20,7 +20,7 @@ function Footer() {
         />
       </div>
       <div className="footer-div" onClick={ () => { 
-        chrome.runtime.sendMessage({ message: 'page_detectessay' }); 
+        chrome.runtime.sendMessage({ message: 'page_detectpost' }); 
       }}>
         <img src={PostImage} className="footer-icon" />
         <TextButton

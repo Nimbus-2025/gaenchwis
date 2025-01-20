@@ -42,16 +42,19 @@ function Callback() {
         const idTokenPayload = jwtDecode(data.id_token);
         const userId = idTokenPayload['cognito:username'];
 
-        const userData = await Api(`${Config.server}/user_load`, 'GET');
-        console.log(userData);
         const user = {
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phone,
           access_token: data.access_token,
           id_token: data.id_token,
           user_id: userId,
         };
+        sessionStorage.setItem('user', JSON.stringify(user));
+
+        const userData = await Api(`${Config.server}/user_load`, 'GET');
+        console.log(userData);
+
+        user["email"]=userData.email;
+        user["name"]=userData.name;
+        user["phone"]=userData.phone;
         sessionStorage.setItem('user', JSON.stringify(user));
         window.location.href = '/';
       })

@@ -6,7 +6,8 @@ importScripts(
   'Logout.js',
   'Session.js',
   'Config.js',
-  'Essay.js'
+  'Essay.js',
+  'Post.js'
 )
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {

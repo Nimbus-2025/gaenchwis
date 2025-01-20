@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import LoadEssayContent from './LoadEssayContent';
 import DeleteImage from '../image/delete.png'
+import SaveImage from '../image/save.png'
 import '../style/essay.css';
 import "../style/icon.css";
 
-function LoadEssayList({data}) {
+function LoadEssayList({essayData, EssaySave=null, EssayDelete=null}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState(null);
   const [selectedContent, setSelectedContent] = useState(null);
@@ -22,31 +23,42 @@ function LoadEssayList({data}) {
     setSelectedDate(date);
     setIsModalOpen(true);
   };
+
   return (
     <div className="essay">
       {
-        data.title.map((title, idx) => (
+        essayData.title.map((title, idx) => (
           <div 
             className="list-content"
-            key={idx} 
             onClick={
               () => ModalOn(
                 title, 
-                data.content[idx],
-                data.post ? data.post[idx] : data.post,
-                data.date ? data.date[idx] : data.date
+                essayData.content[idx],
+                essayData.post?.[idx] ? essayData.post[idx] : essayData.post,
+                essayData.date?.[idx] ? essayData.date[idx] : essayData.date
               )
             }
           >
-            
-            <div className="essay_text">문항 : {title} {!data.date && (
-              <img src={DeleteImage} className="delete-icon" />
-            )}</div>
-            {data.date && (
-              <div className="essay_text">공고 : {data.post ? data.post[idx] : "지원한 공고 없음"}</div>
+            {essayData.date && (
+              <div className="essay_text">{essayData.date[idx]}</div>
             )}
-            {data.date && (
-              <div className="essay_text">{data.date[idx]}</div>
+            {!essayData.date && EssaySave && (
+              <div className="essay_icon">
+                <img 
+                  onClick={(e)=>EssayDelete(e, idx)}
+                  src={DeleteImage} 
+                  className="delete-icon" 
+                />
+                <img 
+                  onClick={(e)=>EssaySave(e, idx)}
+                  src={SaveImage} 
+                  className="save-icon" 
+                />
+              </div>
+            )}
+            <div className="essay_text">문항 : {title} </div>
+            {essayData.date && (
+              <div className="essay_text">공고 : {essayData.post?.[idx] ? essayData.post[idx] : "지원한 공고 없음"}</div>
             )}
           </div>
         ))

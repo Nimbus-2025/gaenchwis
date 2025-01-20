@@ -44,17 +44,6 @@
   transform: scale(1.1);
 }
 
-.footer-div-current {
-  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
 .popup {
   position: absolute;
   top: 6vh;

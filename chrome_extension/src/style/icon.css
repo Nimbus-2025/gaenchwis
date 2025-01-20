@@ -1,13 +1,103 @@
 .footer-icon {
   display: flex;
-  justify-content: center;
-  align-items: center;
   height: 8vh;
 }
 
 .delete-icon {
+  margin: 1vh;
+  position: relative;
+  float: right;
   display: flex;
-  justify-content: center;
-  align-items: center;
   height: 4vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-icon:hover {
+  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
+  transform: scale(1.05);
+}
+
+.save-icon {
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-icon:hover {
+  filter: invert(75%) sepia(72%) saturate(1943%) hue-rotate(93deg) brightness(104%) contrast(101%);
+  transform: scale(1.05);
+}
+
+.essay-icon {
+  position: relative;
+  width: 100%;
+  flex: 1;
+}
+
+.essayload-icon{
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.essayload-icon:hover{
+  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
+  transform: scale(1.05);
+}
+
+.essayload-icon-select{
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
+}
+
+.pick-icon{
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pick-icon:hover{
+  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
+  transform: scale(1.05);
+}
+
+.pick-icon-select{
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  filter: invert(22%) sepia(55%) saturate(6504%) hue-rotate(353deg) brightness(105%) contrast(130%);
+}
+
+.href-icon {
+  margin: 1vh;
+  position: relative;
+  float: right;
+  display: flex;
+  height: 4vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.href-icon:hover {
+  filter: invert(75%) sepia(72%) saturate(1943%) hue-rotate(93deg) brightness(104%) contrast(101%);
+  transform: scale(1.05);
 }
