@@ -5,7 +5,7 @@ import SaveImage from '../image/save.png'
 import '../style/essay.css';
 import "../style/icon.css";
 
-function LoadEssayList({essayData, EssaySave, EssayDelete}) {
+function LoadEssayList({essayData, EssaySave=null, EssayDelete=null}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState(null);
   const [selectedContent, setSelectedContent] = useState(null);
@@ -42,7 +42,7 @@ function LoadEssayList({essayData, EssaySave, EssayDelete}) {
             {essayData.date && (
               <div className="essay_text">{essayData.date[idx]}</div>
             )}
-            {!essayData.date && (
+            {!essayData.date && EssaySave && (
               <div className="essay_icon">
                 <img 
                   onClick={(e)=>EssayDelete(e, idx)}
