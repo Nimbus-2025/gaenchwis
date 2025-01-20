@@ -4,6 +4,7 @@ class IndexNames:
         STATUS_GSI = 'StatusIndex'
         DATE_GSI = 'DateIndex'
         TAG_GSI = 'TagIndex'
+        REC_IDX_GSI = 'PostId'
         
         # User related indexes
         USER_GSI = 'UserIndex'

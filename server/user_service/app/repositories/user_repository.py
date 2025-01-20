@@ -10,11 +10,36 @@ from app.schemas.user_schemas import ApplyCreate, ApplyUpdate, BookmarkCreate, I
 
 class UserRepository:
     def __init__(self):
-        self.dynamodb = AWSClient.get_client('dynamodb')
-        self.table = self.dynamodb.Table(TableNames.APPLIES)
-        self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
-        self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
+        # 로거 설정
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         
+        # 핸들러가 없는 경우에만 추가
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            
+        try: 
+            logging.info("Initializing DynamoDB client...")
+            self.dynamodb = AWSClient.get_client('dynamodb')
+            logging.info("DynamoDB client initialized successfully")
+            
+            logging.info(f"Connecting to table: {TableNames.APPLIES}")
+            self.table = self.dynamodb.Table(TableNames.APPLIES)
+            
+            logging.info(f"Connecting to table: {TableNames.BOOKMARKS}")
+            self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
+            
+            logging.info(f"Connecting to table: {TableNames.INTEREST_COMPANIES}")
+            self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
+            
+            logging.info("All tables connected successfully")
+        except Exception as e:
+            logging.error(f"Error initializing repository: {str(e)}")
+            raise
+
     def create_apply(self, user_id: str, apply_data: ApplyCreate) -> dict:
         apply_id = str(uuid4())
         now = datetime.utcnow().isoformat()

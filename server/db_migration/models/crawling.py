@@ -40,6 +40,7 @@ class JobPosting(TypedDict):
     GSI1SK: str          # <created_at>
     GSI2PK: str          # JOB#ALL
     GSI2SK: str          # <updated_at>
+    rec_idx: str         # rec_idx for PostId GSI
     
 class Tag(TypedDict):
     # Primary Key

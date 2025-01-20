@@ -4,7 +4,7 @@ config = Config()
 
 class TableNames:
     APPLIES = config.dynamodb.applies
-    ESSAY_JOB_POSTINGS = config.dynamodb.essay_job_postings  # 'essay_job_postings'라는 기본값을 가짐
+    ESSAY_JOB_POSTINGS = config.dynamodb.essay_job_postings 
     ESSAYS = config.dynamodb.essays
     JOB_POSTINGS = config.dynamodb.job_postings
     BOOKMARKS = config.dynamodb.bookmarks 
