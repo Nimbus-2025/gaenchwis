@@ -26,6 +26,7 @@ class EssayJobPosting(TypedDict):
     # Attributes
     essay_id: str           # essay_id
     post_id: Optional[str]  # post_id(자소서와 연결된 공고 id)
+    company_id: Optional[str]  # company_id(자소서와 연결된 공고의 회사 id)
     created_at: datetime
     
     # GSI Keys: EssayPostInverseIndex

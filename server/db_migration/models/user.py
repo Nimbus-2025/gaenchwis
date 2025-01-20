@@ -40,6 +40,7 @@ class InterestCompany(TypedDict):
     # Attributes
     user_id: str            # user_id
     company_id: str         # 유저의 관심기업 company_id
+    company_name: str       # 기업명
     created_at: datetime
     
     # GSI Keys: InterestCompanyIndex
@@ -73,6 +74,7 @@ class Bookmark(TypedDict):
     # Attributes
     user_id: str            # user_id
     post_id: str            # 유저의 북마크 공고 post_id
+    post_name: str          # 공고명
     created_at: datetime
     
     # GSI Keys: BookmarkIndex
