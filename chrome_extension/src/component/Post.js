@@ -26,10 +26,11 @@ function Post({postData, post_id}) {
       message:"post-applies", 
       post_id:post_id,
       post_name:data.post_name,
-      deadline_date:data.is_closed,
+      deadline_date:data.deadline,
       loadessay:loadDragEssay
     },(response)=>{
       setData(response.data);
+      setLoadDragEssay(false)
     });
   }
 
@@ -93,12 +94,12 @@ function Post({postData, post_id}) {
         </a>
       </div>
       <div className="post_text">기업 : {data.company_name}</div>
-      <div className="post_text">채용 마감 : {data.is_closed}</div>
+      <div className="post_text">채용 마감 : {data.deadline}</div>
       {data.applies && (
         <div className="post_text">지원한 공고입니다.</div>
       )}
     </div>
-    {data.applies && (data.essays.length > 0 ?
+    {data.applies && (data.essays ?
       <div className="post-essay">
         <LoadEssayList essayData={data.essays}/>
       </div> : <div>자기소개서가 없습니다.</div>

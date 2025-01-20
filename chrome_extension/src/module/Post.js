@@ -23,8 +23,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }).then(async (response) => {
         const result=await response.json();
         console.log(result);
-        await chrome.storage.local.remove("title");
-        await chrome.storage.local.remove("content");
+        if (request.loadessay){
+          await chrome.storage.local.remove("title");
+          await chrome.storage.local.remove("content");
+        }
         await chrome.storage.local.remove("post_id");
         sendResponse({ success: true, data: result.data});
       });
