@@ -60,7 +60,7 @@ class EssayRepository:
                     'essay_id': essay_id,
                     'user_id': user_id,
                     'essay_ask': question['essay_ask'],
-                    'essay_content': question.get('essay_content'),
+                    'essay_content': question.get('essay_content', ''),
                     'status': EssayStatus.DRAFT.value,
                     'created_at': current_time,
                     'updated_at': current_time,
@@ -75,15 +75,15 @@ class EssayRepository:
             if job_posting_ids:
                 essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
                 for essay_id in essay_ids:
-                    for job_posting_id in job_posting_ids:
+                    for post_id in job_posting_ids:
                         link_item = {
                             'PK': f"ESSAY#{essay_id}",
-                            'SK': f"JOB#{job_posting_id}",
-                            'GSI1PK': f"JOB#{job_posting_id}",
-                            'GSI1SK': f"ESSAY#{essay_id}",
-                            'user_id': user_id,
-                            'post_id': job_posting_id,  
-                            'created_at': current_time                            
+                            'SK': f"POST#{post_id}",
+                            'essay_id': essay_id,
+                            'post_id': post_id,  
+                            'created_at': current_time,                            
+                            'GSI1PK': f"POST#{post_id}",
+                            'GSI1SK': f"ESSAY#{essay_id}"
                         }
                         essay_job_postings_table.put_item(Item=link_item)
             return essay_ids
@@ -280,22 +280,21 @@ class EssayRepository:
             
             job_postings = []
             for link in links_response.get('Items', []):
-                job_posting_id = link['SK'].split('#')[1]
+                post_id = link['SK'].split('#')[1]  # POST#<post_id> -> <post_id>
                 try:
                     job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
-                    job_posting_response = job_postings_table.get_item(
-                        Key={
-                            'job_posting_id': job_posting_id
-                        }
-                    )
+                    post_key = {
+                        'PK': f"COMPANY#ALL",
+                        'SK': f"JOB#{post_id}"
+                    }
+                    job_posting_response = job_postings_table.get_item(Key=post_key)
                     
                     if 'Item' in job_posting_response:
                         job_posting = job_posting_response['Item']
                         job_postings.append({
-                            'job_posting_id': job_posting_id,
+                            'post_id': post_id,
                             'company_name': job_posting.get('company_name'),
-                            'position_name': job_posting.get('position_name'),
-                            'post_id': link.get('post_id')
+                            'post_name': job_posting.get('post_name')
                         })
                 except ClientError:
                     continue

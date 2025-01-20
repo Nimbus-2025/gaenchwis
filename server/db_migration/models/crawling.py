@@ -30,7 +30,7 @@ class JobPosting(TypedDict):
     company_name: str     # 회사명
     deadline: datetime    # 공고 마감일  
     post_url: str         # 공고 URL
-    rec_id: str           # 공고 URL의 식별 값
+    rec_idx: str           # 공고 URL의 식별 값
     status: JobStatus     # 공고 상태 (active / inactive)
     created_at: datetime  
     updated_at: datetime  
