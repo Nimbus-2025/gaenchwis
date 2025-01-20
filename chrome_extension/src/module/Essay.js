@@ -24,6 +24,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     });
   }
+  else if(request.message === 'load_drag_essay'){
+    load_drag_essay(sendResponse);
+  }
   return true;
 });
 
@@ -49,12 +52,18 @@ function load_essay(){
   });
 }
 
-function load_drag_essay(){
+function load_drag_essay(sendResponse=false){
   chrome.storage.local.get(null, (result) => {
     const title = result.title;
     const content = result.content;
     const data={ title: title, content: content }
     const message='dragged'
-    chrome.runtime.sendMessage({ message: message, data: data });
+    console.log(data);
+    if (sendResponse){
+      sendResponse({ success: true, data: data });
+    }
+    else{
+      chrome.runtime.sendMessage({ message: message, data: data });
+    }
   });
 }

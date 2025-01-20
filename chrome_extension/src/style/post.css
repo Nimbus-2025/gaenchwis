@@ -1,0 +1,37 @@
+.post-background{
+  width:100%;
+  flex:1;
+  position: relative;
+}
+
+.post-essay{
+  margin-top: 2%;
+  padding-top: 2%;
+  width:100%;
+  position: relative;
+  border-top: 2px solid rgb(190, 190, 190);/*rgb(100, 200, 200);*/
+}
+
+.post{
+  flex-direction: column;
+  border-radius: 6px;
+  border: 2px solid rgb(190, 190, 190);/*rgb(100, 200, 200);*/
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: calc(100%-4%);;
+  margin: 2%;
+  padding: 2%;
+}
+
+.post_text{
+  position: relative;
+  display: flex;
+  width:100%;
+  flex:1;
+  text-align: left;
+}
+
+.post-href {
+  display: inline-block;
+}
