@@ -50,7 +50,6 @@ function PostLoad(post_id){
       }
       else{
         const data = await response.json();
-        console.log(data)
         chrome.runtime.sendMessage({ message: message, success: true, post_id: post_id, data: data });  
       }
       });

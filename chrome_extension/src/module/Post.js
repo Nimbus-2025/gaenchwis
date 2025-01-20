@@ -22,7 +22,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         body: JSON.stringify(body)
       }).then(async (response) => {
         const result=await response.json();
-        console.log(result);
         if (request.loadessay){
           await chrome.storage.local.remove("title");
           await chrome.storage.local.remove("content");

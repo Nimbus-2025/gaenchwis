@@ -21,7 +21,6 @@ function LoginButton() {
         const code = urlParams.get('code');
 
         if (code) {
-          console.log('Authorization Code:', code);
           exchangeCodeForToken(code);
         } else {
           console.error('No authorization code found.');

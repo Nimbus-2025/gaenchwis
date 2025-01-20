@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Button from '../component/Button';
-import LoadEssayList from '../component/LoadEssayList';
 import Post from '../component/Post';
 
 function DetectPost() {

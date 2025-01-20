@@ -19,7 +19,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         })
       }).then(async (response) => {
         const result=await response.json();
-        console.log(result);
         sendResponse({ success: true, time: result.time });
       });
     });
@@ -34,7 +33,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function load_essay(){
   chrome.storage.local.get("user_id", (result) => {
-    console.log(result)
     fetch(`${Config.server}/chrome_extension/essay_load`, {
       method: "GET",
       headers: {
@@ -43,9 +41,7 @@ function load_essay(){
         "user_id": result.user_id,
       }
     }).then(async (response) => {
-      console.log(response)
       const data = await response.json();
-      console.log(data)
       const message='loaded'
       chrome.runtime.sendMessage({ message: message, data: data });
     });
@@ -58,7 +54,6 @@ function load_drag_essay(sendResponse=false){
     const content = result.content;
     const data={ title: title, content: content }
     const message='dragged'
-    console.log(data);
     if (sendResponse){
       sendResponse({ success: true, data: data });
     }
