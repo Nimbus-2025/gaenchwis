@@ -6,10 +6,6 @@ from datetime import datetime
 class EssayQuestion(BaseModel):
     essay_ask: str
     essay_content: Optional[str] = None
-    
-class CreateEssaysRequest(BaseModel):
-    questions: List[EssayQuestion]
-    job_posting_ids: Optional[List[str]] = None
 
 class EssayResponse(BaseModel):
     essay_id: str
@@ -69,3 +65,11 @@ class EssayJobPosting(TypedDict):
 class JobPostingLink(BaseModel):
     post_id: str
     company_id: str
+    
+class JobPostingInfo(BaseModel):
+    post_id: str
+    company_id: str
+    
+class CreateEssaysRequest(BaseModel):
+    questions: List[EssayQuestion]
+    job_postings: Optional[List[JobPostingInfo]] = None

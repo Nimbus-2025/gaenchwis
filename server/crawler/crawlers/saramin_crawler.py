@@ -74,6 +74,10 @@ class SaraminCrawler(BaseCrawler):
         
     def _generate_hash(self, text: str) -> str:
         return hashlib.md5(text.encode()).hexdigest()
+    
+    def _generate_running_id(self) -> int:
+        import random
+        return random.randint(1, 100_000_000)
         
     def process_and_save_data(self, saramin_data: List[Dict]) -> None:
         print(f"처리할 데이터 개수: {len(saramin_data)}")
@@ -155,6 +159,7 @@ class SaraminCrawler(BaseCrawler):
                 'parent_id': None,
                 'tag_level': 1,
                 'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
                 'GSI1PK': f"TAG#{TagCategory.LOCATION.value}",
@@ -177,6 +182,7 @@ class SaraminCrawler(BaseCrawler):
                     'parent_id': main_region_id,
                     'tag_level': 2,
                     'tag_count': 1,
+                    'tag_running_id': self._generate_running_id(),
                     'created_at': datetime.now().isoformat(),
                     'updated_at': datetime.now().isoformat(),
                     'GSI1PK': f"TAG#{TagCategory.LOCATION.value}",
@@ -239,6 +245,7 @@ class SaraminCrawler(BaseCrawler):
                 'parent_id': None,
                 'tag_level': 1,
                 'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
                 'GSI1PK': f"TAG#{TagCategory.SKILL.value}",
@@ -272,6 +279,7 @@ class SaraminCrawler(BaseCrawler):
                 'parent_id': None,
                 'tag_level': 1,
                 'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
                 'GSI1PK': f"TAG#{TagCategory.POSITION.value}",
@@ -300,6 +308,7 @@ class SaraminCrawler(BaseCrawler):
             'parent_id': None,
             'tag_level': 1,
             'tag_count': 1,
+            'tag_running_id': self._generate_running_id(),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat(),
             'GSI1PK': f"TAG#{TagCategory.EDUCATION.value}",

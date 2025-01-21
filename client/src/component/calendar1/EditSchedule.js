@@ -39,7 +39,11 @@ const ResumeViewPopup = ({ onClose, content }) => {
 
 const EditSchedule = ({ history }) => {
   const dispatch = useDispatch();
-  const { currentSchedule } = useSelector((state) => state.schedule);
+  const { currentSchedule, schedules = [] } = useSelector((state) => state.schedule || {});
+  
+  // schedules가 없을 때는 빈 배열 사용
+  const safeSchedules = schedules || [];
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showResumePopup, setShowResumePopup] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -130,20 +134,24 @@ const EditSchedule = ({ history }) => {
         </Header>
         <Body>
           <FormGroup>
-            <Label>{isAnnouncementRelated ? '공고명' : '제목'}</Label>
+            <Label>공고명</Label>
             <Input
               type="text"
               name="title"
-              value={isAnnouncementRelated ? formData.title.split(' ')[0] : formData.title}
+              value={isAnnouncementRelated ? formData.title.split(' ')[1] : formData.title}
               onChange={handleChange}
               readOnly={!isEditing}
             />
-            {isAnnouncementRelated && (
-              <SubTitle>
-                <div className="company">{currentSchedule.company}</div>
-                <div className="announcement">{formData.title}</div>
-              </SubTitle>
-            )}
+          </FormGroup>
+          <FormGroup>
+            <Label>기업명</Label>
+            <Input
+              type="text"
+              name="company"
+              value={currentSchedule.company}
+              onChange={handleChange}
+              readOnly={!isEditing}
+            />
           </FormGroup>
           <FormGroup>
             <Label>날짜</Label>
@@ -158,24 +166,32 @@ const EditSchedule = ({ history }) => {
           {isAnnouncementRelated && (
             <RelatedDates>
               <h4>관련 중요 일자</h4>
-              <div className="date-row">
-                <span className="label">서류 합격 발표</span>
-                <span className="value">
-                  {formData.deadlineDate ? moment(formData.deadlineDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
-                </span>
-              </div>
-              <div className="date-row">
-                <span className="label">면접 일자</span>
-                <span className="value">
-                  {formData.interviewDate ? moment(formData.interviewDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
-                </span>
-              </div>
-              <div className="date-row">
-                <span className="label">최종 발표 일자</span>
-                <span className="value">
-                  {formData.finalDate ? moment(formData.finalDate).format('YYYY년 MM월 DD일') : 'Invalid date'}
-                </span>
-              </div>
+              {[
+                { type: '공고 마감', includes: '공고 마감' },
+                { type: '서류 합격 발표', includes: '서류 합격 발표' },
+                { type: '면접 일자', includes: '면접' },
+                { type: '최종 발표 일자', includes: '최종 발표' }
+              ].map(({ type, includes }) => {
+                // 현재 선택된 일정의 타입은 건너뛰기
+                if (currentSchedule?.title?.includes(includes)) return null;
+
+                // 같은 회사의 해당 타입 일정 찾기
+                const relatedSchedule = safeSchedules.find(s => 
+                  s.company === currentSchedule.company && 
+                  s.title?.includes(includes)
+                );
+
+                return (
+                  <div className="date-row" key={type}>
+                    <span className="label">{type}</span>
+                    <span className="value">
+                      {relatedSchedule?.date ? 
+                        moment(relatedSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일') : 
+                        '날짜를 선택해주세요.'}
+                    </span>
+                  </div>
+                );
+              }).filter(Boolean)}
             </RelatedDates>
           )}
           <FormGroup>
@@ -253,10 +269,43 @@ const EditSchedule = ({ history }) => {
             title: currentSchedule.title.split(' ')[1],
             company: currentSchedule.title.split(' ')[0],
             tag: currentSchedule.tag || '',
-            date: formData.date,
-            deadlineDate: formData.deadlineDate,
-            interviewDate: formData.interviewDate,
-            finalDate: formData.finalDate,
+            // 현재 일정의 날짜와 다른 관련 일정들의 날짜를 함께 표시
+            date: currentSchedule.title.includes('공고 마감') ? 
+              formData.date : 
+              (schedules.find(s => 
+                s.company === currentSchedule.company && 
+                s.title.includes('공고 마감'))?.date ? 
+                  moment(schedules.find(s => 
+                    s.company === currentSchedule.company && 
+                    s.title.includes('공고 마감')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
+                  ''),
+            deadlineDate: currentSchedule.title.includes('서류 합격 발표') ? 
+              formData.date : 
+              (schedules.find(s => 
+                s.company === currentSchedule.company && 
+                s.title.includes('서류 합격 발표'))?.date ? 
+                  moment(schedules.find(s => 
+                    s.company === currentSchedule.company && 
+                    s.title.includes('서류 합격 발표')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
+                  ''),
+            interviewDate: currentSchedule.title.includes('면접') ? 
+              formData.date : 
+              (schedules.find(s => 
+                s.company === currentSchedule.company && 
+                s.title.includes('면접'))?.date ? 
+                  moment(schedules.find(s => 
+                    s.company === currentSchedule.company && 
+                    s.title.includes('면접')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
+                  ''),
+            finalDate: currentSchedule.title.includes('최종 발표') ? 
+              formData.date : 
+              (schedules.find(s => 
+                s.company === currentSchedule.company && 
+                s.title.includes('최종 발표'))?.date ? 
+                  moment(schedules.find(s => 
+                    s.company === currentSchedule.company && 
+                    s.title.includes('최종 발표')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
+                  ''),
             content: formData.content,
           }}
           isEditing={true}
@@ -266,7 +315,6 @@ const EditSchedule = ({ history }) => {
     </>
   );
 };
-
 // 스타일 컴포넌트들
 const Popup = styled.div`
   position: fixed;

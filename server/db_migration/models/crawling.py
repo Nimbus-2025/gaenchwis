@@ -1,4 +1,5 @@
 from typing import TypedDict, Optional
+from typing import TypedDict, Optional
 from datetime import datetime
 from constants.status import JobStatus
 from constants.category import TagCategory
@@ -9,6 +10,8 @@ class Company(TypedDict):
     SK: str                # METADATA#<company_id>
     
     # Attributes
+    company_id: str         # company_id
+    company_name: str       # 회사명
     company_id: str         # company_id
     company_name: str       # 회사명
     created_at: datetime  
@@ -24,6 +27,14 @@ class JobPosting(TypedDict):
     SK: str               # JOB#<post_id>
     
     # Attributes
+    post_id: str          # post_id
+    post_name: str        # 공고명
+    company_id: str       # company_id 
+    company_name: str     # 회사명
+    deadline: datetime    # 공고 마감일  
+    post_url: str         # 공고 URL
+    rec_idx: str           # 공고 URL의 식별 값
+    status: JobStatus     # 공고 상태 (active / inactive)
     post_id: str          # post_id
     post_name: str        # 공고명
     company_id: str       # company_id 
@@ -56,7 +67,6 @@ class Tag(TypedDict):
     tag_name: str               # 태그명
     parent_id: Optional[str]    # 지역 레벨 1의 id값 
     tag_level: int              # 지역 레벨 (1-전체구역, 2-시/군/구)
-    tag_count: int              # 태그 등장 횟수 (중복 횟수)
     created_at: datetime  
     updated_at: datetime  
     

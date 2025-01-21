@@ -1,0 +1,35 @@
+{
+  "family": "gaenchwis-user-service",
+  "networkMode": "bridge",
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "user-service",
+      "image": "463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis-user-service:latest",
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "8000"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/gaenchwis-user-service",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

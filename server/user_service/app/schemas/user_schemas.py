@@ -1,5 +1,6 @@
+from enum import Enum
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TypedDict
 from pydantic import BaseModel, Field
 
 class ApplyCreate(BaseModel):
@@ -16,7 +17,6 @@ class ApplyResponse(BaseModel):
     interview_date: Optional[datetime] = None
     final_date: Optional[datetime] = None
     memo: Optional[str] = None
-    is_resulted: bool
     created_at: datetime
     updated_at: datetime
 
@@ -84,3 +84,25 @@ class InterestCompanyResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class SortOrder(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+class SearchType(str, Enum):
+    QUESTION = "question"
+    CONTENT = "content"
+
+class EssayJobPosting(TypedDict):
+    PK: str
+    SK: str
+    GSI1PK: str
+    GSI1SK: str
+    essay_id: str
+    post_id: str
+    company_id: str
+    created_at: str
+
+class JobPostingLink(TypedDict):
+    post_id: str
+    company_id: str

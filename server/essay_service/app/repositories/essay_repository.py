@@ -46,13 +46,13 @@ class EssayRepository:
         self, 
         user_id: str, 
         questions: List[dict], 
-        job_postings: List[dict] = None,  # [{'post_id': str, 'company_id': str}, ...]
+        job_postings: List[dict] = None,
     ) -> List[str]:
         try: 
             essay_ids = []
             current_time = datetime.now().isoformat()
                     
-            # 1. Essays 생성 부분은 동일
+            # 1. Essays 생성
             for question in questions:
                 essay_id = str(uuid.uuid4())
                 essay_item: EssayItem = {
@@ -72,19 +72,19 @@ class EssayRepository:
                 self.table.put_item(Item=essay_item)
                 essay_ids.append(essay_id)
                 
-            # 채용공고 연결 부분 수정
+            # 채용공고 연결
             if job_postings:
                 essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
                 for essay_id in essay_ids:
                     for posting in job_postings:
                         link_item: EssayJobPosting = {
                             'PK': f"ESSAY#{essay_id}",
-                            'SK': f"POST#{posting.post_id}",
+                            'SK': f"POST#{posting['post_id']}",  # dictionary 접근으로 수정
                             'essay_id': essay_id,
-                            'post_id': posting.post_id,
-                            'company_id': posting.company_id,  # 추가
+                            'post_id': posting['post_id'],
+                            'company_id': posting['company_id'],
                             'created_at': current_time,                            
-                            'GSI1PK': f"POST#{posting.post_id}",
+                            'GSI1PK': f"POST#{posting['post_id']}",  # dictionary 접근으로 수정
                             'GSI1SK': f"ESSAY#{essay_id}"
                         }
                         essay_job_postings_table.put_item(Item=link_item)
@@ -206,55 +206,6 @@ class EssayRepository:
             error_message = e.response['Error']['Message']
             raise Exception(f"Failed to delete essay: {error_code} - {error_message}")
 
-    def get_essay_list(
-        self,
-        user_id: str,
-        sort_order: SortOrder = SortOrder.DESC,
-        page: int = 1,
-        page_size: int = 10
-    ) -> dict:
-        try:
-            # 1. 전체 에세이 조회
-            response = self.table.query(
-                KeyConditionExpression='PK = :pk',
-                ExpressionAttributeValues={
-                    ':pk': f"USER#{user_id}"
-                },
-                ScanIndexForward=sort_order == SortOrder.ASC
-            )
-            
-            items = response.get('Items', [])
-            total_count = len(items)
-            
-            # 2. 페이지네이션 처리
-            start_idx = (page - 1) * page_size
-            end_idx = start_idx + page_size
-            
-            # 3. 해당 페이지의 아이템만 추출
-            paged_items = items[start_idx:end_idx] if start_idx < total_count else []
-            
-            # 4. 응답 데이터 구조에 맞게 변환
-            essays = [
-                {
-                    'essay_id': item['SK'].split('#')[1],  # "ESSAY#uuid" -> "uuid"
-                    'essay_ask': item['essay_ask'],
-                    'created_at': item['created_at']
-                }
-                for item in paged_items
-            ]
-            
-            return {
-                'essays': essays,
-                'total_count': total_count,
-                'current_page': page,
-                'total_pages': (total_count + page_size - 1) // page_size
-            }
-                
-        except ClientError as e:
-            error_code = e.response['Error']['Code']
-            error_message = e.response['Error']['Message']
-            raise Exception(f"Failed to get essays: {error_code} - {error_message}")
-
     def get_essay_detail(
         self,
         user_id: str,
@@ -271,7 +222,7 @@ class EssayRepository:
             
             if 'Item' not in response:
                 raise ValueError("Essay not found")
-                
+                    
             essay_item = response['Item']
             
             # 2. 연관된 공고 ID들 조회 
@@ -283,25 +234,25 @@ class EssayRepository:
                 }
             )
             
-            # 디버깅용 로그 추가
-            print(f"Found job posting links: {links_response.get('Items', [])}")
+            links = links_response.get('Items', [])
+            print(f"Found {len(links)} job posting links: {links}")
             
             # 3. 연관된 공고 정보 조회
             job_postings = []
-            for link in links_response.get('Items', []):
-                post_id = link['SK'].split('#')[1]  # POST#<post_id> -> <post_id>
-                company_id = link['company_id']     # 추가된 company_id 필드 사용
-                
+            job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
+            
+            for link in links:
                 try:
-                    job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
-                    post_key = {
-                        'PK': f"COMPANY#{company_id}",  # 회사 ID로 조회
-                        'SK': f"JOB#{post_id}"         # 공고 ID로 조회
-                    }
+                    post_id = link['SK'].split('#')[1]
+                    company_id = link['company_id']
                     
-                    print(f"Fetching job posting with key: {post_key}")  # 디버깅용
-                    
-                    job_posting_response = job_postings_table.get_item(Key=post_key)
+                    # 정확한 복합키로 직접 조회
+                    job_posting_response = job_postings_table.get_item(
+                        Key={
+                            'PK': f"COMPANY#{company_id}",
+                            'SK': f"JOB#{post_id}"
+                        }
+                    )
                     
                     if 'Item' in job_posting_response:
                         job_posting = job_posting_response['Item']
@@ -310,28 +261,39 @@ class EssayRepository:
                             'company_name': job_posting.get('company_name', '회사명 없음'),
                             'post_name': job_posting.get('post_name', '공고명 없음')
                         })
-                        print(f"Found job posting: {job_posting}")  # 디버깅용
+                        print(f"Successfully fetched job posting: {job_posting}")
                     else:
-                        print(f"No job posting found for key: {post_key}")  # 디버깅용
+                        print(f"Job posting not found for company_id={company_id}, post_id={post_id}")
+                        job_postings.append({
+                            'post_id': post_id,
+                            'company_name': '삭제된 회사',
+                            'post_name': '삭제된 공고'
+                        })
                         
-                except ClientError as e:
-                    print(f"Error fetching job posting {post_id}: {str(e)}")  # 디버깅용
-                    continue
+                except Exception as e:
+                    print(f"Error fetching job posting {post_id}: {str(e)}")
+                    job_postings.append({
+                        'post_id': post_id,
+                        'company_name': '에러 발생',
+                        'post_name': f'공고 조회 실패: {str(e)}'
+                    })
             
-            return {
+            result = {
                 'essay_id': essay_id,
                 'essay_ask': essay_item['essay_ask'],
                 'essay_content': essay_item.get('essay_content', ''),
                 'created_at': essay_item['created_at'],
                 'updated_at': essay_item['updated_at'],
-                'related_job_postings': job_postings  # 조회된 공고 정보
+                'related_job_postings': job_postings
             }
             
+            return result
+                
         except ClientError as e:
             error_code = e.response['Error']['Code']
             error_message = e.response['Error']['Message']
             raise Exception(f"Failed to get essay detail: {error_code} - {error_message}")
-    
+
     def search_essays(
         self,
         user_id: str,
