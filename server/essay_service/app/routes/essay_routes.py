@@ -40,7 +40,7 @@ def get_user_applied_jobs(
             detail=f"Failed to get applied jobs: {str(e)}"
         )
 
-@router.post("/essays", response_model=list)
+@router.post("/essays")
 def create_essay(
     request_body: CreateEssaysRequest = Body(...),  # Body(...) 명시적으로 지정
     tokens: Dict = Depends(get_user_tokens)
@@ -57,7 +57,7 @@ def create_essay(
         essay_ids = essay_repository.create_essays_and_links(
             user_id=user_id,
             questions=[question.dict() for question in request_body.questions],
-            job_postings=request_body.job_postings  # 수정된 부분
+            job_postings=[posting.dict() for posting in request_body.job_postings] if request_body.job_postings else None
         )
         
         logging.info(f"Created essay with ID: {user_id}")

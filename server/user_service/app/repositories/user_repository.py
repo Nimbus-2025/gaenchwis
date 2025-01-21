@@ -56,7 +56,6 @@ class UserRepository:
             'interview_date': None,
             'final_date': None,
             'memo': None,
-            'is_resulted': False,
             'created_at': now,
             'updated_at': now
         }
