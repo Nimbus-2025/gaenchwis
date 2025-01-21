@@ -88,13 +88,13 @@ Resources:
         GitCloneDepth: 1
         GitSubmodulesConfig:
           FetchSubmodules: false
-        Auth:
-          Type: AWS_CONNECTOR
-          Resource: !Ref GitHubConnectionArn
-        ReportBuildStatus: true
         BuildStatusConfig:
           Context: 'CodeBuild'
           TargetUrl: !Sub https://${AWS::Region}.console.aws.amazon.com/codebuild/home?region=${AWS::Region}#/projects/${AWS::StackName}-build/view/new
+        Auth:
+          Type: OAUTH
+          Resource: !Ref GitHubConnectionArn
+        ReportBuildStatus: true
       Cache:
         Type: LOCAL
         Modes:
