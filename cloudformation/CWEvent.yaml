@@ -1,0 +1,36 @@
+Parameters:
+  LambdaRole:
+    Type: String
+    Default: arn:aws:iam::463470980614:role/lambda-execution-role
+
+Resources:
+  ActiveJobPostingsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Active-Job-Postings
+      Role: !Ref LambdaRole
+      Runtime: python3.9
+      Handler: active_job_postings.active_job_postings
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: active_job_postings.zip
+
+  ActiveJobPostingsEventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: ActiveJobPostings
+      ScheduleExpression: cron(0 15 * * ? *)
+      Targets:
+        - Arn: !GetAtt ActiveJobPostingsLambdaFunction.Arn
+          Id: LambdaTarget
+      State: ENABLED
+
+  ActiveJobPostingsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ActiveJobPostingsLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt ActiveJobPostingsEventBridgeRule.Arn
