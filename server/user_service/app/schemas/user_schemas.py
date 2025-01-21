@@ -17,7 +17,6 @@ class ApplyResponse(BaseModel):
     interview_date: Optional[datetime] = None
     final_date: Optional[datetime] = None
     memo: Optional[str] = None
-    is_resulted: bool
     created_at: datetime
     updated_at: datetime
 
