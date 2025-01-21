@@ -5,7 +5,8 @@ config = Config()
 
 class TableNames(str, Enum):
     SCHEDULES = config.dynamodb.schedules_table
-    SCHEDULE_JOB_POSTINGS = config.dynamodb.schedules_job_postings_table
+    APPLIES = config.dynamodb.schedules_applies
+    
 
 class IndexNames:
     SCHEUDULE_GSI = 'ScheduleIndex'

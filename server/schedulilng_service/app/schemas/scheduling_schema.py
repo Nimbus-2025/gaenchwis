@@ -34,10 +34,10 @@ class ScheduleType(str, Enum):
 
 class ScheduleResponse(BaseModel):
     schedule_id: str
-    title: str
-    date: str
-    content: Optional[str]
-    schedule_type: str   # 'general' 또는 'apply'
+    schedule_title: str
+    schedule_date: str
+    schedule_content: Optional[str]
+    is_completed: bool = False  # 완료 상태 필드 추가
     created_at: str
     updated_at: str
 
@@ -45,7 +45,13 @@ class ScheduleResponse(BaseModel):
 class ScheduleDetailResponse(BaseModel):
     title: str
     date: str
-    content: Optional[str] = None
+    content: Optional[str] = None 
+    schedule_type: str
+    is_completed: bool = False
+    # 공고 일정일 경우 추가 필드
+    company_name: Optional[str] = None
+    position_name: Optional[str] = None  # 공고명
+    memo: Optional[str] = None  # 기타 내용(메모)
 
     class Config:
         json_schema_extra = {
