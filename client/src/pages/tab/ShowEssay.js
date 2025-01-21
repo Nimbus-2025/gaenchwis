@@ -23,35 +23,43 @@ const ShowEssay = () => {
 
   
 
-  // 북마크 토글 함수 추가
-  // 북마크 토글 함수 수정
-const toggleBookmark = (essayId, e) => {
-  e.stopPropagation(); // 클릭 이벤트 전파 방지
-  setEssays(prevEssays => {
-    const currentIndex = prevEssays.findIndex(essay => essay.id === essayId);
-    
-    return prevEssays.map((essay, index) => {
-      if (essay.id === essayId) {
-        // 북마크 상태 변경
-        return {
-          ...essay,
-          isBookmarked: !essay.isBookmarked,
-          // 북마크 해제 시 현재 인덱스를 originalIndex로 저장
-          originalIndex: !essay.isBookmarked ? currentIndex : essay.originalIndex
-        };
-      }
-      return essay;
-    }).sort((a, b) => {
-      if (a.isBookmarked === b.isBookmarked) {
-        // 북마크가 같은 상태일 때는 originalIndex로 정렬
-        return a.originalIndex - b.originalIndex;
-      }
-      // 북마크된 항목을 위로
-      return a.isBookmarked ? -1 : 1;
-    });
-  });
-};
+  // 북마크 토글 함수도 백엔드와 연동
+const toggleBookmark = async (essayId, e) => {
+  e.stopPropagation();
   
+  try {
+    const essay = essays.find(e => e.id === essayId);
+    const updatedBookmarkStatus = !essay.isBookmarked;
+    
+    // 백엔드에 북마크 상태 업데이트 요청
+    await axios.patch(`/api/essays/${essayId}/bookmark`, {
+      isBookmarked: updatedBookmarkStatus
+    });
+
+    setEssays(prevEssays => {
+      const currentIndex = prevEssays.findIndex(essay => essay.id === essayId);
+      
+      return prevEssays.map((essay, index) => {
+        if (essay.id === essayId) {
+          return {
+            ...essay,
+            isBookmarked: updatedBookmarkStatus,
+            originalIndex: !updatedBookmarkStatus ? currentIndex : essay.originalIndex
+          };
+        }
+        return essay;
+      }).sort((a, b) => {
+        if (a.isBookmarked === b.isBookmarked) {
+          return a.originalIndex - b.originalIndex;
+        }
+        return a.isBookmarked ? -1 : 1;
+      });
+    });
+  } catch (error) {
+    console.error('북마크 상태 업데이트 실패:', error);
+    alert('북마크 상태 업데이트에 실패했습니다.');
+  }
+};
 
   // 정렬 함수
   const sortEssays = (essays, order) => {
@@ -109,21 +117,6 @@ const toggleBookmark = (essayId, e) => {
 
 
 
-  const fetchEssays = async () => {
-    try {
-      const response = await axios.get('/api/essays');
-      setEssays(response.data);
-    } catch (error) {
-      console.error('자기소개서 목록을 불러오는데 실패했습니다:', error);
-    }
-  };
-
-  // 컴포넌트 마운트 시 자기소개서 목록 불러오기
-  useEffect(() => {
-    fetchEssays();
-  }, []);
-
-
   const saveEssay = async (essayData) => {
     try {
       // essayData.questions 배열의 각 문항에 대해
@@ -158,35 +151,57 @@ const toggleBookmark = (essayId, e) => {
   };
 
 
-  // 새 에세이 추가 시 originalIndex 포함
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 새 에세이 데이터 생성 - 타이틀을 문항 내용으로 변경
-    const newEssays = questions.map((question, index) => ({
-      id: Date.now() + index,
-      title: question.question, // 문항 내용을 타이틀로 사용
-      questions: [{
-        question: question.question,
-        answer: question.answer
-      }],
-      isBookmarked: false,
-      originalIndex: essays.length + index
-    }));
+    try {
+      // 각 문항을 개별 자기소개서로 생성
+      const savePromises = questions.map(async (question, index) => {
+        const essayData = {
+          title: question.question, // 문항 내용을 타이틀로 사용
+          questions: [{
+            question: question.question,
+            answer: question.answer
+          }],
+          isBookmarked: false,
+          company: '', // 필요한 경우 회사 정보 추가
+          createdAt: new Date().toISOString()
+        };
   
-    // 프론트엔드 상태 업데이트
-    setEssays(prevEssays => {
-      const updatedEssays = [...newEssays, ...prevEssays];
-      return sortEssays(updatedEssays, sortOrder);
-    });
+        // 백엔드 API 호출
+        const response = await axios.post('/api/essays', essayData);
+        return response;
+      });
   
-    // 성공 처리
-    alert('자기소개서 저장이 완료되었습니다.');
-    setIsPopupOpen(false);
-    setEssayTitle('');
-    setQuestions([{ question: '', answer: '' }]);
+      // 모든 저장 요청 실행
+      const responses = await Promise.all(savePromises);
+      
+      if (responses.every(response => response.status === 200 || response.status === 201)) {
+        // 저장 성공 후 최신 목록 다시 불러오기
+        await fetchEssays();
+        
+        alert('자기소개서 저장이 완료되었습니다.');
+        setIsPopupOpen(false);
+        setEssayTitle('');
+        setQuestions([{ question: '', answer: '' }]);
+      }
+    } catch (error) {
+      console.error('자기소개서 저장 실패:', error);
+      alert('자기소개서 저장에 실패했습니다.');
+    }
   };
-
+  
+  // 자기소개서 목록 조회 함수
+  const fetchEssays = async () => {
+    try {
+      const response = await axios.get('/api/essays');
+      const sortedEssays = sortEssays(response.data, sortOrder);
+      setEssays(sortedEssays);
+    } catch (error) {
+      console.error('자기소개서 목록을 불러오는데 실패했습니다:', error);
+      alert('자기소개서 목록을 불러오는데 실패했습니다.');
+    }
+  };
 
 
 
@@ -292,29 +307,32 @@ useEffect(() => {
 
 
 
-  // 삭제 시 originalIndex 업데이트
-  const deleteEssay = (id) => {
-    setEssays(prevEssays => {
-      const deletedIndex = prevEssays.findIndex(essay => essay.id === id);
-      const newEssays = prevEssays
-        .filter(essay => essay.id !== id)
-        .map(essay => ({
-          ...essay,
-          originalIndex: essay.originalIndex > deletedIndex 
-            ? essay.originalIndex - 1 
-            : essay.originalIndex
-        }));
-
-      if (newEssays.length > 0) {
-        const nextEssay = deletedIndex > 0 ? newEssays[deletedIndex - 1] : newEssays[0];
-        setSelectedEssay(nextEssay);
-      } else {
-        setSelectedEssay(null);
-      }
+  // 자기소개서 삭제 함수도 백엔드와 연동
+  const deleteEssay = async (id) => {
+    try {
+      await axios.delete(`/api/essays/${id}`);
       
-      return newEssays;
-    });
+      setEssays(prevEssays => {
+        const deletedIndex = prevEssays.findIndex(essay => essay.id === id);
+        const newEssays = prevEssays.filter(essay => essay.id !== id);
+
+        if (newEssays.length > 0) {
+          const nextEssay = deletedIndex > 0 ? newEssays[deletedIndex - 1] : newEssays[0];
+          setSelectedEssay(nextEssay);
+        } else {
+          setSelectedEssay(null);
+        }
+        
+        return newEssays;
+      });
+    } catch (error) {
+      console.error('자기소개서 삭제 실패:', error);
+      alert('자기소개서 삭제에 실패했습니다.');
+    }
   };
+
+
+
   const addPostingSelect = () => {
     const newId = postingSelects.length + 1;
     setPostingSelects([...postingSelects, { id: newId }]);
@@ -381,7 +399,31 @@ useEffect(() => {
                 ${searchTerm ? 'search-view' : 'normal-view'}`}
               onClick={() => handleEssayClick(essay)}
             >
-              {renderEssayItem(essay)} {/* 여기를 수정 */}
+              <div className="essay-content">
+                {searchTerm ? (
+                  // 검색 시 레이아웃
+                  <>
+                    <h3 className="search-title">
+                      {searchType === 'question' 
+                        ? highlightText(essay.questions[0].question, searchTerm)
+                        : essay.questions[0].question
+                      }
+                    </h3>
+                    <div className="company-info">
+                      {essay.company || '-'}
+                    </div>
+                    <div className="preview-text">
+                      {searchType === 'content'
+                        ? highlightText(essay.questions[0].answer, searchTerm)
+                        : essay.questions[0].answer
+                      }
+                    </div>
+                  </>
+                ) : (
+                  // 기본 레이아웃
+                  <h3>{essay.questions[0].question}</h3>
+                )}
+              </div>
               <button 
                 className={`bookmark-button ${essay.isBookmarked ? 'bookmarked' : ''}`}
                 onClick={(e) => toggleBookmark(essay.id, e)}
@@ -407,7 +449,7 @@ useEffect(() => {
           <div className="no-essay-message">
             {searchTerm ? "검색 결과가 없습니다." : "등록된 자기소개서가 없습니다."}
           </div>
-          )}
+        )}
         </div>
 
         {selectedEssay && (
