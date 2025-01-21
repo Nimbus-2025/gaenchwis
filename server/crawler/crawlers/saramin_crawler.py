@@ -14,7 +14,7 @@ from common.utils import save_to_csv
 from common.constants import CrawlerConfig
 # AWS 서비스 접근 관련 
 from common.aws_client import AWSClient
-from common.enums import RepositoryType, TagCategory
+from common.enums import TagCategory, JobStatus
 from common.constants import TableNames
 
 class SaraminCrawler(BaseCrawler):
@@ -74,6 +74,10 @@ class SaraminCrawler(BaseCrawler):
         
     def _generate_hash(self, text: str) -> str:
         return hashlib.md5(text.encode()).hexdigest()
+    
+    def _generate_running_id(self) -> int:
+        import random
+        return random.randint(1, 100_000_000)
         
     def process_and_save_data(self, saramin_data: List[Dict]) -> None:
         print(f"처리할 데이터 개수: {len(saramin_data)}")
@@ -147,18 +151,19 @@ class SaraminCrawler(BaseCrawler):
             main_region_id = self._generate_hash(f"location_{main_region}")
 
             main_tag_data = {
-                'PK': f"TAG#{main_region_id}",  # TAG#<tag_id>로 변경
-                'SK': f"TAG#location",          # TAG#<category>로 변경
+                'PK': f"TAG#{main_region_id}", 
+                'SK': f"TAG#{TagCategory.LOCATION.value}",          
                 'tag_id': main_region_id,
-                'category': 'location',
-                'name': main_region_name,  # 예: '서울전체', '경기전체', '인천전체'
-                'level': 1,
+                'tag_category': TagCategory.LOCATION.value,
+                'tag_name': main_region_name,  # 예: '서울전체', '경기전체', '인천전체'
                 'parent_id': None,
-                'count': 1,
+                'tag_level': 1,
+                'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
-                'GSI1PK': "TAG#ALL",
-                'GSI1SK': f"1#{main_region_id}"
+                'GSI1PK': f"TAG#{TagCategory.LOCATION.value}",
+                'GSI1SK': main_region_name
             }
             self.tag_repo.put_item(Item=main_tag_data)
             tags.append(main_region_id)
@@ -170,17 +175,18 @@ class SaraminCrawler(BaseCrawler):
                 
                 district_tag_data = {
                     'PK': f"TAG#{district_id}",     # TAG#<tag_id>로 변경
-                    'SK': f"TAG#location",          # TAG#<category>로 변경
+                    'SK': f"TAG#{TagCategory.LOCATION.value}",          # TAG#<category>로 변경
                     'tag_id': district_id,
-                    'category': 'location',
-                    'name': district_full_name,
-                    'level': 2,
+                    'tag_category': TagCategory.LOCATION.value,
+                    'tag_name': district_full_name,
                     'parent_id': main_region_id,
-                    'count': 1,
+                    'tag_level': 2,
+                    'tag_count': 1,
+                    'tag_running_id': self._generate_running_id(),
                     'created_at': datetime.now().isoformat(),
                     'updated_at': datetime.now().isoformat(),
-                    'GSI1PK': "TAG#ALL",
-                    'GSI1SK': f"2#{district_id}"                    
+                    'GSI1PK': f"TAG#{TagCategory.LOCATION.value}",
+                    'GSI1SK': district_full_name                    
                 }
                 self.tag_repo.put_item(Item=district_tag_data)
                 tags.append(district_id)
@@ -232,17 +238,18 @@ class SaraminCrawler(BaseCrawler):
             tag_id = self._generate_hash(f"{TagCategory.SKILL.value}_{skill}")
             tag_data = {
                 'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
-                'SK': f"TAG#skill",   # TAG#<category>로 변경
+                'SK': f"TAG#{TagCategory.SKILL.value}",   # TAG#<category>로 변경
                 'tag_id': tag_id,
-                'category': TagCategory.SKILL.value,
-                'name': skill,
-                'level': 1,
+                'tag_category': TagCategory.SKILL.value,
+                'tag_name': skill,
                 'parent_id': None,
-                'count': 1,
+                'tag_level': 1,
+                'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
-                'GSI1PK': "TAG#ALL",
-                'GSI1SK': f"1#{tag_id}"
+                'GSI1PK': f"TAG#{TagCategory.SKILL.value}",
+                'GSI1SK': skill
             }
             self.tag_repo.put_item(Item=tag_data)
             tags.append(tag_id)
@@ -265,17 +272,18 @@ class SaraminCrawler(BaseCrawler):
             tag_id = self._generate_hash(f"{TagCategory.POSITION.value}_{career_type}")
             tag_data = {
                 'PK': f"TAG#{tag_id}",  # TAG#<tag_id>로 변경
-                'SK': f"TAG#position",     # TAG#<category>로 변경
+                'SK': f"TAG#{TagCategory.POSITION.value}",     # TAG#<category>로 변경
                 'tag_id': tag_id,
-                'category': TagCategory.POSITION.value,
-                'name': career_type,
-                'level': 1,
+                'tag_category': TagCategory.POSITION.value,
+                'tag_name': career_type,
                 'parent_id': None,
-                'count': 1,
+                'tag_level': 1,
+                'tag_count': 1,
+                'tag_running_id': self._generate_running_id(),
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat(),
-                'GSI1PK': "TAG#ALL",
-                'GSI1SK': f"1#{tag_id}"
+                'GSI1PK': f"TAG#{TagCategory.POSITION.value}",
+                'GSI1SK': career_type
             }
             self.tag_repo.put_item(Item=tag_data)
             tags.append(tag_id)
@@ -293,24 +301,25 @@ class SaraminCrawler(BaseCrawler):
         tag_id = self._generate_hash(f"{TagCategory.EDUCATION.value}_{education}")
         tag_data = {
             'PK': f"TAG#{tag_id}",      # TAG#<tag_id>로 변경
-            'SK': f"TAG#education",      # TAG#<category>로 변경
+            'SK': f"TAG#{TagCategory.EDUCATION.value}",      # TAG#<category>로 변경
             'tag_id': tag_id,
-            'category': TagCategory.EDUCATION.value,
-            'name': education,
-            'level': 1,
+            'tag_category': TagCategory.EDUCATION.value,
+            'tag_name': education,
             'parent_id': None,
-            'count': 1,
+            'tag_level': 1,
+            'tag_count': 1,
+            'tag_running_id': self._generate_running_id(),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat(),
-            'GSI1PK': "TAG#ALL",
-            'GSI1SK': f"1#{tag_id}"
+            'GSI1PK': f"TAG#{TagCategory.EDUCATION.value}",
+            'GSI1SK': education
         }
         self.tag_repo.put_item(Item=tag_data)
         return tag_id
 
     def _save_job_posting(self, company_id: str, post_id: str, job_data: Dict) -> None:
         # 3. 채용 공고 저장
-        deadline_str = self._parse_deadline(job_data['마감일'])
+        deadline = self._parse_deadline(job_data['마감일'])
         rec_idx = self._extract_rec_idx(job_data['공고URL'])
         
         job_data_processed = {
@@ -320,13 +329,13 @@ class SaraminCrawler(BaseCrawler):
             'post_name': job_data['공고제목'],
             'company_id': company_id,
             'company_name': job_data['회사명'],
-            'is_closed': deadline_str,
+            'deadline': deadline,
             'post_url': job_data['공고URL'],
             'rec_idx': rec_idx,
-            'status': 'active',
+            'status': JobStatus.ACTIVE.value,
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat(),
-            'GSI1PK': "STATUS#active",
+            'GSI1PK': f"STATUS#{JobStatus.ACTIVE.value}",
             'GSI1SK': datetime.now().isoformat(),
             'GSI2PK': "JOB#ALL",
             'GSI2SK': datetime.now().isoformat()

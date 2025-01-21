@@ -1,18 +1,21 @@
 class IndexNames:
     class DynamoDB:
         # Crawling related indexes
-        STATUS_GSI = 'StatusIndex'
-        DATE_GSI = 'DateIndex'
-        TAG_GSI = 'TagIndex'
+        COMPANY_NAME_GSI = 'CompanyNameIndex'
+        JOB_STATUS_GSI = 'StatusIndex'
+        REC_IDX_GSI = 'RecIdx'
+        POST_ID_GSI = 'JobPostId'
+        TAG_CATEGORY_NAME_GSI = 'TagCategoryNameIndex'
+        JOB_TAG_INVERSE_GSI = 'JobTagInverseIndex'
         
         # User related indexes
-        USER_GSI = 'UserIndex'
-        # IMAGE_GSI = 'ImageIndex'
+        USER_DATA_GSI = 'UserIndex'
+        USER_TAG_INVERSE_GSI = 'UserTagIndex'
         SCHEDULE_GSI = 'ScheduleIndex'
         BOOKMARK_GSI = 'BookmarkIndex'
         APPLY_GSI = 'ApplyIndex'
         INTEREST_COMPANY_GSI = 'InterestCompanyIndex'
         
         # Essay related indexes
-        ESSAY_GSI = 'EssayIndex'
-        ESSAY_JOB_POSTING_GSI = 'EssayJobPostingIndex'
+        ESSAY_DATE_GSI = 'EssayDateIndex'
+        ESSAY_POST_INVERSE_GSI = 'EssayPostInverseIndex'

@@ -10,30 +10,52 @@ from app.schemas.user_schemas import ApplyCreate, ApplyUpdate, BookmarkCreate, I
 
 class UserRepository:
     def __init__(self):
-        self.dynamodb = AWSClient.get_client('dynamodb')
-        self.table = self.dynamodb.Table(TableNames.APPLIES)
-        self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
-        self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
+        # 로거 설정
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         
+        # 핸들러가 없는 경우에만 추가
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            
+        try: 
+            logging.info("Initializing DynamoDB client...")
+            self.dynamodb = AWSClient.get_client('dynamodb')
+            logging.info("DynamoDB client initialized successfully")
+            
+            logging.info(f"Connecting to table: {TableNames.APPLIES}")
+            self.table = self.dynamodb.Table(TableNames.APPLIES)
+            
+            logging.info(f"Connecting to table: {TableNames.BOOKMARKS}")
+            self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
+            
+            logging.info(f"Connecting to table: {TableNames.INTEREST_COMPANIES}")
+            self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
+            
+            logging.info("All tables connected successfully")
+        except Exception as e:
+            logging.error(f"Error initializing repository: {str(e)}")
+            raise
+
     def create_apply(self, user_id: str, apply_data: ApplyCreate) -> dict:
-        apply_id = str(uuid4())
         now = datetime.utcnow().isoformat()
             
         item = {
             'PK': f"USER#{user_id}",
             'SK': f"APPLY#{apply_data.post_id}",
             'GSI1PK': f"POST#{apply_data.post_id}",
-            'GSI1SK': apply_id,
+            'GSI1SK': now,                           # apply_id -> now
             'user_id': user_id,
             'post_id': apply_data.post_id,
             'post_name': apply_data.post_name,
-            'apply_date': now,
             'deadline_date': None,
             'document_result_date': None,
             'interview_date': None,
             'final_date': None,
             'memo': None,
-            'is_resulted': False,
             'created_at': now,
             'updated_at': now
         }
@@ -112,10 +134,6 @@ class UserRepository:
         try:
             logging.info(f"Querying with PK: USER#{user_id}, SK: APPLY#{post_id}")
             
-            # get_apply() 결과와 비교
-            apply = self.get_apply(user_id, post_id)
-            logging.info(f"get_apply() result: {apply}")
-
             response = self.table.get_item(
                 Key={
                     'PK': f"USER#{user_id}",
@@ -130,7 +148,7 @@ class UserRepository:
                 # 응답 스키마에 맞게 필드를 매핑
                 return {
                     'post_name': item.get('post_name'),
-                    'apply_date': item.get('apply_date'),
+                    'apply_date': item.get('GSI1SK'),
                     'deadline_date': item.get('deadline_date'),
                     'document_result_date': item.get('document_result_date'),
                     'interview_date': item.get('interview_date'),
@@ -149,10 +167,10 @@ class UserRepository:
             # 1. 먼저 EssayJobPosting 테이블에서 post_id에 해당하는 essay_id들을 조회
             essay_job_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
             response = essay_job_table.query(
-                IndexName=IndexNames.POST_ESSAY_GSI,  # 'GSI1' 대신 정의된 상수 사용
+                IndexName=IndexNames.ESSAY_POST_INVERSE_GSI,  
                 KeyConditionExpression='GSI1PK = :gsi1pk',
                 ExpressionAttributeValues={
-                    ':gsi1pk': f"JOB#{post_id}"
+                    ':gsi1pk': f"POST#{post_id}"
                 }
             )
             
@@ -191,14 +209,13 @@ class UserRepository:
         
         item = {
             'PK': f"USER#{user_id}",
-            'SK': f"BOOKMARK#{bookmark_data.post_id}",
+            'SK': f"POST#{bookmark_data.post_id}",  
             'GSI1PK': f"POST#{bookmark_data.post_id}",
-            'GSI1SK': now,
+            'GSI1SK': f"USER#{user_id}",
             'user_id': user_id,
             'post_id': bookmark_data.post_id,
-            'post_name': bookmark_data.post_name,
+            'post_name': bookmark_data.post_name,  # BookmarkCreate에서 전달받은 post_name 추가
             'created_at': now,
-            'updated_at': now
         }
         
         self.bookmarks_table.put_item(Item=item)
@@ -208,7 +225,7 @@ class UserRepository:
         response = self.bookmarks_table.get_item(
             Key={
                 'PK': f"USER#{user_id}",
-                'SK': f"BOOKMARK#{post_id}"
+                'SK': f"POST#{post_id}"
             }
         )
         return response.get('Item')
@@ -218,7 +235,7 @@ class UserRepository:
             self.bookmarks_table.delete_item(
                 Key={
                     'PK': f"USER#{user_id}",
-                    'SK': f"BOOKMARK#{post_id}"
+                    'SK': f"POST#{post_id}"
                 }
             )
             return True
@@ -232,7 +249,7 @@ class UserRepository:
                 KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
                 ExpressionAttributeValues={
                     ':pk': f"USER#{user_id}",
-                    ':sk': "BOOKMARK#"
+                    ':sk': "POST#"
                 }
             )
             return response.get('Items', [])
@@ -246,13 +263,12 @@ class UserRepository:
         item = {
             'PK': f"USER#{user_id}",
             'SK': f"COMPANY#{company_data.company_id}",
-            'GSI1PK': f"COMPANY#{company_data.company_id}",
-            'GSI1SK': now,
             'user_id': user_id,
             'company_id': company_data.company_id,
             'company_name': company_data.company_name,
             'created_at': now,
-            'updated_at': now
+            'GSI1PK': f"COMPANY#{company_data.company_id}",
+            'GSI1SK': f"USER#{user_id}"  
         }
         
         self.interest_companies_table.put_item(Item=item)

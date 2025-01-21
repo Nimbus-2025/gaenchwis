@@ -1,15 +1,11 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, TypedDict
 from datetime import datetime
 
 class EssayQuestion(BaseModel):
     essay_ask: str
     essay_content: Optional[str] = None
-    
-class CreateEssaysRequest(BaseModel):
-    questions: List[EssayQuestion]
-    job_posting_ids: Optional[List[str]] = None
 
 class EssayResponse(BaseModel):
     essay_id: str
@@ -39,10 +35,9 @@ class EssayListResponse(BaseModel):
     total_pages: int
     
 class JobPosting(BaseModel):
-    job_posting_id: str
+    post_id: str
     company_name: str  
-    position_name: str
-    post_id: Optional[str] = None
+    post_name: str
 
 class EssayDetailResponse(BaseModel):
     essay_id: str
@@ -55,3 +50,26 @@ class EssayDetailResponse(BaseModel):
 class SearchType(str, Enum):
     QUESTION = "question"  # 문항 기반 검색
     CONTENT = "content"    # 내용 기반 검색
+
+# DynamoDB 용 TypedDict 추가
+class EssayJobPosting(TypedDict):
+    PK: str               # ESSAY#<essay_id>
+    SK: str               # POST#<post_id>
+    essay_id: str         
+    post_id: str         
+    company_id: str       # 추가
+    created_at: str       
+    GSI1PK: str          
+    GSI1SK: str          
+
+class JobPostingLink(BaseModel):
+    post_id: str
+    company_id: str
+    
+class JobPostingInfo(BaseModel):
+    post_id: str
+    company_id: str
+    
+class CreateEssaysRequest(BaseModel):
+    questions: List[EssayQuestion]
+    job_postings: Optional[List[JobPostingInfo]] = None
