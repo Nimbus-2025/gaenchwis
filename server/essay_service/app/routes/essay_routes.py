@@ -228,4 +228,3 @@ async def get_essay_detail(
             status_code=500,
             detail=f"Failed to fetch essay detail: {str(e)}"
         )
-

@@ -89,7 +89,7 @@ Resources:
         GitSubmodulesConfig:
           FetchSubmodules: false
         Auth:
-          Type: OAUTH
+          Type: AWS_CONNECTOR
           Resource: !Ref GitHubConnectionArn
         ReportBuildStatus: true
         BuildStatusConfig:
