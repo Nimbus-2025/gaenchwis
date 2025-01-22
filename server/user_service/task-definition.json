@@ -1,31 +1,33 @@
 {
-  "family": "gaenchwis-user-service",
-  "networkMode": "bridge",
-  "requiresCompatibilities": ["EC2"],
+  "family": "user-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
   "containerDefinitions": [
     {
       "name": "user-service",
-      "image": "463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis-user-service:latest",
+      "image": "463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/user-service:latest",
       "portMappings": [
         {
           "containerPort": 8000,
-          "hostPort": 8000,
           "protocol": "tcp"
         }
       ],
-      "essential": true,
       "environment": [
         {
-          "name": "PORT",
-          "value": "8000"
+          "name": "COGNITO_USER_POOL_ID",
+          "value": "ap-northeast-2_ltCxps5XQ"
+        },
+        {
+          "name": "COGNITO_APP_CLIENT_ID",
+          "value": "6dnsfj8d7327ghh5sg62eqbru0"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/gaenchwis-user-service",
+          "awslogs-group": "/ecs/user-service",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
         }
