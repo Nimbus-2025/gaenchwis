@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CodeBuild Project for User Service with GitHub Organization'
+Description: 'CodeBuild Project for User Service with GitHub Organization Integration'
 
 Parameters:
   GitHubOrg:
@@ -14,44 +14,9 @@ Parameters:
     Default: main
   GitHubConnectionArn:
     Type: String
-    Description: ARN of the GitHub connection created in AWS Console
+    Description: GitHub CodeStar connection ARN
 
 Resources:
-  CodeBuildServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-      Policies:
-        - PolicyName: CodeBuildServiceRolePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Resource: '*'
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-              - Effect: Allow
-                Resource:
-                  - !Sub arn:aws:s3:::${ArtifactBucket}/*
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:GetObjectVersion
-              - Effect: Allow
-                Resource: '*'
-                Action:
-                  - codestar-connections:UseConnection
-
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -63,14 +28,79 @@ Resources:
             Status: Enabled
             ExpirationInDays: 30
 
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: gaenchwis-usercode-role-cf
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildBasePolicy-gaenchwis-usercode-role-cf
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*:*
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactBucket}
+                  - !Sub arn:aws:s3:::${ArtifactBucket}/*
+              - Effect: Allow
+                Action:
+                  - codebuild:CreateReportGroup
+                  - codebuild:CreateReport
+                  - codebuild:UpdateReport
+                  - codebuild:BatchPutTestCases
+                  - codebuild:BatchPutCodeCoverages
+                Resource:
+                  - !Sub arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/*
+        - PolicyName: CodeBuildConnectionsPolicy-gaenchwis-usercode-role-cf
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                Resource: !Ref GitHubConnectionArn
+
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub ${AWS::StackName}-build
+      Description: 'CodeBuild project for building and deploying user-service'
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: GITHUB
+        Location: !Sub https://github.com/${GitHubOrg}/${GitHubRepo}.git
+        BuildSpec: server/user_service/buildspec.yml
+        GitCloneDepth: 1
+        Auth:
+          Type: CODECONNECTIONS
+          Resource: !Ref GitHubConnectionArn
+      SourceVersion: !Ref GitHubBranch
       Artifacts:
         Type: S3
         Location: !Ref ArtifactBucket
+        Name: build-output
+        NamespaceType: BUILD_ID
+        Packaging: ZIP
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -79,22 +109,19 @@ Resources:
         EnvironmentVariables:
           - Name: AWS_DEFAULT_REGION
             Value: !Ref AWS::Region
-          - Name: AWS_ACCOUNT_ID
-            Value: !Ref AWS::AccountId
-      Source:
-        Type: GITHUB
-        Location: !Sub https://github.com/${GitHubOrg}/${GitHubRepo}.git
-        BuildSpec: server/user_service/buildspec.yml
-        GitCloneDepth: 1
-        GitSubmodulesConfig:
-          FetchSubmodules: false
-        BuildStatusConfig:
-          Context: 'CodeBuild'
-          TargetUrl: !Sub https://${AWS::Region}.console.aws.amazon.com/codebuild/home?region=${AWS::Region}#/projects/${AWS::StackName}-build/view/new
-        Auth:
-          Type: OAUTH
-          Resource: !Ref GitHubConnectionArn
-        ReportBuildStatus: true
+          - Name: ECR_REPOSITORY_NAME
+            Value: !Sub
+              - '${repoName}'
+              - repoName: !ImportValue gaenchwis-user-service-ecr-UserServiceRepositoryName
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: PUSH
+            - Type: HEAD_REF
+              Pattern: !Sub ^refs/heads/${GitHubBranch}$
+            - Type: FILE_PATH
+              Pattern: ^server/user_service/.*$
       Cache:
         Type: LOCAL
         Modes:
