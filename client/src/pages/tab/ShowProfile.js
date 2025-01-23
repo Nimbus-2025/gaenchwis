@@ -105,40 +105,34 @@ const ShowProfile = ({ userData }) => {
             <div className="profile-details">
               {/* <p>이름: {name}</p>
             {/* <p>전화번호: {phone}</p>
-            <p>이메일 주소: {email}</p> */}
-            </div>
-          </div>
-          <button className="edit-button" onClick={openEditModal}>
-            개인정보 수정
-          </button>
-        </div>
-        <div className="profile-info1">
-          <h4>입사지원 현황</h4>
-          <div className="status-box">
-            <div className="status-container">
-              <div className="status-item">
-                <span>지원완료</span>
-                <span>2</span>
-              </div>
-              <div className="divider"></div>
-              <div className="status-item">
-                <span>서류통과</span>
-                <span>0</span>
-              </div>
-              <div className="divider"></div>
-              <div className="status-item">
-                <span>최종합격</span>
-                <span>0</span>
-              </div>
-              <div className="divider"></div>
-              <div className="status-item">
-                <span>불합격</span>
-                <span>0</span>
-              </div>
-            </div>
+            <p>이메일 주소: {email}</p> */} 
           </div>
         </div>
+        <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
       </div>
+      <div className="profile-info1">
+      <h4>입사지원 현황</h4>
+        <div className="status-box">
+        <div className="status-container">
+        <div className="status-item">
+            <span>지원완료</span>
+            <span>2</span>
+        </div>
+        <div className="divider"></div>
+        <div className="status-item">
+            <span>서류통과</span>
+            <span>0</span>
+        </div>
+        <div className="divider"></div>
+        <div className="status-item">
+        <span>최종합격</span>
+        <span>0</span>
+        </div>
+        <div className="divider"></div>
+        </div>
+        </div>
+    </div>
+    </div>
       <div>
         <div className="info-box-container">
           <div className="info-box">
@@ -168,11 +162,13 @@ const ShowProfile = ({ userData }) => {
             </div>
           </div>
           <div className="info-box">
-            <h4>관심 직무</h4>
-            <div className="tag-list">{/* 관심 직무 내용 추가 */}</div>
-          </div>
-          <div className="info-box">
-            <h4>학력</h4>
+                        <h4>관심 직무</h4>
+                        <div className="tag-list">
+                            {/* 관심 직무 내용 추가 */}
+                        </div>
+                    </div>
+                    <div className="info-box">
+                    <h4>학력</h4>
             <div className="tag-list">
               {educationTags.length > 0 ? (
                 educationTags.map((tag, index) => (
@@ -192,14 +188,14 @@ const ShowProfile = ({ userData }) => {
         onClose={() => setIsModalOpen(false)}
         onApply={handleApplyLocations}
       />
-      {/* <Modal 
+       <Modal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
                 onSave={handleSave}
                 name={name}
                 email={email}
                 phone={phone}
-            /> */}
+            />
     </div>
   );
 };
