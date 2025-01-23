@@ -32,8 +32,10 @@ import {
   Dow,
   SelectDropdown,
   SelectOption,
-  MonthDisplay
+  MonthDisplay,
+  WeekdayHeader
 } from './styles/CalendarStyles';
+import styled from 'styled-components';
 
 // 캘린더 렌더링
 const Calendar = () => {
@@ -47,10 +49,10 @@ const Calendar = () => {
   const [showYearSelect, setShowYearSelect] = useState(false);
   const [showMonthSelect, setShowMonthSelect] = useState(false);
 
-  // 년도 선택 옵션 생성 (1950년부터 현재 년도까지)
+  // 년도 선택 옵션 생성 (현재 년도부터 1950년까지 내림차순)
   const yearOptions = Array.from(
     { length: moment().year() - 1950 + 1 }, 
-    (_, i) => 1950 + i
+    (_, i) => moment().year() - i
   );
 
   // 월 선택 옵션 생성
@@ -111,48 +113,44 @@ const Calendar = () => {
 
   const generate = () => {
     const startWeek = current.clone().startOf('month').week();
-    const endWeek =
-      current.clone().endOf('month').week() === 1
-        ? 53
-        : current.clone().endOf('month').week();
+    const endWeek = current.clone().endOf('month').week() === 1
+      ? 53
+      : current.clone().endOf('month').week();
 
     let calendar = [];
 
     for (let w = startWeek; w <= endWeek; w++) {
       calendar.push(
         <Weekend key={w}>
-          {Array(7)
-            .fill(0)
-            .map((n, idx) => {
-              const noFormatDate = current
-                .clone()
-                .startOf('year')
-                .week(w)
-                .startOf('week')
-                .add(idx, 'day');
+          {Array(7).fill(0).map((n, idx) => {
+            const noFormatDate = current
+              .clone()
+              .startOf('year')
+              .week(w)
+              .startOf('week')
+              .add(idx, 'day');
 
-              const day = noFormatDate.format('D');
-              const fullDate = noFormatDate.format('l').replaceAll('.', '');
-              const isToday =
-                noFormatDate.format('YYYYMMDD') === moment().format('YYYYMMDD')
-                  ? 'today'
-                  : '';
-              const isGrayed =
-                noFormatDate.format('MM') === current.format('MM')
-                  ? ''
-                  : 'grayed';
+            const day = noFormatDate.format('D');
+            const fullDate = noFormatDate.format('YYYYMMDD');
+            const isToday = fullDate === moment().format('YYYYMMDD') ? 'today' : '';
+            const isGrayed = noFormatDate.format('MM') === current.format('MM') ? '' : 'grayed';
+            const dow = idx; // 요일 정보 추가 (0: 일요일, 6: 토요일)
 
-              const currentSch = getFilteredSchedules(thisMonth.filter((s) => s.date === fullDate));
+            // thisMonth에서 해당 날짜의 일정 필터링
+            const currentSch = getFilteredSchedules(
+              thisMonth.filter((s) => s.date === fullDate)
+            );
 
-              const dateInfo = { day, fullDate, dow: idx, currentSch };
-              return (
-                <Day
-                  key={`${w}-${idx}`}
-                  dateInfo={dateInfo}
-                  className={`${isGrayed} ${isToday}`}
-                />
-              );
-            })}
+            console.log('Date:', fullDate, 'Schedules:', currentSch); // 디버깅용
+
+            return (
+              <Day
+                key={`${w}-${idx}`}
+                dateInfo={{ day, fullDate, currentSch, dow }} // dow 추가
+                className={`${isGrayed} ${isToday}`}
+              />
+            );
+          })}
         </Weekend>
       );
     }
@@ -220,15 +218,15 @@ const Calendar = () => {
           </HeaderContent>
         </Header>
         <DateContainer>
-          <Weekend>
-            <Dow color="#ff4b4b">S</Dow>
-            <Dow>M</Dow>
-            <Dow>T</Dow>
-            <Dow>W</Dow>
-            <Dow>T</Dow>
-            <Dow>F</Dow>
-            <Dow color="#4b87ff">S</Dow>
-          </Weekend>
+          <Dow>
+            <div>S</div>
+            <div>M</div>
+            <div>T</div>
+            <div>W</div>
+            <div>T</div>
+            <div>F</div>
+            <div>S</div>
+          </Dow>
           {generate()}
         </DateContainer>
       </CalendarWrapper>
