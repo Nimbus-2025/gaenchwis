@@ -43,7 +43,7 @@ const AddButton = styled.button`
 
 const TextAreaWrapper = styled.div`
   margin-bottom: 15px;
-  width: 100%;
+  width: 95%;
   
   textarea {
     width: 100%;
@@ -108,8 +108,6 @@ const AddSchedule = ({
     return formattedDate;
   };
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setScheduleData(prev => ({
@@ -121,7 +119,16 @@ const AddSchedule = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (type === 'announcement') {
+    if (type === 'schedule') {
+      // 일반 일정 추가
+      dispatch(createSchedule({
+        title: scheduleData.title,
+        date: scheduleData.date.replaceAll('-', ''),
+        content: scheduleData.content || '',
+        type: 'schedule',
+        backgroundColor: '#74c0fc'
+      }));
+    } else if (type === 'announcement') {
       const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
                       scheduleData.deadlineDate.length > currentYear.length + 1 ||
                       scheduleData.interviewDate.length > currentYear.length + 1 ||
@@ -211,14 +218,55 @@ const AddSchedule = ({
           }));
         }
       } else {
-        // 새로운 일정 추가 로직은 그대로 유지
-        // ... 기존 코드 유지 ...
+        // 새로운 공고 일정 추가
+        const baseSchedule = {
+          type: 'announcement',
+          company: scheduleData.company,
+          tag: scheduleData.tag,
+          content: scheduleData.content,
+          backgroundColor: '#ff9aa3'
+        };
+
+        // 공고 마감 일정
+        if (scheduleData.date.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            ...baseSchedule,
+            title: `${scheduleData.company} 공고 마감`,
+            date: scheduleData.date.replaceAll('-', '')
+          }));
+        }
+
+        // 서류 합격 발표 일정
+        if (scheduleData.deadlineDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            ...baseSchedule,
+            title: `${scheduleData.company} 서류 합격 발표`,
+            date: scheduleData.deadlineDate.replaceAll('-', '')
+          }));
+        }
+
+        // 면접 일정
+        if (scheduleData.interviewDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            ...baseSchedule,
+            title: `${scheduleData.company} 면접일`,
+            date: scheduleData.interviewDate.replaceAll('-', '')
+          }));
+        }
+
+        // 최종 발표 일정
+        if (scheduleData.finalDate.length > currentYear.length + 1) {
+          dispatch(createSchedule({
+            ...baseSchedule,
+            title: `${scheduleData.company} 최종 발표`,
+            date: scheduleData.finalDate.replaceAll('-', '')
+          }));
+        }
       }
     }
     
     onClose();
   };
-
 
   return (
     <PopupOverlay onClick={onClose}>
@@ -233,13 +281,15 @@ const AddSchedule = ({
               <>
                 <FormGroup>
                   <Label>공고명</Label>
-                  <Input
-                    type="text"
+                  <Select
                     name="title"
                     value={scheduleData.title}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">공고를 선택하세요</option>
+                    {/* 여기에 나중에 백엔드에서 받아온 데이터를 매핑할 예정 */}
+                  </Select>
                 </FormGroup>
                 <FormGroup>
                   <Label>기업명</Label>
@@ -328,23 +378,21 @@ const AddSchedule = ({
               </>
             )}
             <FormGroup>
-              <Label>내용</Label>
+              <Label>메모</Label>
               <Textarea
                 name="content"
                 value={scheduleData.content}
                 onChange={handleChange}
               />
             </FormGroup>
-            <ButtonGroup>
-              <div>
-                <SubmitButton type="submit">
-                  {isEditing ? '수정하기' : (type === 'schedule' ? '일정 추가' : '공고 추가')}
-                </SubmitButton>
-                <CancelButton type="button" onClick={onClose}>
-                  취소
-                </CancelButton>
-              </div>
-            </ButtonGroup>
+            <ActionButtonGroup>
+              <SubmitButton type="submit">
+                {isEditing ? '수정하기' : (type === 'schedule' ? '일정 추가' : '공고 추가')}
+              </SubmitButton>
+              <CancelButton type="button" onClick={onClose}>
+                취소
+              </CancelButton>
+            </ActionButtonGroup>
           </Form>
         </PopupContent>
       </PopupWrapper>
@@ -388,12 +436,26 @@ const PopupHeader = styled.div`
 
 const PopupContent = styled.div`
   padding: 20px;
+  max-height: 70vh; // 뷰포트 높이의 70%로 제한
+  overflow-y: auto; // 세로 스크롤 추가
 `;
 
 const Form = styled.form``;
 
 const FormGroup = styled.div`
   margin-bottom: 15px;
+
+  input, textarea {
+    width: 97%; // 너비를 늘림
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    
+    &:focus {
+      outline: none;
+      border-color: #ff9aa3;
+    }
+  }
 `;
 
 const Label = styled.label`
@@ -403,7 +465,7 @@ const Label = styled.label`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 97%; // 너비를 늘림
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -415,12 +477,12 @@ const Input = styled.input`
 `;
 
 const Textarea = styled.textarea`
-  width: 100%;
+  width: 97%; // textarea 너비도 늘림
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  height: 3cm;  // 정확히 3cm로 설정
-  min-height: 3cm;  // 최소 높이도 3cm로 설정
+  height: 3cm;
+  min-height: 3cm;
   resize: vertical;
   
   &:focus {
@@ -462,7 +524,6 @@ const SubmitButton = styled(Button)`
   }
 `;
 
-
 const CancelButton = styled(Button)`
   background-color: #6c757d;
   
@@ -471,8 +532,7 @@ const CancelButton = styled(Button)`
   }
 `;
 
-const CloseButton = styled.button`
-  background: none;
+const CloseButton = styled.button`  background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
@@ -508,11 +568,34 @@ const SubLabel = styled.label`
   color: #666;
 `;
 
-
 const ActionButtonGroup = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
+  padding-right: 20px;
 `;
+
+// Select 스타일 컴포넌트 추가
+const Select = styled.select`
+  width: 100%; // 너비를 98%로 늘림
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  box-sizing: border-box;
+  height: 35px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 1em;
+  padding-right: 40px;
+  
+  &:focus {
+    outline: none;
+    border-color: #ff9aa3;
+  }
+`;
+
 export default AddSchedule;

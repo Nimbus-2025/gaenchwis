@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECR Repository for Scheduling Service'
+
+Parameters:
+  ServiceName:
+    Type: String
+    Default: scheduling-service
+    Description: Name of the service
+  EnvironmentName:
+    Type: String
+    Default: gaenchwis
+    Description: Name of the environment
+
+Resources:
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${EnvironmentName}-${ServiceName}
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 5 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 5
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+Outputs:
+  RepositoryURI:
+    Description: URI of the ECR Repository
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EnvironmentName}-${ServiceName}
+  RepositoryName:
+    Description: Name of the ECR Repository
+    Value: !Sub ${EnvironmentName}-${ServiceName}

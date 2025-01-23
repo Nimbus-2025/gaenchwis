@@ -122,197 +122,197 @@ const EditSchedule = ({ history }) => {
     currentSchedule.title?.includes('면접') ||
     currentSchedule.title?.includes('최종 발표');
 
+  // 일정 타입 확인
+  const isGeneralSchedule = currentSchedule?.type === 'schedule';
+
   if (!currentSchedule) return null;
 
   return (
-    <>
-      <Popup>
-        <Header>
-          <MdChevronLeft onClick={() => dispatch(openEditPopup({ isOpen: false }))} />
-          {formData.title}
-          <i />
-        </Header>
-        <Body>
-          <FormGroup>
-            <Label>공고명</Label>
-            <Input
-              type="text"
-              name="title"
-              value={isAnnouncementRelated ? formData.title.split(' ')[1] : formData.title}
-              onChange={handleChange}
-              readOnly={!isEditing}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>기업명</Label>
-            <Input
-              type="text"
-              name="company"
-              value={currentSchedule.company}
-              onChange={handleChange}
-              readOnly={!isEditing}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>날짜</Label>
-            <Input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              readOnly={!isEditing}
-            />
-          </FormGroup>
-          {isAnnouncementRelated && (
-            <RelatedDates>
-              <h4>관련 중요 일자</h4>
-              {[
-                { type: '공고 마감', includes: '공고 마감' },
-                { type: '서류 합격 발표', includes: '서류 합격 발표' },
-                { type: '면접 일자', includes: '면접' },
-                { type: '최종 발표 일자', includes: '최종 발표' }
-              ].map(({ type, includes }) => {
-                // 현재 선택된 일정의 타입은 건너뛰기
-                if (currentSchedule?.title?.includes(includes)) return null;
-
-                // 같은 회사의 해당 타입 일정 찾기
-                const relatedSchedule = safeSchedules.find(s => 
-                  s.company === currentSchedule.company && 
-                  s.title?.includes(includes)
-                );
-
-                return (
-                  <div className="date-row" key={type}>
-                    <span className="label">{type}</span>
-                    <span className="value">
-                      {relatedSchedule?.date ? 
-                        moment(relatedSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일') : 
-                        '날짜를 선택해주세요.'}
-                    </span>
-                  </div>
-                );
-              }).filter(Boolean)}
-            </RelatedDates>
-          )}
-          <FormGroup>
-            <Label>내용</Label>
-            <Textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              readOnly={!isEditing}
-            />
-          </FormGroup>
-          <ButtonContainer>
-            {isAnnouncementRelated && (
+    <Popup>
+      <Header>
+        <MdChevronLeft onClick={() => dispatch(openEditPopup({ isOpen: false }))} />
+        {isGeneralSchedule ? '일정 확인' : currentSchedule.title}
+        <i />
+      </Header>
+      <Body>
+        {isGeneralSchedule ? (
+          // 일반 일정 확인 양식
+          <>
+            <FormGroup>
+              <Label>일정내용</Label>
+              <Input
+                type="text"
+                name="title"
+                value={isEditing ? formData.title : currentSchedule.title || ''}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>날짜</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.date : 
+                  moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>메모</Label>
+              <TextArea>
+                <textarea
+                  name="content"
+                  value={isEditing ? formData.content : currentSchedule.content || ''}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+              </TextArea>
+            </FormGroup>
+            <ButtonContainer>
               <ActionButtonGroup>
-                <Button onClick={() => setShowResumePopup(true)}>
-                  자기소개서 확인
-                </Button>
-              </ActionButtonGroup>
-            )}
-            <ActionButtonGroup>
-              {!isEditing ? (
-                <>
-                  <Button onClick={() => {
-                    if (isAnnouncementRelated) {
-                      setShowEditModal(true);
-                    } else {
-                      setIsEditing(true);
-                    }
-                  }}>
-                    수정
-                  </Button>
-                  {currentSchedule.type !== 'announcement' && (
-                    <Button
-                      disabled={currentSchedule.completed}
-                      onClick={onComplete}
-                    >
-                      완료
+                {!isEditing ? (
+                  <>
+                    <Button onClick={() => setIsEditing(true)}>수정</Button>
+                    <Button onClick={onDelete}>삭제</Button>
+                    <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
+                      닫기
                     </Button>
-                  )}
-                  <Button onClick={onDelete}>
-                    삭제
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button onClick={onSave}>
-                    저장
-                  </Button>
-                  <Button onClick={() => setIsEditing(false)}>
-                    취소
-                  </Button>
-                </>
-              )}
-            </ActionButtonGroup>
-          </ButtonContainer>
-        </Body>
-      </Popup>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={onSave}>저장</Button>
+                    <Button onClick={() => setIsEditing(false)}>취소</Button>
+                  </>
+                )}
+              </ActionButtonGroup>
+            </ButtonContainer>
+          </>
+        ) : (
+          // 공고 확인 모달창 수정
+          <>
+            <FormGroup>
+              <Label>공고명</Label>
+              <Input
+                type="text"
+                name="title"
+                value={isAnnouncementRelated ? formData.title.split(' ')[1] : formData.title}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>기업명</Label>
+              <Input
+                type="text"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>날짜</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.date : 
+                  moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            {isAnnouncementRelated && !isEditing && (
+              <RelatedDates>
+                <h4>관련 중요 일자</h4>
+                {[
+                  { type: '공고 마감', date: 'date', includes: '공고 마감' },
+                  { type: '서류 합격 발표', date: 'deadlineDate', includes: '서류 합격 발표' },
+                  { type: '면접 일자', date: 'interviewDate', includes: '면접' },
+                  { type: '최종 발표 일자', date: 'finalDate', includes: '최종 발표' }
+                ].map(({ type, date, includes }) => {
+                  // 현재 보고 있는 일정 타입은 건너뛰기
+                  if (currentSchedule?.title?.includes(includes)) {
+                    return (
+                      <div className="date-row current" key={type}>
+                        <span className="label">{type}</span>
+                        <span className="value">
+                          {moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
+                          <span className="current-tag">(현재 일정)</span>
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  // 같은 회사의 다른 일정들 찾기
+                  const relatedSchedule = safeSchedules.find(s => 
+                    s.company === currentSchedule.company && 
+                    s.title?.includes(includes)
+                  );
+
+                  return (
+                    <div className="date-row" key={type}>
+                      <span className="label">{type}</span>
+                      <span className="value">
+                        {relatedSchedule?.date ? 
+                          moment(relatedSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일') : 
+                          '일정 미정'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </RelatedDates>
+            )}
+            <FormGroup>
+              <Label>메모</Label>
+              <TextArea>
+                <textarea
+                  name="content"
+                  value={formData.content}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+              </TextArea>
+            </FormGroup>
+            <ButtonContainer>
+              <ActionButtonGroup>
+                {!isEditing ? (
+                  <>
+                    <Button onClick={() => setIsEditing(true)}>수정</Button>
+                    {currentSchedule.type !== 'announcement' && (
+                      <Button
+                        disabled={currentSchedule.completed}
+                        onClick={onComplete}
+                      >
+                        완료
+                      </Button>
+                    )}
+                    <Button onClick={onDelete}>삭제</Button>
+                    <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
+                      닫기
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={onSave}>저장</Button>
+                    <Button onClick={() => setIsEditing(false)}>취소</Button>
+                  </>
+                )}
+              </ActionButtonGroup>
+            </ButtonContainer>
+          </>
+        )}
+      </Body>
       {showResumePopup && (
-        <ResumeViewPopup 
+        <ResumeViewPopup
           onClose={() => setShowResumePopup(false)}
-          content={formData.resume || '자기소개서가 없습니다.'}
+          content={currentSchedule.resume || ''}
         />
       )}
-
-
-      {/* AddSchedule 모달 추가 */}
-      {showEditModal && (
-        <AddSchedule
-          type="announcement"
-          onClose={() => {
-            setShowEditModal(false);
-            dispatch(openEditPopup({ isOpen: false }));
-          }}
-          initialData={{
-            title: currentSchedule.title.split(' ')[1],
-            company: currentSchedule.title.split(' ')[0],
-            tag: currentSchedule.tag || '',
-            // 현재 일정의 날짜와 다른 관련 일정들의 날짜를 함께 표시
-            date: currentSchedule.title.includes('공고 마감') ? 
-              formData.date : 
-              (schedules.find(s => 
-                s.company === currentSchedule.company && 
-                s.title.includes('공고 마감'))?.date ? 
-                  moment(schedules.find(s => 
-                    s.company === currentSchedule.company && 
-                    s.title.includes('공고 마감')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
-                  ''),
-            deadlineDate: currentSchedule.title.includes('서류 합격 발표') ? 
-              formData.date : 
-              (schedules.find(s => 
-                s.company === currentSchedule.company && 
-                s.title.includes('서류 합격 발표'))?.date ? 
-                  moment(schedules.find(s => 
-                    s.company === currentSchedule.company && 
-                    s.title.includes('서류 합격 발표')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
-                  ''),
-            interviewDate: currentSchedule.title.includes('면접') ? 
-              formData.date : 
-              (schedules.find(s => 
-                s.company === currentSchedule.company && 
-                s.title.includes('면접'))?.date ? 
-                  moment(schedules.find(s => 
-                    s.company === currentSchedule.company && 
-                    s.title.includes('면접')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
-                  ''),
-            finalDate: currentSchedule.title.includes('최종 발표') ? 
-              formData.date : 
-              (schedules.find(s => 
-                s.company === currentSchedule.company && 
-                s.title.includes('최종 발표'))?.date ? 
-                  moment(schedules.find(s => 
-                    s.company === currentSchedule.company && 
-                    s.title.includes('최종 발표')).date, 'YYYYMMDD').format('YYYY-MM-DD') : 
-                  ''),
-            content: formData.content,
-          }}
-          isEditing={true}
-          currentSchedule={currentSchedule}
-        />
-      )}
-    </>
+    </Popup>
   );
 };
 // 스타일 컴포넌트들
@@ -572,6 +572,13 @@ const RelatedDates = styled.div`
       margin-bottom: 0;
     }
 
+    &.current {
+      background-color: rgba(255, 154, 163, 0.1);
+      padding: 8px;
+      border-radius: 4px;
+      margin: -4px -8px 4px -8px;
+    }
+
     .label {
       width: 120px;
       color: #868e96;
@@ -580,6 +587,12 @@ const RelatedDates = styled.div`
     
     .value {
       color: #495057;
+      
+      .current-tag {
+        margin-left: 8px;
+        color: #ff9aa3;
+        font-size: 12px;
+      }
     }
   }
 `;

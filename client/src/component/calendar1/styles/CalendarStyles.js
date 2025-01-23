@@ -227,15 +227,19 @@ export const Header = styled.div`
 `;
 
 export const YearDisplay = styled.div`
-  color: #666;
-  font-size: 0.8em;
+  color: #495057;
+  font-size: 0.9em;
   margin-bottom: 5px;
   margin-left: 10px;
   cursor: pointer;
   position: relative;
   display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
   
   &:hover {
+    background-color: #f8f9fa;
     color: #333;
   }
 `;
@@ -246,8 +250,13 @@ export const MonthDisplay = styled.span`
   display: inline-block;
   min-width: 80px;
   text-align: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  color: #495057;
   
   &:hover {
+    background-color: #f8f9fa;
     color: #333;
   }
 `;
@@ -255,40 +264,61 @@ export const MonthDisplay = styled.span`
 export const SelectDropdown = styled.div`
   position: absolute;
   top: 100%;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  max-height: 300px;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 280px;
   overflow-y: auto;
   z-index: 1000;
-  min-width: 100px;
+  min-width: 110px;
+  margin-top: 8px;
+  padding: 6px;
   
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
   }
   
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.4);
+    background: #f8f9fa;
+    border-radius: 2px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
+    background: #dee2e6;
+    border-radius: 2px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-left: 1px solid #e9ecef;
+    border-top: 1px solid #e9ecef;
   }
 `;
 
 export const SelectOption = styled.div`
   padding: 8px 12px;
   cursor: pointer;
-  background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.35)' : 'white'};
-  color: ${props => props.selected ? '#333' : '#666'};
-  font-size: ${props => props.isMonth ? '0.85em' : '0.9em'};
+  background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.15)' : 'white'};
+  color: ${props => props.selected ? '#333' : '#495057'};
+  font-size: ${props => props.isMonth ? '0.9em' : '0.92em'};
   white-space: nowrap;
+  transition: all 0.15s ease;
+  border-radius: 8px;
+  margin: 2px 0;
   
   &:hover {
-    background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.35)' : '#f5f5f5'};
+    background-color: ${props => props.selected ? 'rgba(255, 219, 13, 0.25)' : '#f8f9fa'};
+    transform: translateX(2px);
   }
 `;
 
@@ -337,11 +367,27 @@ export const Weekend = styled.div`
 `;
 
 export const Dow = styled.div`
-  border-bottom: 1px solid gray;
-  width: 100%;
-  height: 35px;
-  color: ${(props) => (props.color ? props.color : 'black')};
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   text-align: center;
+  margin-bottom: 5mm;
+  height: 30px;
+  line-height: 30px;
+  border-bottom: 1px solid #ced4da;
+  padding-bottom: 5mm;
+  
+  div {
+    padding: 0;
+    font-size: 14px;
+    
+    &:first-child {
+      color: #ff0000; // 일요일 'S'
+    }
+    
+    &:last-child {
+      color: #4dabf7; // 토요일 'S'
+    }
+  }
 `;
 
 // 날짜 그리드를 감싸는 컨테이너
@@ -377,6 +423,14 @@ export const DayWrapper = styled.div`
     border-radius: 50%;
     width: 30px;
     height: 30px;
+    
+    &.sunday {
+      color: #ff0000; // 일요일 날짜
+    }
+    
+    &.saturday {
+      color: #4dabf7; // 토요일 날짜
+    }
   }
 
   // 일정 목록 컨테이너
