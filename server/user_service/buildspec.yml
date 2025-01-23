@@ -29,7 +29,7 @@ phases:
       - echo Writing image definitions file...
       - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
       # task-definition.json의 환경변수 치환
-      - envsubst < task-definition.json > /codebuild/output/task-definition.json
+      - envsubst < task-definition.json > task-definition.json
 
 artifacts:
   files:
