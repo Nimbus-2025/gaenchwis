@@ -33,6 +33,6 @@ phases:
 
 artifacts:
   files:
-    - /codebuild/output/task-definition.json
-    - /codebuild/output/imageDefinitions.json
+    - task-definition.json
+    - imageDefinitions.json
   discard-paths: yes
