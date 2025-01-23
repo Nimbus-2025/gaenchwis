@@ -26,6 +26,7 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       # ECS 배포를 위한 imagedefinitions.json 생성
+      - cd ../../
       - echo Writing image definitions file...
       - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
       # task-definition.json의 환경변수 치환
