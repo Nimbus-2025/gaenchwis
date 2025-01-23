@@ -25,15 +25,14 @@ phases:
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
-      - pwd
       # ECS 배포를 위한 imagedefinitions.json 생성
       - echo Writing image definitions file...
       - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
       # task-definition.json의 환경변수 치환
-      - envsubst < ./task-definition.json > ./task-definition.json
+      - envsubst < ./task-definition.json > /codebuild/output/task-definition.json
 
 artifacts:
   files:
-    - task-definition.json
-    - imageDefinitions.json
+    - /codebuild/output/task-definition.json
+    - /codebuild/output/imageDefinitions.json
   discard-paths: yes
