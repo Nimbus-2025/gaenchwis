@@ -28,7 +28,7 @@ phases:
       # ECS 배포를 위한 imagedefinitions.json 생성
       - pwd
       - echo Writing image definitions file...
-      - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
+      - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
       # task-definition.json의 환경변수 치환
       - envsubst < ./task-definition.json > /codebuild/output/task-definition.json
 
@@ -36,4 +36,5 @@ artifacts:
   files:
     - task-definition.json
     - imageDefinitions.json
+  base-directory: $CODEBUILD_SRC_DIR/
   discard-paths: yes
