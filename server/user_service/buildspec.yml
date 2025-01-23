@@ -5,7 +5,7 @@ phases:
     commands:
       # ECR 로그인
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       # 환경변수 설정
       - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/user-service
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
@@ -28,6 +28,8 @@ phases:
       # ECS 배포를 위한 imagedefinitions.json 생성
       - echo Writing image definitions file...
       - printf '[{"name":"user-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
+      # task-definition.json의 환경변수 치환
+      - envsubst < ./task-definition.json > /codebuild/output/task-definition.json
 
 artifacts:
   files:
