@@ -49,5 +49,6 @@ artifacts:
 
 env:
   parameter-store:
+    AWS_REGION: /gaenchwis/user-service/aws-region
     COGNITO_USER_POOL_ID: /gaenchwis/user-service/cognito-user-pool-id
     COGNITO_APP_CLIENT_ID: /gaenchwis/user-service/cognito-app-client-id
