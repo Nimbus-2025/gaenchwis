@@ -316,4 +316,4 @@ def get_education_tags():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5001)  # host='0.0.0.0' 추가
+    app.run(host='0.0.0.0', debug=True, port=8003)  # host='0.0.0.0' 추가

@@ -1,0 +1,28 @@
+Resources:
+  SSM:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      ServiceName: com.amazonaws.ap-northeast-2.ssm
+      VpcId: !ImportValue VPC
+      SubnetIds:
+      - !ImportValue VPCPrivateSubnet1
+      - !ImportValue VPCPrivateSubnet2
+  SSMMessages:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      ServiceName: com.amazonaws.ap-northeast-2.ssmmessages
+      VpcId: !ImportValue VPC
+      SubnetIds:
+      - !ImportValue VPCPrivateSubnet1
+      - !ImportValue VPCPrivateSubnet2
+  EC2Messages:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      ServiceName: com.amazonaws.ap-northeast-2.ec2messages
+      VpcId: !ImportValue VPC
+      SubnetIds:
+      - !ImportValue VPCPrivateSubnet1
+      - !ImportValue VPCPrivateSubnet2
