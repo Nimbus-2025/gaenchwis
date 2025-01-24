@@ -35,7 +35,8 @@ phases:
       - echo Writing image definitions file...
       - printf '[{"name":"Gaenchwis-UserBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
       # task-definition.json의 환경변수 치환
-      - envsubst < ./task-definition.json > /codebuild/output/task-definition.json
+      - cd $CODEBUILD_SRC_DIR/server/user_service
+      - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
 
 artifacts:
   files:
