@@ -49,8 +49,6 @@ artifacts:
 
 env:
   parameter-store:
-    AWS_ACCESS_KEY_ID: /gaenchwis/user-service/aws-access-key
-    AWS_SECRET_ACCESS_KEY: /gaenchwis/user-service/aws-secret-key
     AWS_REGION: /gaenchwis/user-service/aws-region
     COGNITO_USER_POOL_ID: /gaenchwis/user-service/cognito-user-pool-id
     COGNITO_APP_CLIENT_ID: /gaenchwis/user-service/cognito-app-client-id
