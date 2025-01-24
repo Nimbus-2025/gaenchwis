@@ -18,7 +18,7 @@ phases:
       - pwd
       - ls -la
       - cd server/user_service
-      - cat Dockerfile
+      # - cat Dockerfile
       - cd $CODEBUILD_SRC_DIR
       - ls -la
       - cd server/user_service
