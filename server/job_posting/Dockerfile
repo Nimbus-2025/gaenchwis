@@ -12,5 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 애플리케이션 소스 복사
 COPY . .
 
+EXPOSE 8003
+
 # Flask 애플리케이션 실행
 CMD ["python", "fetch_jobs.py"]

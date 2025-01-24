@@ -1,0 +1,50 @@
+Resources:
+  #Job Posting Backend Service
+  JobPostingBackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 150
+        MinimumHealthyPercent: 100
+        Alarms:
+          AlarmNames:
+          - Job Posting Backend Alarm
+          Enable: true
+          Rollback: true
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: Gaenchwis-JobPostingBackend
+          ContainerPort: 8003
+          TargetGroupArn: !ImportValue BackendTargetGroup8003
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+      TaskDefinition: !Ref JobPostingBackendTask
+      ServiceName: JobPostingBackendService
+      Role: !ImportValue ECSServiceRole
+  #Job Posting Backend Task
+  JobPostingBackendTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: Gaenchwis-JobPostingBackend
+        Image: piwhyjey/job_posting:1
+        PortMappings:
+        - ContainerPort: 8003
+          HostPort: 8003
+          Protocol: tcp
+        Environment:
+        - Name: ALB
+          Value: !ImportValue ApplicationLoadBalancer
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-region: ap-northeast-2
+            awslogs-group: !ImportValue BackendLogGroup
+            awslogs-stream-prefix: ecs-backend
+      Family: Gaenchwis-JobPostingBackend
+      Cpu: 512
+      Memory: 512
+      TaskRoleArn: !ImportValue ECSContainerRole
+      ExecutionRoleArn: !ImportValue ECSContainerExecutionRole
