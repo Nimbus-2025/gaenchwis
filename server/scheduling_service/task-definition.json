@@ -16,6 +16,7 @@
             "protocol": "tcp"
           }
         ],
+        
         "environment": [
           {
             "name": "COGNITO_USER_POOL_ID",
@@ -30,6 +31,7 @@
             "value": "ap-northeast-2"
           }
         ],
+
         "logConfiguration": {
           "logDriver": "awslogs",
           "options": {
