@@ -1,6 +1,16 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - echo Installing prerequisites...
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_REGION=$AWS_DEFAULT_REGION
+      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
+      - COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID
+      - COGNITO_APP_CLIENT_ID=$COGNITO_APP_CLIENT_ID
+
   pre_build:
     commands:
       # ECR 로그인
