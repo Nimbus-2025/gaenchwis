@@ -46,7 +46,7 @@ class DynamoDBConfig:
     
 @dataclass
 class Config:
-    # aws: AWSConfig = field(default_factory=lambda: AWSConfig())
+    aws: AWSConfig = field(default_factory=lambda: AWSConfig())
     dynamodb: DynamoDBConfig = field(default_factory=lambda: DynamoDBConfig())
 
 config = Config() 
