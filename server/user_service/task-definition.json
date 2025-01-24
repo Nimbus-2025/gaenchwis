@@ -3,16 +3,15 @@
   "networkMode": "bridge",
   "requiresCompatibilities": ["EC2"],
   "cpu": "256",
-  "memory": "512",
-  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
+  "memory": "256",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ECS-Container-Role",
   "containerDefinitions": [
     {
       "name": "user-service",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/user-service:latest",
       "portMappings": [
         {
-          "containerPort": 8000,
-          "hostPort": 8000,
+          "containerPort": 8005,
           "protocol": "tcp"
         }
       ],
