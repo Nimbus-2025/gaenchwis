@@ -21,7 +21,7 @@ phases:
       - ls -la
       - cd server/user_service
       - ls -la
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile .
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
