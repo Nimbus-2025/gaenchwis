@@ -15,7 +15,12 @@ phases:
     commands:
       # Docker 이미지 빌드
       - echo Building the Docker image...
+      - pwd
+      - ls -la
+      - cd $CODEBUILD_SRC_DIR
+      - ls -la
       - cd server/user_service
+      - ls -la
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
@@ -28,9 +33,10 @@ phases:
       # ECS 배포를 위한 imagedefinitions.json 생성
       - pwd
       - echo Writing image definitions file...
-      - printf '[{"name":"UserBackendService","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
+      - printf '[{"name":"Gaenchwis-UserBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
       # task-definition.json의 환경변수 치환
-      - envsubst < ./task-definition.json > /codebuild/output/task-definition.json
+      - cd $CODEBUILD_SRC_DIR/server/user_service
+      - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
 
 artifacts:
   files:
