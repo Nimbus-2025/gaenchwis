@@ -6,6 +6,13 @@ from .config import config
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# 핸들러 추가
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 class AWSClient:
     _instances: Dict[str, Any] = {}
     
