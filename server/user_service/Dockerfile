@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 # 의존성 파일 복사
 COPY requirements.txt .
-# COPY .env /app/.env
+COPY .env /app/.env
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 코드 복사
