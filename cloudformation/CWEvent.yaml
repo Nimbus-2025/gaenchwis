@@ -4,19 +4,6 @@ Parameters:
     Default: arn:aws:iam::463470980614:role/lambda-execution-role
 
 Resources:
-  ActiveJobPostingsLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: Active-Job-Postings
-      Role: !Ref LambdaRole
-      Runtime: python3.9
-      Handler: active_job_postings.active_job_postings
-      Layers:
-      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
-      Code:
-        S3Bucket: gaenchwis-lambda 
-        S3Key: active_job_postings.zip
-
   ActiveJobPostingsEventBridgeRule:
     Type: AWS::Events::Rule
     Properties:
@@ -34,3 +21,29 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt ActiveJobPostingsEventBridgeRule.Arn
+
+  ActiveJobPostingsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Active-Job-Postings
+      Role: !Ref LambdaRole
+      Runtime: python3.9
+      Handler: active_job_postings.active_job_postings
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: active_job_postings.zip
+
+  NewJobPostingsProcessingLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: New-Job-Postings-Processing
+      Role: !Ref LambdaRole
+      Runtime: python3.9
+      Handler: new_job_postings_processing.new_job_postings_processing
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: new_job_postings_processing.zip

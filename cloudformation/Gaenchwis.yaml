@@ -18,7 +18,7 @@ Parameters:
   MaxECSInstance:
     Description: Maximum ECS EC2 Instance Scaling
     Type: String
-    Default: 8
+    Default: 10
   ECSKey:
     Description: ECS EC2 Instance SSH Key
     Type: String
@@ -39,6 +39,88 @@ Parameters:
     Description: Seoul AZ2
     Type: String
     Default: ap-northeast-2b
+
+Outputs:
+  VPC:
+    Value: !Ref VPC
+    Export:
+      Name: VPC
+  VPCPrivateSubnet1:
+    Value: !Ref VPCPrivateSubnet1
+    Export:
+      Name: VPCPrivateSubnet1
+  VPCPrivateSubnet2:
+    Value: !Ref VPCPrivateSubnet2
+    Export:
+      Name: VPCPrivateSubnet2
+  ECSServiceRole:
+    Value: !Ref ECSServiceRole
+    Export:
+      Name: ECSServiceRole
+  FrontendTargetGroup:
+    Value: !Ref FrontendTargetGroup
+    Export:
+      Name: FrontendTargetGroup
+  ApplicationLoadBalancer:
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: ApplicationLoadBalancer
+  ECSContainerExecutionRole:
+    Value: !GetAtt ECSContainerExecutionRole.Arn
+    Export:
+      Name: ECSContainerExecutionRole
+  ECSContainerRole:
+    Value: !GetAtt ECSContainerRole.Arn
+    Export:
+      Name: ECSContainerRole
+  ECSCluster:
+    Value: !Ref ECSCluster
+    Export:
+      Name: ECSCluster
+  BackendTargetGroup8000:
+    Value: !Ref BackendTargetGroup8000
+    Export:
+      Name: BackendTargetGroup8000
+  BackendTargetGroup8001:
+    Value: !Ref BackendTargetGroup8001
+    Export:
+      Name: BackendTargetGroup8001
+  BackendTargetGroup8002:
+    Value: !Ref BackendTargetGroup8002
+    Export:
+      Name: BackendTargetGroup8002
+  BackendTargetGroup8003:
+    Value: !Ref BackendTargetGroup8003
+    Export:
+      Name: BackendTargetGroup8003
+  BackendTargetGroup8004:
+    Value: !Ref BackendTargetGroup8004
+    Export:
+      Name: BackendTargetGroup8004
+  BackendTargetGroup8005:
+    Value: !Ref BackendTargetGroup8005
+    Export:
+      Name: BackendTargetGroup8005
+  BackendTargetGroup8006:
+    Value: !Ref BackendTargetGroup8006
+    Export:
+      Name: BackendTargetGroup8006
+  BackendTargetGroup8007:
+    Value: !Ref BackendTargetGroup8007
+    Export:
+      Name: BackendTargetGroup8007
+  BackendTargetGroup8008:
+    Value: !Ref BackendTargetGroup8008
+    Export:
+      Name: BackendTargetGroup8008
+  BackendTargetGroup8009:
+    Value: !Ref BackendTargetGroup8009
+    Export:
+      Name: BackendTargetGroup8009
+  BackendTargetGroup8010:
+    Value: !Ref BackendTargetGroup8010
+    Export:
+      Name: BackendTargetGroup8010
 
 Resources:
 #--------------------VPC
@@ -307,6 +389,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - logs:*
             - ecs:*
             - elasticloadbalancing:*
             Resource: '*'
@@ -342,6 +425,7 @@ Resources:
             Action:
             - ecs:*
             - cloudwatch:*
+            - logs:*
             - elasticloadbalancing:*
             Resource: '*'
   #ECS Container
@@ -366,6 +450,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - logs:*
             - dynamodb:*
             - s3:*
             Resource: '*'
@@ -391,6 +476,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - logs:*
             - ecs:*
             Resource: '*'
   #Lambda Execution Role
@@ -1169,9 +1255,9 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AutoScalingGroupName: ECS-AutoScaling-Group
-      MinSize: 1 #EC2 인스턴스 최소 실행
+      MinSize: 5 #EC2 인스턴스 최소 실행
       MaxSize: !Ref MaxECSInstance #EC2 인스턴스 최대 실행
-      DesiredCapacity: 1 #EC2 인스턴스 기본 실행
+      DesiredCapacity: 5 #EC2 인스턴스 기본 실행
       VPCZoneIdentifier: #Private Subnet에 인스턴스 배포
       - !Ref VPCPrivateSubnet1
       - !Ref VPCPrivateSubnet2
