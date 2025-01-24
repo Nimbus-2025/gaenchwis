@@ -43,7 +43,7 @@ function LoadEssayList({essayData, EssaySave=null, EssayDelete=null}) {
               <div className="essay_text">{essayData.date[idx]}</div>
             )}
             {!essayData.date && EssaySave && (
-              <div className="essay_icon">
+              <div className="essay-icon">
                 <img 
                   onClick={(e)=>EssayDelete(e, idx)}
                   src={DeleteImage} 

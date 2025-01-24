@@ -1,5 +1,5 @@
 # Python 3.9 이미지를 베이스로 사용
-FROM python:3.9
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 # 작업 디렉토리 설정
 WORKDIR /app

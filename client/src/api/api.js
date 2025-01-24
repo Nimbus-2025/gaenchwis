@@ -21,9 +21,10 @@ async function Api(url, method, body={}){
       request["body"]=JSON.stringify(body)
     }
     const response = await fetch(url, request);
+    
     return await response.json();
   } catch(error){
-    console.error(error);
+    console.error(`${url}, ${error}`);
     return error;
   }
   

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './SearchResult.css';
 import JobCard from '../../component/JobCard';
+import Config from '../../api/Config';
+import Api from '../../api/api';
 
 const ITEMS_PER_PAGE = 10; // 페이지당 공고 
 const SearchResult = ({ searchQuery }) => {
@@ -35,7 +37,7 @@ const SearchResult = ({ searchQuery }) => {
       
       setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/jobs?query=${encodeURIComponent(searchQuery)}&page=${currentPage}&per_page=10`);
+      const response = await Api(`${Config.server}:8003/api/jobs?query=${encodeURIComponent(searchQuery)}&page=${currentPage}&per_page=10`, 'GET');
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
