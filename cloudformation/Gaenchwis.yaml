@@ -389,6 +389,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - ecr:*
             - logs:*
             - ecs:*
             - elasticloadbalancing:*
@@ -423,6 +424,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - ecr:*
             - ecs:*
             - cloudwatch:*
             - logs:*
@@ -450,6 +452,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
+            - ecr:*
             - logs:*
             - dynamodb:*
             - s3:*
@@ -478,6 +481,7 @@ Resources:
             Action:
             - logs:*
             - ecs:*
+            - ecr:*
             Resource: '*'
   #Lambda Execution Role
   LambdaExecutionRole:

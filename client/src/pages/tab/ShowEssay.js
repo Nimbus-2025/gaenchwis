@@ -1,7 +1,8 @@
 // ShowEssay.js
 import { useState, useEffect } from 'react';
 import './ShowEssay.css';
-import axios from 'axios';
+import Config from '../../api/Config';
+import Api from '../../api/api';
 
 
 const ShowEssay = () => {
@@ -19,9 +20,6 @@ const ShowEssay = () => {
   const [filteredEssays, setFilteredEssays] = useState([]); // 추가
   const [searchResults, setSearchResults] = useState([]);  // 검색 결과를 위한 상태
   const [splitView, setSplitView] = useState(false);      // 분할 뷰 상태
-  
-
-  
 
   // 북마크 토글 함수도 백엔드와 연동
 const toggleBookmark = async (essayId, e) => {
@@ -32,7 +30,7 @@ const toggleBookmark = async (essayId, e) => {
     const updatedBookmarkStatus = !essay.isBookmarked;
     
     // 백엔드에 북마크 상태 업데이트 요청
-    await axios.patch(`/api/essays/${essayId}/bookmark`, {
+    await Api(`${Config.server}:8002/api/v1/essays/${essayId}/bookmark`, 'PATCH', {
       isBookmarked: updatedBookmarkStatus
     });
 
@@ -133,7 +131,7 @@ const toggleBookmark = async (essayId, e) => {
         };
 
         // 개별 자기소개서 저장
-        await axios.post('/api/essays', individualEssay);
+        await Api(`${Config.server}:8002/api/v1/essays`, 'POST', individualEssay);
       }
 
       // 모든 저장이 완료된 후
@@ -169,7 +167,7 @@ const toggleBookmark = async (essayId, e) => {
         };
   
         // 백엔드 API 호출
-        const response = await axios.post('/api/essays', essayData);
+        const response = await Api(`${Config.server}:8002/api/v1/essays`, 'POST', essayData);
         return response;
       });
   
@@ -194,7 +192,8 @@ const toggleBookmark = async (essayId, e) => {
   // 자기소개서 목록 조회 함수
   const fetchEssays = async () => {
     try {
-      const response = await axios.get('/api/essays');
+      const response = await Api(`${Config.server}:8002/api/v1/essays`, "GET");
+      console.log(response)
       const sortedEssays = sortEssays(response.data, sortOrder);
       setEssays(sortedEssays);
     } catch (error) {
@@ -310,7 +309,7 @@ useEffect(() => {
   // 자기소개서 삭제 함수도 백엔드와 연동
   const deleteEssay = async (id) => {
     try {
-      await axios.delete(`/api/essays/${id}`);
+      await Api(`${Config.server}:8002/api/v1/essays/${id}`, 'DELETE');
       
       setEssays(prevEssays => {
         const deletedIndex = prevEssays.findIndex(essay => essay.id === id);

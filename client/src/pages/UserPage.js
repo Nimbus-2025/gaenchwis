@@ -4,6 +4,8 @@ import '../component/Header.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './UserPage.css';
 import Header from '../component/Header';
+import Config from '../api/Config';
+import Api from '../api/api';
 
 import JobCard from '../component/JobCard';
 
@@ -63,11 +65,8 @@ const UserPage = () => {
     const fetchJobs = async (page) => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5001/api/jobs?page=${page}&per_page=10`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
+        const data = await Api(`${Config.server}:8003/api/jobs?page=${page}&per_page=10`, 'GET');
+
         setJobs(data.items);
         setTotalPages(data.total_pages);
       } catch (error) {

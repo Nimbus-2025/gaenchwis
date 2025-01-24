@@ -28,13 +28,7 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchEducationTags = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:5001/api/tags/education',
-        );
-        if (!response.ok) {
-          throw new Error('Failed to fetch education tags');
-        }
-        const data = await response.json();
+        const data = await Api(`${Config.server}:8003/api/tags/education`, 'GET')
 
         // 태그 정렬
         const sortedTags = data.sort(

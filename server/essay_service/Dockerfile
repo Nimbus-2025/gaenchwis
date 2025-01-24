@@ -1,5 +1,5 @@
 # Python 3.11 이미지를 기반으로 사용
-FROM python:3.11-slim
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 # 작업 디렉토리 설정
 WORKDIR /app
