@@ -24,16 +24,16 @@ load_dotenv(dotenv_path=env_path)
 
 
 # 3. 환경변수 로드 확인용 로깅 (Config 클래스 생성 전)
-logger.info("Initial AWS Credentials Check:")
-logger.info(f"AWS_ACCESS_KEY_ID exists: {bool(os.getenv('AWS_ACCESS_KEY_ID'))}")
-logger.info(f"AWS_SECRET_ACCESS_KEY exists: {bool(os.getenv('AWS_SECRET_ACCESS_KEY'))}")
-logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
+# logger.info("Initial AWS Credentials Check:")
+# logger.info(f"AWS_ACCESS_KEY_ID exists: {bool(os.getenv('AWS_ACCESS_KEY_ID'))}")
+# logger.info(f"AWS_SECRET_ACCESS_KEY exists: {bool(os.getenv('AWS_SECRET_ACCESS_KEY'))}")
+# logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
 
 @dataclass
 class AWSConfig:
     region: str = os.getenv('AWS_REGION', 'ap-northeast-2')
-    access_key: Optional[str] = os.getenv('AWS_ACCESS_KEY_ID')
-    secret_key: Optional[str] = os.getenv('AWS_SECRET_ACCESS_KEY')
+    # access_key: Optional[str] = os.getenv('AWS_ACCESS_KEY_ID')
+    # secret_key: Optional[str] = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 @dataclass
 class DynamoDBConfig:
@@ -46,7 +46,7 @@ class DynamoDBConfig:
     
 @dataclass
 class Config:
-    aws: AWSConfig = field(default_factory=lambda: AWSConfig())
+    # aws: AWSConfig = field(default_factory=lambda: AWSConfig())
     dynamodb: DynamoDBConfig = field(default_factory=lambda: DynamoDBConfig())
 
 config = Config() 

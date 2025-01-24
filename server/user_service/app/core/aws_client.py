@@ -20,25 +20,25 @@ class AWSClient:
     def get_client(cls, service_name: str):
         if service_name not in cls._instances:
             try:
-                logger.info(f"Creating new {service_name} client...")
-                logger.info(f"Using region: {config.aws.region}")
-                logger.info(f"Access key exists: {bool(config.aws.access_key)}")
+                # logger.info(f"Creating new {service_name} client...")
+                # logger.info(f"Using region: {config.aws.region}")
+                # logger.info(f"Access key exists: {bool(config.aws.access_key)}")
                 
-                credentials = {
-                    'aws_access_key_id': config.aws.access_key,
-                    'aws_secret_access_key': config.aws.secret_key,
-                    'region_name': config.aws.region or 'ap-northeast-2'  # 기본 리전 설정
-                }
+                # credentials = {
+                #     'aws_access_key_id': config.aws.access_key,
+                #     'aws_secret_access_key': config.aws.secret_key,
+                #     'region_name': config.aws.region or 'ap-northeast-2'  # 기본 리전 설정
+                # }
 
                 if service_name == 'dynamodb':
                     cls._instances[service_name] = boto3.resource(
                         service_name,
-                        **credentials
+                        # **credentials
                     )
                 else:
                     cls._instances[service_name] = boto3.client(
                         service_name,
-                        **credentials
+                        # **credentials
                     )
                 logger.info(f"{service_name} client created successfully")
                     
