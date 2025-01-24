@@ -17,11 +17,13 @@ phases:
       - echo Building the Docker image...
       - pwd
       - ls -la
+      - cd server/user_service
+      - cat Dockerfile
       - cd $CODEBUILD_SRC_DIR
       - ls -la
       - cd server/user_service
       - ls -la
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile .
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
@@ -44,3 +46,11 @@ artifacts:
     - imageDefinitions.json
   base-directory: $CODEBUILD_SRC_DIR/
   discard-paths: yes
+
+env:
+  parameter-store:
+    AWS_ACCESS_KEY_ID: /gaenchwis/user-service/aws-access-key
+    AWS_SECRET_ACCESS_KEY: /gaenchwis/user-service/aws-secret-key
+    AWS_REGION: /gaenchwis/user-service/aws-region
+    COGNITO_USER_POOL_ID: /gaenchwis/user-service/cognito-user-pool-id
+    COGNITO_APP_CLIENT_ID: /gaenchwis/user-service/cognito-app-client-id
