@@ -22,20 +22,11 @@ class UserRepository:
             self.logger.addHandler(handler)
             
         try: 
-            logging.info("Initializing DynamoDB client...")
             self.dynamodb = AWSClient.get_client('dynamodb')
-            logging.info("DynamoDB client initialized successfully")
-            
-            logging.info(f"Connecting to table: {TableNames.APPLIES}")
             self.table = self.dynamodb.Table(TableNames.APPLIES)
-            
-            logging.info(f"Connecting to table: {TableNames.BOOKMARKS}")
             self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
-            
-            logging.info(f"Connecting to table: {TableNames.INTEREST_COMPANIES}")
             self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
             
-            logging.info("All tables connected successfully")
         except Exception as e:
             logging.error(f"Error initializing repository: {str(e)}")
             raise
