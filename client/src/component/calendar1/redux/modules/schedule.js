@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   fullSchedule: [],
@@ -9,27 +9,6 @@ const initialState = {
   currentSchedule: null,
   isFilter: false
 };
-
-// API 함수
-const createScheduleAPI = (scheduleData) => {
-  const response = fetch('http://localhost:8000/api/v1/schedules', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(scheduleData)
-  });
-  return response.json();
-};
-
-// Thunk 액션 생성
-export const createScheduleAsync = createAsyncThunk(
-  'schedule/createScheduleAsync',
-  (scheduleData) => {
-    const response = createScheduleAPI(scheduleData);
-    return response;
-  }
-);
 
 const scheduleSlice = createSlice({
   name: 'schedule',
@@ -94,20 +73,6 @@ const scheduleSlice = createSlice({
     closeAddSchedule: (state) => {
       state.isOpenAddPopup = false;
     }
-  },
-  extraReducers: (builder) => {
-    builder.addCase(createScheduleAsync.fulfilled, (state, action) => {
-      const newSchedule = {
-        ...action.payload,
-        id: action.payload.schedule_id,
-        completed: false
-      };
-      state.fullSchedule.push(newSchedule);
-      state.thisMonthSchedule.push(newSchedule);
-      if (!state.isFilter) {
-        state.thisMonth.push(newSchedule);
-      }
-    });
   }
 });
 
