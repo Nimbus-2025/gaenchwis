@@ -24,6 +24,10 @@
         {
           "name": "COGNITO_APP_CLIENT_ID",
           "value": "6dnsfj8d7327ghh5sg62eqbru0"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "ap-northeast-2"
         }
       ],
       "logConfiguration": {
