@@ -18,7 +18,7 @@ phases:
       - pwd
       - ls -la
       - cd server/user_service
-      - cat Dockerfile
+      # - cat Dockerfile
       - cd $CODEBUILD_SRC_DIR
       - ls -la
       - cd server/user_service
@@ -49,6 +49,7 @@ artifacts:
 
 env:
   parameter-store:
+    ACCOUNT_ID: /gaenchwis/user-service/account-id
     AWS_REGION: /gaenchwis/user-service/aws-region
     COGNITO_USER_POOL_ID: /gaenchwis/user-service/cognito-user-pool-id
     COGNITO_APP_CLIENT_ID: /gaenchwis/user-service/cognito-app-client-id
