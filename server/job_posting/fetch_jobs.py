@@ -315,5 +315,11 @@ def get_education_tags():
         print(f"Error fetching education tags: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/v1/healthcheck', methods=['GET'])
+def healthcheck():
+    return jsonify({
+        'message': "Clear"
+    })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8003)  # host='0.0.0.0' 추가

@@ -48,6 +48,7 @@ Resources:
         Image: piwhyjey/essay_service:1
         PortMappings:
         - ContainerPort: 8002
+          HostPort: 8002
           Protocol: tcp
         Environment:
         - Name: ALB
@@ -56,7 +57,7 @@ Resources:
           LogDriver: awslogs
           Options:
             awslogs-region: ap-northeast-2
-            awslogs-group: !Ref BackendLogGroup
+            awslogs-group: !ImportValue BackendLogGroup
             awslogs-stream-prefix: ecs-backend
       Family: Gaenchwis-EssayBackend
       Cpu: 512
@@ -97,6 +98,7 @@ Resources:
         Image: piwhyjey/job_posting:1
         PortMappings:
         - ContainerPort: 8003
+          HostPort: 8003
           Protocol: tcp
         Environment:
         - Name: ALB
@@ -105,7 +107,7 @@ Resources:
           LogDriver: awslogs
           Options:
             awslogs-region: ap-northeast-2
-            awslogs-group: !Ref BackendLogGroup
+            awslogs-group: !ImportValue BackendLogGroup
             awslogs-stream-prefix: ecs-backend
       Family: Gaenchwis-JobPostingBackend
       Cpu: 512
@@ -146,6 +148,7 @@ Resources:
         Image: piwhyjey/user_service:1
         PortMappings:
         - ContainerPort: 8005
+          HostPort: 8005
           Protocol: tcp
         Environment:
         - Name: ALB
@@ -154,7 +157,7 @@ Resources:
           LogDriver: awslogs
           Options:
             awslogs-region: ap-northeast-2
-            awslogs-group: !Ref BackendLogGroup
+            awslogs-group: !ImportValue BackendLogGroup
             awslogs-stream-prefix: ecs-backend
       Family: Gaenchwis-UserBackend
       Cpu: 512
@@ -195,6 +198,7 @@ Resources:
         Image: piwhyjey/scheduling_service:1
         PortMappings:
         - ContainerPort: 8006
+          HostPort: 8006
           Protocol: tcp
         Environment:
         - Name: ALB
@@ -203,7 +207,7 @@ Resources:
           LogDriver: awslogs
           Options:
             awslogs-region: ap-northeast-2
-            awslogs-group: !Ref BackendLogGroup
+            awslogs-group: !ImportValue BackendLogGroup
             awslogs-stream-prefix: ecs-backend
       Family: Gaenchwis-SchedulingBackend
       Cpu: 512

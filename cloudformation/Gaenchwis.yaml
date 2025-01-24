@@ -858,7 +858,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -884,7 +884,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -910,7 +910,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -936,7 +936,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -962,7 +962,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -988,7 +988,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -1014,7 +1014,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -1040,7 +1040,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -1066,7 +1066,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -1092,7 +1092,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5
@@ -1118,7 +1118,7 @@ Resources:
       Protocol: HTTP
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /healthcheck
+      HealthCheckPath: /api/v1/healthcheck
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 5

@@ -1,0 +1,51 @@
+Resources:
+  #User Backend Service
+  UserBackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 150
+        MinimumHealthyPercent: 100
+        Alarms:
+          AlarmNames:
+          - User Backend Alarm
+          Enable: true
+          Rollback: true
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: Gaenchwis-UserBackend
+          ContainerPort: 8005
+          TargetGroupArn: !ImportValue BackendTargetGroup8005
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+      TaskDefinition: !Ref UserBackendTask
+      ServiceName: UserBackendService
+      Role: !ImportValue ECSServiceRole
+  #User Backend Task
+  UserBackendTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      - Name: Gaenchwis-UserBackend
+        Image: piwhyjey/user_service:1
+        PortMappings:
+        - ContainerPort: 8005
+          HostPort: 8005
+          Protocol: tcp
+        Environment:
+        - Name: ALB
+          Value: !ImportValue ApplicationLoadBalancer
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-region: ap-northeast-2
+            awslogs-group: !ImportValue BackendLogGroup
+            awslogs-stream-prefix: ecs-backend
+      Family: Gaenchwis-UserBackend
+      Cpu: 512
+      Memory: 512
+      TaskRoleArn: !ImportValue ECSContainerRole
+      ExecutionRoleArn: !ImportValue ECSContainerExecutionRole
+#--------------------ECS Container/
