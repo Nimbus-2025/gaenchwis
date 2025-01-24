@@ -43,7 +43,7 @@ app = FastAPI(
 # 프로덕션 환경에서는 구체적인 origin 지정
 # origins = [
 #     "http://localhost:3000",
-#     "https://gaenchwis.com"
+#     "https://gaenchwis.click"
 # ]
 
 # CORS 미들웨어 설정
