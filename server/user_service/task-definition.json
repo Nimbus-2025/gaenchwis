@@ -19,11 +19,11 @@
       "environment": [
         {
           "name": "COGNITO_USER_POOL_ID",
-          "value": "${COGNITO_USER_POOL_ID}"
+          "value": "ap-northeast-2_ltCxps5XQ"
         },
         {
           "name": "COGNITO_APP_CLIENT_ID",
-          "value": "${COGNITO_APP_CLIENT_ID}"
+          "value": "6dnsfj8d7327ghh5sg62eqbru0"
         },
         {
           "name": "AWS_REGION",
