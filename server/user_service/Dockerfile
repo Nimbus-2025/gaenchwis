@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 8000번 포트 노출
-EXPOSE 8000
+# EXPOSE 8000
 
 # 헬스체크를 위한 curl 설치 (docker-compose의 healthcheck에서 사용)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
