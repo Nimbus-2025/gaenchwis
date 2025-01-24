@@ -22,23 +22,23 @@ logger.info(f"File exists: {env_path.exists()}")
 load_dotenv(dotenv_path=env_path)
 
 # 환경변수 로드 확인
-logger.info(f"AWS_ACCESS_KEY_ID exists: {bool(os.getenv('AWS_ACCESS_KEY_ID'))}")
-logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
+# logger.info(f"AWS_ACCESS_KEY_ID exists: {bool(os.getenv('AWS_ACCESS_KEY_ID'))}")
+# logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
 
-required_env_vars = [
-    'AWS_REGION',
-    'COGNITO_USER_POOL_ID',
-    'COGNITO_APP_CLIENT_ID',
-    'AWS_ACCESS_KEY_ID',
-    'AWS_SECRET_ACCESS_KEY'
-]
+# required_env_vars = [
+#     'AWS_REGION',
+#     'COGNITO_USER_POOL_ID',
+#     'COGNITO_APP_CLIENT_ID',
+#     'AWS_ACCESS_KEY_ID',
+#     'AWS_SECRET_ACCESS_KEY'
+# ]
 
-missing_vars = [var for var in required_env_vars if not os.getenv(var)]
-if missing_vars:
-    logger.error(f"Missing required environment variables: {missing_vars}")
-    raise RuntimeError(f"Missing required environment variables: {missing_vars}")
+# missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+# if missing_vars:
+#     logger.error(f"Missing required environment variables: {missing_vars}")
+#     raise RuntimeError(f"Missing required environment variables: {missing_vars}")
 
-logger.info("All required environment variables are present")
+# logger.info("All required environment variables are present")
 
 app = FastAPI(
     title="User Service",
