@@ -35,8 +35,12 @@ Resources:
           HostPort: 8005
           Protocol: tcp
         Environment:
-        - Name: ALB
-          Value: !ImportValue ApplicationLoadBalancer
+        - Name: COGNITO_USER_POOL_ID
+          Value: ap-northeast-2_ltCxps5XQ
+        - Name: COGNITO_APP_CLIENT_ID
+          Value: 6dnsfj8d7327ghh5sg62eqbru0
+        - Name: AWS_REGION
+          Value: ap-northeast-2
         LogConfiguration:
           LogDriver: awslogs
           Options:

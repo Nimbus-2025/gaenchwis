@@ -14,7 +14,7 @@ Parameters:
   ALBTLS:
     Description: HTTPS TLS Certification
     Type: String
-    Default: arn:aws:acm:ap-northeast-2:463470980614:certificate/f74f79a3-c366-4ba8-856c-17b2a9d76871
+    Default: arn:aws:acm:ap-northeast-2:463470980614:certificate/a5999268-7bbc-403c-a020-bcadf3e4e5ef
   MaxECSInstance:
     Description: Maximum ECS EC2 Instance Scaling
     Type: String
@@ -871,12 +871,14 @@ Resources:
   BackendListener8000:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8000
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8000
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8001
   BackendTargetGroup8001:
@@ -897,12 +899,14 @@ Resources:
   BackendListener8001:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8001
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8001
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8002
   BackendTargetGroup8002:
@@ -923,12 +927,14 @@ Resources:
   BackendListener8002:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8002
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8002
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8003
   BackendTargetGroup8003:
@@ -949,12 +955,14 @@ Resources:
   BackendListener8003:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8003
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8003
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8004
   BackendTargetGroup8004:
@@ -975,12 +983,14 @@ Resources:
   BackendListener8004:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8004
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8004
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8005
   BackendTargetGroup8005:
@@ -1001,12 +1011,14 @@ Resources:
   BackendListener8005:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8005
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8005
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8006
   BackendTargetGroup8006:
@@ -1027,12 +1039,14 @@ Resources:
   BackendListener8006:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8006
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8006
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8007
   BackendTargetGroup8007:
@@ -1053,12 +1067,14 @@ Resources:
   BackendListener8007:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8007
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8007
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8008
   BackendTargetGroup8008:
@@ -1079,12 +1095,14 @@ Resources:
   BackendListener8008:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8008
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8008
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8009
   BackendTargetGroup8009:
@@ -1105,12 +1123,14 @@ Resources:
   BackendListener8009:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8009
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8009
-      Protocol: HTTP
+      Protocol: HTTPS
 
   #Backend TargetGroup 8010
   BackendTargetGroup8010:
@@ -1131,12 +1151,14 @@ Resources:
   BackendListener8010:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
       DefaultActions:
       - Type: forward
         TargetGroupArn: !Ref BackendTargetGroup8010
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 8010
-      Protocol: HTTP
+      Protocol: HTTPS
 #--------------------Application LoadBalancer/
 
   
