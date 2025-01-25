@@ -23,6 +23,10 @@ def get_user_tokens(
     logging.info("토큰 검증 완료")
     return {"access_token": access_token, "id_token": id_token, "user_id": user_id}
 
+@router.options("/{path:path}")
+def preflight():
+    return {"status": "ok", "message": "Preflight"}
+
 @router.get("/healthcheck")
 async def healthcheck():
     return {"status": "healthy", "message": "건강합니다"}

@@ -7,6 +7,10 @@ from ..repositories.essay_repository import EssayRepository
 router = APIRouter()
 essay_repository = EssayRepository()
 
+@router.options("/{path:path}")
+def preflight():
+    return {"status": "ok", "message": "Preflight"}
+
 @router.get("/healthcheck")
 async def healthcheck():
     return {"status": "healthy", "message": "건강합니다"}

@@ -5,8 +5,8 @@ Resources:
     Properties:
       Cluster: !ImportValue ECSCluster
       DeploymentConfiguration:
-        MaximumPercent: 150
-        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
         Alarms:
           AlarmNames:
           - Job Posting Backend Alarm

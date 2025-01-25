@@ -693,6 +693,13 @@ Resources:
   ApplicationLoadBalancerListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id, post_id, applies"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1256,13 +1263,13 @@ Resources:
       AutoScalingGroupProvider:
         AutoScalingGroupArn: !Ref ECSAutoScalingGroup
         ManagedScaling:
-          InstanceWarmupPeriod: 180 #EC2 인스턴스 가동 대기 시간
-          MinimumScalingStepSize: 1 #Container 최소 실행
-          MaximumScalingStepSize: 100 #Container 최대 실행
+          InstanceWarmupPeriod: 180
+          MinimumScalingStepSize: 1
+          MaximumScalingStepSize: 100
           Status: ENABLED
         #ManagedTerminationProtection: ENABLED
   #ECS Capacity Provider Association
-  ECSCapacityProviderAssociation: #Container 실행 환경 - ASG EC2 인스턴스
+  ECSCapacityProviderAssociation:
     Type: AWS::ECS::ClusterCapacityProviderAssociations
     Properties:
       CapacityProviders:
@@ -1281,16 +1288,16 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AutoScalingGroupName: ECS-AutoScaling-Group
-      MinSize: 5 #EC2 인스턴스 최소 실행
-      MaxSize: !Ref MaxECSInstance #EC2 인스턴스 최대 실행
-      DesiredCapacity: 5 #EC2 인스턴스 기본 실행
-      VPCZoneIdentifier: #Private Subnet에 인스턴스 배포
+      MinSize: 5
+      MaxSize: !Ref MaxECSInstance
+      DesiredCapacity: 5
+      VPCZoneIdentifier:
       - !Ref VPCPrivateSubnet1
       - !Ref VPCPrivateSubnet2
       LaunchTemplate:
-        LaunchTemplateId: !Ref ECSAutoScalingGroupLaunchTemplate #EC2 실행 템플릿 로드
+        LaunchTemplateId: !Ref ECSAutoScalingGroupLaunchTemplate
         Version: !GetAtt ECSAutoScalingGroupLaunchTemplate.LatestVersionNumber
-      TargetGroupARNs: #ALB Target Group 매치
+      TargetGroupARNs:
       - !Ref FrontendTargetGroup
       - !Ref BackendTargetGroup8000
       - !Ref BackendTargetGroup8001
@@ -1308,7 +1315,7 @@ Resources:
         Value: ECS-AutoScaling-Group
         PropagateAtLaunch: true
   #ECS ASG Policy
-  ECSASGPolicy: #EC2 Scale-out 조건
+  ECSASGPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AutoScalingGroupName: !Ref ECSAutoScalingGroup
@@ -1316,7 +1323,7 @@ Resources:
       TargetTrackingConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
-        TargetValue: 70 #CPU 사용률 70% 이상
+        TargetValue: 70
   #ECS ASG LaunchConfiguation
   ECSAutoScalingGroupLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -1324,7 +1331,7 @@ Resources:
       LaunchTemplateName: ECS-AutoScalingGroup-LaunchTemplate
       LaunchTemplateData:
         IamInstanceProfile:
-          Name: !Ref ECSInstanceProfile #IAM 역할이 연결된 EC2 프로파일 연동
+          Name: !Ref ECSInstanceProfile
         ImageId: !Ref ImageID
         InstanceType: !Ref InstanceType
         KeyName: !Ref ECSKey
@@ -1332,7 +1339,7 @@ Resources:
         - !Ref FrontendSecurityGroup
         - !Ref BackendSecurityGroup
         - !Ref SSHSecurityGroup
-        BlockDeviceMappings: #스토리지 정의
+        BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs: 
             Encrypted: true
