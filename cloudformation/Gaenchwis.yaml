@@ -878,6 +878,13 @@ Resources:
   BackendListener8000:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -906,6 +913,13 @@ Resources:
   BackendListener8001:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -934,6 +948,13 @@ Resources:
   BackendListener8002:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -962,6 +983,13 @@ Resources:
   BackendListener8003:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -990,6 +1018,13 @@ Resources:
   BackendListener8004:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1018,6 +1053,13 @@ Resources:
   BackendListener8005:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1046,6 +1088,13 @@ Resources:
   BackendListener8006:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1074,6 +1123,13 @@ Resources:
   BackendListener8007:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1102,6 +1158,13 @@ Resources:
   BackendListener8008:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1130,6 +1193,13 @@ Resources:
   BackendListener8009:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:
@@ -1158,6 +1228,13 @@ Resources:
   BackendListener8010:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
       Certificates:
       - CertificateArn: !Ref ALBTLS
       DefaultActions:

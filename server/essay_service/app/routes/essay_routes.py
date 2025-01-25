@@ -7,8 +7,8 @@ from ..repositories.essay_repository import EssayRepository
 router = APIRouter()
 essay_repository = EssayRepository()
 
-@router.options("/{path:path}")
-def preflight():
+@router.options("/{full_path:path}")
+def options_handler(full_path: str):
     return {"status": "ok", "message": "Preflight"}
 
 @router.get("/healthcheck")
