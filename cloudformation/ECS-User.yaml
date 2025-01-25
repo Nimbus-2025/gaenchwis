@@ -5,8 +5,8 @@ Resources:
     Properties:
       Cluster: !ImportValue ECSCluster
       DeploymentConfiguration:
-        MaximumPercent: 150
-        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
         Alarms:
           AlarmNames:
           - User Backend Alarm
@@ -29,7 +29,7 @@ Resources:
     Properties:
       ContainerDefinitions:
       - Name: Gaenchwis-UserBackend
-        Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/user-service
+        Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/user-service:latest
         PortMappings:
         - ContainerPort: 8005
           HostPort: 8005

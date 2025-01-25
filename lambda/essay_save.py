@@ -11,9 +11,6 @@ def essay_save(event, context):
 
     header = {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, access_token, id_token, user_id, post_id, applies"
     }
 
     if event['httpMethod'] == 'OPTIONS':
