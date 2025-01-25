@@ -22,6 +22,10 @@ logger.info(f"Loading .env from: {env_path}")
 logger.info(f"Env file exists: {env_path.exists()}")
 load_dotenv(dotenv_path=env_path)
 
+# 3. 환경변수 로드 확인용 로깅 (Config 클래스 생성 전)
+logger.info("Initial AWS Credentials Check:")
+logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
+
 @dataclass
 class AWSConfig:
     region: str = os.getenv('AWS_REGION', 'ap-northeast-2')
