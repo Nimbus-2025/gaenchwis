@@ -17,9 +17,16 @@ router = APIRouter()
 user_repository = UserRepository()
 token_validator = TokenValidator()
 
+@router.options("/{full_path:path}")
+def options_handler(full_path: str):
+    return JSONResponse(
+        content={"message": "OK"},
+        status_code=200
+    )
+
 @router.get("/healthcheck")
 async def healthcheck():
-    return {"status": "healthy", "message": "건강합니다"}
+    return {"status": "healthy"}
 
 def get_user_tokens(
     access_token: str | None = Header(None, alias="access_token", convert_underscores=False), 
@@ -386,10 +393,3 @@ def get_user_interest_companies(
             detail=str(e)
         )
 
-# CORS preflight 요청을 처리하는 핸들러 
-@router.options("/{full_path:path}")
-def options_handler(full_path: str):
-    return JSONResponse(
-        content={"message": "OK"},
-        status_code=200
-    )

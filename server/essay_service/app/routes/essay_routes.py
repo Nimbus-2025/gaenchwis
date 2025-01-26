@@ -1,30 +1,75 @@
 from fastapi import APIRouter, Header, Depends, HTTPException, Body, Query
+from fastapi.responses import JSONResponse
 from typing import Dict, Optional
 import logging
 from ..schemas.essay_schema import CreateEssaysRequest, UpdateEssayRequest, SortOrder, EssayListResponse, EssayDetailResponse, SearchType
 from ..repositories.essay_repository import EssayRepository
+from ..core.security.token_validator import TokenValidator
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 essay_repository = EssayRepository()
+token_validator = TokenValidator()
 
 @router.options("/{full_path:path}")
 def options_handler(full_path: str):
-    return {"status": "ok", "message": "Preflight"}
+    return JSONResponse(
+        content={"message": "OK"},
+        status_code=200
+    )
 
 @router.get("/healthcheck")
 async def healthcheck():
-    return {"status": "healthy", "message": "건강합니다"}
+    return {"status": "healthy"}
 
 def get_user_tokens(
     access_token: str | None = Header(None, alias="access_token", convert_underscores=False), 
     id_token: str | None = Header(None, alias="id_token", convert_underscores=False),
     user_id: str | None = Header(None, alias="user_id", convert_underscores=False)
 ) -> Dict[str, str]:
-    # 헤더에서 토큰 정보를 가져오는 헬퍼 함수
-    if not access_token or not id_token:
-        raise HTTPException(status_code=401, detail="Authentication tokens required")
-    logging.info("토큰 검증 완료") 
-    return {"access_token": access_token, "id_token": id_token, "user_id": user_id}
+    logger.info("Validating user tokens...")
+    
+    # 필수 헤더 확인
+    if not access_token:
+        logger.error("Missing access_token header")
+        raise HTTPException(status_code=401, detail="access_token is required")
+    if not id_token:
+        logger.error("Missing id_token header")
+        raise HTTPException(status_code=401, detail="id_token is required")
+    if not user_id:
+        logger.error("Missing user_id header")
+        raise HTTPException(status_code=401, detail="user_id is required")
+    
+    try:
+        logger.info(f"Attempting to validate token for user: {user_id}")
+        validator = TokenValidator()
+        decoded_token = validator.decode_and_validate_token(id_token)
+        
+        # 토큰에서 추출한 user_id와 헤더의 user_id가 일치하는지 확인
+        token_user_id = decoded_token.get('cognito:username')
+        logger.info(f"Token user_id: {token_user_id}, Header user_id: {user_id}")
+        
+        if user_id != token_user_id:
+            logger.error(f"User ID mismatch. Token: {token_user_id}, Header: {user_id}")
+            raise HTTPException(status_code=401, detail="Invalid user ID")
+        
+        logger.info("Token validation successful")
+        return {
+            "access_token": access_token,
+            "id_token": id_token,
+            "user_id": user_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Token validation failed: {str(e)}")
+        raise HTTPException(status_code=401, detail=str(e))
 
 @router.get("/applied-jobs")
 def get_user_applied_jobs(
@@ -46,7 +91,7 @@ def get_user_applied_jobs(
 
 @router.post("/essays")
 def create_essay(
-    request_body: CreateEssaysRequest = Body(...),  # Body(...) 명시적으로 지정
+    request_body: CreateEssaysRequest = Body(...),  
     tokens: Dict = Depends(get_user_tokens)
 ):
     try:

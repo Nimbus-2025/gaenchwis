@@ -14,7 +14,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 # .env 파일 로드
 env_path = Path(__file__).parent.parent / '.env'
 logger.info(f"Loading .env from: {env_path}")
