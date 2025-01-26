@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Optional, TypedDict, List
-from uuid import uuid4
 import logging
 from botocore.exceptions import ClientError
 
@@ -26,7 +25,9 @@ class UserRepository:
             self.table = self.dynamodb.Table(TableNames.APPLIES)
             self.bookmarks_table = self.dynamodb.Table(TableNames.BOOKMARKS)
             self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
-            
+            self.essay_table = self.dynamodb.Table(TableNames.ESSAYS)
+            self.essay_job_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
+
         except Exception as e:
             logging.error(f"Error initializing repository: {str(e)}")
             raise
@@ -38,7 +39,7 @@ class UserRepository:
             'PK': f"USER#{user_id}",
             'SK': f"APPLY#{apply_data.post_id}",
             'GSI1PK': f"POST#{apply_data.post_id}",
-            'GSI1SK': now,                           # apply_id -> now
+            'GSI1SK': now,                          
             'user_id': user_id,
             'post_id': apply_data.post_id,
             'post_name': apply_data.post_name,
@@ -156,8 +157,7 @@ class UserRepository:
     def get_essays_by_post(self, user_id: str, post_id: str) -> list[dict]:
         try:
             # 1. 먼저 EssayJobPosting 테이블에서 post_id에 해당하는 essay_id들을 조회
-            essay_job_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
-            response = essay_job_table.query(
+            response = self.essay_job_table.query(
                 IndexName=IndexNames.ESSAY_POST_INVERSE_GSI,  
                 KeyConditionExpression='GSI1PK = :gsi1pk',
                 ExpressionAttributeValues={
@@ -172,14 +172,13 @@ class UserRepository:
                 return []
                 
             # 2. 찾은 essay_id들로 Essay 테이블에서 실제 에세이 데이터 조회
-            essay_table = self.dynamodb.Table(TableNames.ESSAYS)
             essays = []
             
             for item in response['Items']:
                 essay_id = item['GSI1SK'].split('#')[1] 
                 logging.info(f"Fetching essay with ID: {essay_id}")
                 
-                essay_response = essay_table.get_item(
+                essay_response = self.essay_table.get_item(
                     Key={
                         'PK': f"USER#{user_id}",
                         'SK': f"ESSAY#{essay_id}"

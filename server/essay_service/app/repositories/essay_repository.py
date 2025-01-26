@@ -1,13 +1,12 @@
 from typing import Optional, TypedDict, List
 from datetime import datetime
 import uuid
-
+import logging
 from botocore.exceptions import ClientError
 
 from app.core.aws_client import AWSClient
-from app.core.constants import TableNames, IndexNames
-from app.core.enums import EssayStatus
-from app.schemas.essay_schema import SortOrder, SearchType, EssayJobPosting, JobPostingLink
+from app.core.constants import TableNames
+from app.schemas.essay_schema import SortOrder, SearchType, EssayJobPosting
 
 class EssayItem(TypedDict):
     PK: str
@@ -24,13 +23,30 @@ class EssayItem(TypedDict):
 
 class EssayRepository:
     def __init__(self):
-        self.dynamodb = AWSClient.get_client('dynamodb')
-        self.table = self.dynamodb.Table(TableNames.ESSAYS)
+        # 로거 설정
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+
+        # 핸들러가 없는 경우에만 추가
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+
+        try: 
+            self.dynamodb = AWSClient.get_client('dynamodb')
+            self.table = self.dynamodb.Table(TableNames.ESSAYS)
+            self.applies_table = self.dynamodb.Table(TableNames.APPLIES)
+            self.essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
+            self.job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
+        except Exception as e:
+            logging.error(f"Error initializing repository: {str(e)}")
+            raise
 
     def get_user_applied_jobs(self, user_id: str) -> List[dict]:
         try:
-            applies_table = self.dynamodb.Table(TableNames.APPLIES)
-            response = applies_table.query(
+            response = self.applies_table.query(
                 KeyConditionExpression="PK = :PK",
                 ExpressionAttributeValues={
                     ':PK': f"USER#{user_id}"
@@ -62,7 +78,6 @@ class EssayRepository:
                     'user_id': user_id,
                     'essay_ask': question['essay_ask'],
                     'essay_content': question.get('essay_content', ''),
-                    'status': EssayStatus.DRAFT.value,
                     'created_at': current_time,
                     'updated_at': current_time,
                     'GSI1PK': "ESSAY#ALL",
@@ -74,7 +89,6 @@ class EssayRepository:
                 
             # 채용공고 연결
             if job_postings:
-                essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
                 for essay_id in essay_ids:
                     for posting in job_postings:
                         link_item: EssayJobPosting = {
@@ -87,7 +101,7 @@ class EssayRepository:
                             'GSI1PK': f"POST#{posting['post_id']}",  # dictionary 접근으로 수정
                             'GSI1SK': f"ESSAY#{essay_id}"
                         }
-                        essay_job_postings_table.put_item(Item=link_item)
+                        self.essay_job_postings_table.put_item(Item=link_item)
             return essay_ids
             
         except ClientError as e:
@@ -172,10 +186,8 @@ class EssayRepository:
                 raise ValueError("Essay not found")
                 
             # 2. 연결된 채용공고 링크 삭제
-            essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
-            
             # 2-1. 해당 에세이의 모든 채용공고 링크 조회
-            links_response = essay_job_postings_table.query(
+            links_response = self.essay_job_postings_table.query(
                 KeyConditionExpression="PK = :pk",
                 ExpressionAttributeValues={
                     ':pk': f"ESSAY#{essay_id}"
@@ -184,7 +196,7 @@ class EssayRepository:
             
             # 2-2. 모든 링크 삭제
             for link in links_response.get('Items', []):
-                essay_job_postings_table.delete_item(
+                self.essay_job_postings_table.delete_item(
                     Key={
                         'PK': link['PK'],
                         'SK': link['SK']
@@ -226,8 +238,7 @@ class EssayRepository:
             essay_item = response['Item']
             
             # 2. 연관된 공고 ID들 조회 
-            essay_job_postings_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
-            links_response = essay_job_postings_table.query(
+            links_response = self.essay_job_postings_table.query(
                 KeyConditionExpression="PK = :pk",
                 ExpressionAttributeValues={
                     ':pk': f"ESSAY#{essay_id}"
@@ -239,15 +250,13 @@ class EssayRepository:
             
             # 3. 연관된 공고 정보 조회
             job_postings = []
-            job_postings_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
-            
             for link in links:
                 try:
                     post_id = link['SK'].split('#')[1]
                     company_id = link['company_id']
                     
                     # 정확한 복합키로 직접 조회
-                    job_posting_response = job_postings_table.get_item(
+                    job_posting_response = self.job_postings_table.get_item(
                         Key={
                             'PK': f"COMPANY#{company_id}",
                             'SK': f"JOB#{post_id}"
