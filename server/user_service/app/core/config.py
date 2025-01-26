@@ -26,6 +26,8 @@ logger.info(f"AWS_REGION: {os.getenv('AWS_REGION')}")
 class AWSConfig:
     region: str = os.getenv('AWS_REGION', 'ap-northeast-2')
 
+@dataclass
+class DynamoDBConfig:
     applies: str = os.getenv('DYNAMODB_APPLIES', 'applies')
     essay_job_postings: str = os.getenv('DYNAMODB_ESSAY_JOB_POSTINGS', 'essay_job_postings')
     essays: str = os.getenv('DYNAMODB_ESSAYS', 'essays') 

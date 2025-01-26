@@ -1,28 +1,35 @@
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-from typing import List, Dict
-import uuid
 from datetime import datetime
+from typing import List, Dict
+import logging
+import uuid
+from boto3.dynamodb.conditions import Key, Attr
+from botocore.exceptions import ClientError
+
+from app.core.aws_client import AWSClient
 from app.schemas.scheduling_schema import GeneralScheduleCreate
 from app.core.config import config
-import logging
 
 class ScheduleRepository:
     def __init__(self):
-        self.dynamodb = boto3.resource(
-            'dynamodb',
-            region_name=config.aws.region,
-            aws_access_key_id=config.aws.access_key,
-            aws_secret_access_key=config.aws.secret_key
-        )
-        # 테이블 초기화 시 로깅 추가
-        logging.info("Initializing DynamoDB tables")
+        # 로거 설정
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         
-        self.table = self.dynamodb.Table('schedules')  # 일반 일정 테이블
-        self.apply_table = self.dynamodb.Table('applies')  # 취업 일정 테이블
+        # 핸들러가 없는 경우에만 추가
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
         
-        logging.info(f"Schedules table name: {self.table.table_name}")
-        logging.info(f"Applies table name: {self.apply_table.table_name}")
+        try: 
+            self.dynamodb = AWSClient.get_client('dynamodb')
+            self.table = self.dynamodb.Table('schedules')  # 일반 일정 테이블
+            self.apply_table = self.dynamodb.Table('applies')  # 취업 일정 테이블
+
+        except Exception as e:
+            logging.error(f"Error initializing repository: {str(e)}")
+            raise
 
     def create_general_schedule(self, user_id: str, request: GeneralScheduleCreate) -> str:
         try:
