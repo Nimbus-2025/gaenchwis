@@ -6,10 +6,6 @@ phases:
       - echo Installing prerequisites...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      - AWS_REGION=$AWS_DEFAULT_REGION
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID
-      - COGNITO_APP_CLIENT_ID=$COGNITO_APP_CLIENT_ID
 
   pre_build:
     commands:
@@ -25,29 +21,17 @@ phases:
     commands:
       # Docker 이미지 빌드
       - echo Building the Docker image...
-      - pwd
-      - ls -la
       - cd server/user_service
-      # - cat Dockerfile
-      - cd $CODEBUILD_SRC_DIR
-      - ls -la
-      - cd server/user_service
-      - ls -la
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      # ECR에 이미지 푸시
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
-      # ECS 배포를 위한 imagedefinitions.json 생성
-      - pwd
       - echo Writing image definitions file...
       - printf '[{"name":"Gaenchwis-UserBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
-      # task-definition.json의 환경변수 치환
-      - cd $CODEBUILD_SRC_DIR/server/user_service
       - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
 
 artifacts:
@@ -56,10 +40,3 @@ artifacts:
     - imageDefinitions.json
   base-directory: $CODEBUILD_SRC_DIR/
   discard-paths: yes
-
-env:
-  parameter-store:
-    ACCOUNT_ID: /gaenchwis/user-service/account-id
-    AWS_REGION: /gaenchwis/user-service/aws-region
-    COGNITO_USER_POOL_ID: /gaenchwis/user-service/cognito-user-pool-id
-    COGNITO_APP_CLIENT_ID: /gaenchwis/user-service/cognito-app-client-id
