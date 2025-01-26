@@ -1,0 +1,43 @@
+{
+  "family": "JobPostingBackendService",
+  "networkMode": "bridge",
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "512",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ECS-Container-Role",
+  "containerDefinitions": [
+    {
+      "name": "Gaenchwis-JobPostingBackend",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/job-posting-service:latest",
+      "portMappings": [
+        {
+          "containerPort": 8003,
+          "hostPort": 8003,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "COGNITO_USER_POOL_ID",
+          "value": "ap-northeast-2_ltCxps5XQ"
+        },
+        {
+          "name": "COGNITO_APP_CLIENT_ID",
+          "value": "6dnsfj8d7327ghh5sg62eqbru0"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "ap-northeast-2"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/job-posting-service",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
