@@ -29,7 +29,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: Gaenchwis-SchedulingBackend
-          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/scheduling-service
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/scheduling-service:latest
           PortMappings:
             - ContainerPort: 8006
               HostPort: 8006
