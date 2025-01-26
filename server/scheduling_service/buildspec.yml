@@ -16,12 +16,18 @@ phases:
       - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/scheduling-service
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+      # 권한 설정 추가
+      - chmod -R 755 server/scheduling_service
 
   build:
     commands:
       # Docker 이미지 빌드
       - echo Building the Docker image...
-      - cd server/scheduling_service
+      # 디렉토리 존재 확인
+      - echo "Current directory is $(pwd)"
+      - ls -la
+      # 디렉토리 이동 및 빌드
+      - cd server/scheduling_service || exit 1
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
