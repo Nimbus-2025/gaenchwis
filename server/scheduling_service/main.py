@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.routes.user_routes import router
+from app.routes.schedule_routes import router
 import logging
 
 # 로깅 설정
