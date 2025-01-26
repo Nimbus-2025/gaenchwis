@@ -89,7 +89,7 @@ app.add_middleware(
 )
 
 app.include_router(
-    schedule_routes.router,
+    router,
     prefix="/api/v1",
     tags=["schedules"]
 )
