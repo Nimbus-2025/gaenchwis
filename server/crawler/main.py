@@ -90,16 +90,12 @@ class APIServer:
 
     def _run_periodic_crawling(self):
         import time
-        while True:
-            try:
-                self.crawler_executor.logger.info("정기 크롤링 작업 시작")
-                result = self.crawler_executor.execute_crawler('saramin')
-                self.crawler_executor.logger.info(f"정기 크롤링 완료: {result}")
-            except Exception as e:
-                self.crawler_executor.logger.error(f"정기 크롤링 중 오류 발생: {str(e)}")
-
-            # EventBridge에서 3시간마다 실행하므로, 크롤링 완료 후 종료
-            break
+        try:
+            self.crawler_executor.logger.info("정기 크롤링 작업 시작")
+            result = self.crawler_executor.execute_crawler('saramin')
+            self.crawler_executor.logger.info(f"정기 크롤링 완료: {result}")
+        except Exception as e:
+            self.crawler_executor.logger.error(f"정기 크롤링 중 오류 발생: {str(e)}")
 
     def _setup_routes(self) -> None:
         # API 라우트 설정
