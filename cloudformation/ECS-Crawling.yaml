@@ -55,7 +55,7 @@ Resources:
       ScheduleExpression: 'cron(0 */3 * * ? *)'
       State: ENABLED
       Targets:
-        - Arn: !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/!ImportValue ECSCluster
+        - Arn: !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/Gaenchwis'
           Id: CrawlerTask
           RoleArn: !GetAtt EventBridgeRole.Arn
           EcsParameters:
