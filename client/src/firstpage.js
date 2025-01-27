@@ -78,11 +78,7 @@ return (
       <Logo src={logo} alt="Logo" onClick={handleLogoClick}/>
       <LoginButtonWrapper>
         <LoginButton />
-       <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleLoginFailure}
-        scope="profile email"
-        />
+       
        </LoginButtonWrapper>
     </PageWrapper>
      </GoogleOAuthProvider>

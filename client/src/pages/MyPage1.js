@@ -69,7 +69,7 @@ const handleSearch = (query) => {
   };
 
   const showProfile = () => {
-    if (!userData?.email) {
+    if (!userData?.user_id) {
       setIsPopupOpen(true); // 팝업 표시
     } else {
       setSelectedButton('profile');
@@ -77,7 +77,7 @@ const handleSearch = (query) => {
     }
 
   const handleShowBookmarks = () => {
-    if (!userData?.email) {
+    if (!userData?.user_id) {
       setIsPopupOpen(true); // 팝업 표시
     } else {
       setContent(<ShowBookmark bookmarkedJobs={bookmarkedJobs} />); // 북마크된 공고 표시

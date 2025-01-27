@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import LocationModal from '../modal/LocationModal';
+import LocationTag from '../modal/LocationTag';
 import Modal from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
 import Api from '../../api/api';
+import { format } from 'date-fns';
+import EducationTag from '../modal/EducationTag';
+import PositionTag from '../modal/PositionTag';
+
+
 
 const ShowProfile = ({ userData }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -16,6 +21,12 @@ const ShowProfile = ({ userData }) => {
   const [positionTags, setPositionTags] = useState([]);
   const [educationTags, setEducationTags] = useState([]);
   const [error, setError] = useState(null);
+  const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
+  const [allEducationTags, setAllEducationTags] = useState([]);
+  const [allLocationTags, setAllLocationTags] = useState([]);
+  const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
+  const [selectedPositionTags, setSelectedPositionTags] = useState([]);
+
   const tagOrder = {
     '대학교(4년)': 1,
     '대학(2,3년)': 2,
@@ -24,7 +35,7 @@ const ShowProfile = ({ userData }) => {
     박사: 5,
     학력무관: 6,
   };
-
+  const today = new Date(); // today 변수 추가
   useEffect(() => {
     const fetchEducationTags = async () => {
       try {
@@ -35,7 +46,8 @@ const ShowProfile = ({ userData }) => {
           (a, b) => (tagOrder[a] || 999) - (tagOrder[b] || 999),
         );
 
-        setEducationTags(sortedTags);
+        setAllEducationTags(sortedTags);  // 모든 가능한 태그 설정
+        setEducationTags([]); // 초기에는 선택된 태그 없음
       } catch (error) {
         console.error('Error fetching education tags:', error);
       }
@@ -44,6 +56,36 @@ const ShowProfile = ({ userData }) => {
     fetchEducationTags();
   }, []);
 
+  useEffect(() => {
+    const fetchLocationTags = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/tags/location');
+        if (!response.ok) {
+          throw new Error('Failed to fetch location tags');
+        }
+        const data = await response.json();
+        console.log('Fetched location tags:', data); // 데이터 확인용
+        setAllLocationTags(data);
+      } catch (error) {
+        console.error('Error fetching location tags:', error);
+      }
+    };
+
+    fetchLocationTags();
+  }, []);
+
+  const handleApplyEducationTags = (selectedTags) => {
+    setEducationTags(selectedTags);
+    setIsEducationModalOpen(false);
+  };
+
+  const handlePositionTagsApply = (tags) => {
+    console.log('선택된 태그들:', tags); // 디버깅용
+    setSelectedPositionTags(tags);
+    // 여기서 선택된 태그들을 저장하거나 처리
+  };
+
+  
   const handleSave = async (name, email, phone) => {
     setName(name);
     setEmail(email);
@@ -90,22 +132,17 @@ const ShowProfile = ({ userData }) => {
         <div className="profile-info">
           <div className="profile-header">
             <div className="profile-picture">
-              <img
-                src={userData.profileImage || ''}
-                alt="Profile"
-                className="profile-image"
-              />
+             
             </div>
             <div className="profile-details">
-              {/* <p>이름: {name}</p>
-            {/* <p>전화번호: {phone}</p>
-            <p>이메일 주소: {email}</p> */} 
+                <p>이름: {name}</p>
+                <p>전화번호: {phone}</p>
+                <p>이메일 주소: {email}</p>
+                 
           </div>
         </div>
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
-      </div>
-      <div className="profile-info1">
-      <h4>입사지원 현황</h4>
+        <h4>입사지원 현황</h4>
         <div className="status-box">
         <div className="status-container">
         <div className="status-item">
@@ -125,44 +162,59 @@ const ShowProfile = ({ userData }) => {
         <div className="divider"></div>
         </div>
         </div>
+      </div>
+
+      <div className="profile-info">
+      <div className="today-schedule">
+    <h4>오늘의 일정입니다</h4>
+    <p className="today-date">{format(new Date(), 'yyyy년 MM월 dd일')}</p>
+    </div>
+    <div className="today-schedule">
+   
+    <h4>다가오는 일정</h4>
+    
+    </div>
+     
     </div>
     </div>
       <div>
+      <h4>My tag</h4>
+      
         <div className="info-box-container">
+        
+        <div className="info-box-row">
           <div className="info-box">
+          <div className="info-box-header">
             <h4>지역</h4>
-            <div className="tag-list">
-              <p>
-                선택된 지역:{' '}
-                {selectedLocations
-                  .map((location) => (
-                    <span key={location}>
-                      {location}(
-                      {selectedDistricts[location]?.join(', ') || '지역구 없음'}
-                      )
-                    </span>
-                  ))
-                  .reduce(
-                    (prev, curr) => (prev ? [prev, ', ', curr] : [curr]),
-                    '',
-                  )}
-              </p>
-              <button
-                className="add-location-button"
-                onClick={() => setIsModalOpen(true)}
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <div className="info-box">
-                        <h4>관심 직무</h4>
-                        <div className="tag-list">
-                            {/* 관심 직무 내용 추가 */}
-                        </div>
-                    </div>
+            <button  
+            className="add-tag-button"
+          onClick={() => setIsModalOpen(true)}
+        >
+          +
+        </button>
+        </div>
+           <div className="tag-list">
+      {selectedLocations.length > 0 ? (
+        selectedLocations.map((location, index) => (
+          <span key={index} className="tag-item">
+            {location}
+          </span>
+        ))
+      ) : (
+        <span className="no-tags">태그 없음</span>
+      )}
+    </div>
+  </div>
                     <div className="info-box">
+                    <div className="info-box-header">
                     <h4>학력</h4>
+                    <button 
+          className="add-tag-button"
+          onClick={() => setIsEducationModalOpen(true)}
+        >
+          +
+        </button>
+        </div>
             <div className="tag-list">
               {educationTags.length > 0 ? (
                 educationTags.map((tag, index) => (
@@ -173,15 +225,44 @@ const ShowProfile = ({ userData }) => {
               ) : (
                 <span className="no-tags">태그 없음</span>
               )}
+              
+            </div>
             </div>
           </div>
+          <div className="info-box1">
+          <div className="info-box-header">
+          <h4>관심 직무</h4>
+          <button 
+            className="add-tag-button"
+            onClick={() => setIsPositionModalOpen(true)}
+          >
+            +
+          </button>
+        </div>
+        <div className="tag-list">
+          {selectedPositionTags.length > 0 ? (
+            selectedPositionTags.map((tag, index) => (
+              <span key={index} className="tag-item">
+                {tag}
+              </span>
+            ))
+          ) : (
+            <span className="no-tags">태그 없음</span>
+          )}
         </div>
       </div>
-      <LocationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onApply={handleApplyLocations}
-      />
+        </div>
+      </div>
+      <LocationTag
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      allLocationTags={allLocationTags}
+      selectedTags={selectedLocations}
+      onApply={(selectedTags) => {
+        setSelectedLocations(selectedTags);
+        setIsModalOpen(false);
+      }}
+    />
        <Modal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
@@ -190,7 +271,21 @@ const ShowProfile = ({ userData }) => {
                 email={email}
                 phone={phone}
             />
+        <EducationTag
+        isOpen={isEducationModalOpen}
+        onClose={() => setIsEducationModalOpen(false)}
+        allEducationTags={allEducationTags}
+        selectedTags={educationTags}
+        onApply={handleApplyEducationTags}
+      />
+      <PositionTag
+  isOpen={isPositionModalOpen}
+  onClose={() => setIsPositionModalOpen(false)}
+  selectedTags={selectedPositionTags}
+  onApply={handlePositionTagsApply}
+/>
     </div>
+    
   );
 };
 

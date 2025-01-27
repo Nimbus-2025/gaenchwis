@@ -30,11 +30,15 @@
   .info-box-container {
     display: flex;
     flex-direction: column; /* 세로로 정렬 */
-    gap: 50px; /* 각 박스 사이의 간격 */
-    margin-top:150px;
-    
+    gap: 20px; /* 각 박스 사이의 간격 */
+    margin-top:100px;
+    align-items: center; /* 가로축 중앙 정렬 */
     justify-content: space-between; /* 박스 간 동일한 간격 배분 */
-    margin-left:100px;
+    margin-left:50px;
+  }
+  .info-box-row {
+    display: flex;
+    gap: 20px;
   }
   Profilebutton {
     padding: 10px 20px;border: 1px solid rgb(170, 168, 168);
@@ -65,8 +69,8 @@
     border-radius: 5px; /* 모서리 둥글게 설정 (선택 사항) */
   }
 .profile-info {
-    width: 500px; /* 예시 너비 */
-    height: 300px;
+    width: 600px; /* 예시 너비 */
+    height: 400px;
     padding: 15px;
     margin-top: 20px;
     background-color: #f9f9f9;
@@ -77,11 +81,12 @@
 }
 .profile-info1 {
   width: 800px; /* 예시 너비 */
-  height: 300px;
+  height: 400px;
   padding: 15px;
   display: flex; /* Flexbox 사용 */
   flex-direction: column; /* 세로 방향으로 정렬 */
   margin-top: 20px; /* 위쪽 여백 */
+  
   border: 1px solid rgb(170, 168, 168);
   border-radius: 16px; /* 모서리 둥글게 */
   background-color: #f9f9f9; /* 배경색 */
@@ -111,6 +116,10 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
+  max-height: 150px;
+  overflow-y: auto; /* 세로 스크롤 활성화 */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 
 .tag {
@@ -119,8 +128,8 @@
 
 .tag-item {
   display: inline-block;
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: #5170fa;
+  color: #ffffff;
   padding: 8px 15px;
   border-radius: 20px;
   font-size: 14px;
@@ -130,18 +139,39 @@
 }
 
 .tag-item:hover {
-  background-color: #e0e0e0;
+  background-color: #1b33e9;
   transform: translateY(-2px);
 }
-
+.info-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
 .info-box {
   
   background-color: #f9f9f9; /* 사각형 배경색 */
   border-radius: 16px;/*  모서리 둥글게 */
   padding: 10px; /* 내부 여백 */
-  width: 800px; /* 각 사각형의 너비 */
+  width: 500px; /* 각 사각형의 너비 */
   margin: 0;
-  height:200px;
+  height:300px;
+  border: 1px solid rgb(170, 168, 168);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  
+  
+}
+
+
+.info-box1 {
+  
+  background-color: #f9f9f9; /* 사각형 배경색 */
+  border-radius: 16px;/*  모서리 둥글게 */
+  padding: 10px; /* 내부 여백 */
+  width: 1040px; /* 각 사각형의 너비 */
+  margin: 0;
+  margin-top: 50px;
+  height:300px;
   border: 1px solid rgb(170, 168, 168);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   
@@ -229,7 +259,7 @@ edit-form {
 }
 
 .edit-button {
-  margin-left: auto; /* 왼쪽 여백 자동 */
+  width: 200px; /* 왼쪽 여백 자동 */
   margin-right: 0; /* 오른쪽 여백 제거 */
   padding: 5px 10px; /* 버튼 패딩 줄이기 */
   font-size: 12px; /* 버튼 글자 크기 */
@@ -294,4 +324,16 @@ edit-form {
 
 .add-tag-button:hover {
   background-color: #0056b3;
+}
+.today-schedule {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.upcoming-info h4 {
+  margin-top: 20px;
+  color: #666;
 }

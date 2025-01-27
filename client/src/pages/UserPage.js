@@ -37,6 +37,7 @@ const UserPage = () => {
       prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     );
   };
+  
 
   const handleLoginClick = () => {
     navigate('/'); // 로그인 페이지로 이동
@@ -47,7 +48,7 @@ const UserPage = () => {
     sessionStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
     navigate('/'); // 메인 페이지로 이동
   };
-
+  const isLoggedIn = !!userData; // userData가 있으면 true, 없으면 false
 
   useEffect(() => {
     try {
@@ -87,6 +88,22 @@ const UserPage = () => {
   };
   return (
     <div>
+      {/* 로그인 상태일 때만 맞춤공고 섹션 표시 */}
+      {isLoggedIn && (
+        <>
+          <h1 className="job-header">맞춤공고 입니다.</h1>
+          <div className="job-container">
+            {/* 맞춤공고 관련 컨텐츠 */}
+            {loading ? (
+              <div>로딩 중...</div>
+            ) : (
+              // 여기에 맞춤공고 JobCard들을 매핑
+              <div>맞춤공고 컨텐츠</div>
+            )}
+          </div>
+        </>
+      )}
+
       <h1 className="job-header">최근 업데이트된 공고입니다.</h1>
       <div className="job-container">
         

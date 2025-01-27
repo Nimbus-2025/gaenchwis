@@ -11,11 +11,9 @@ function CategoryPopup({ isOpen, onClose }) {
   });
 
   const categories = {
-    직무: ['개발자', '디자이너', '기획자', '마케팅', 'PM'],
     학력: ['4년제 졸업', '전문대 졸업', '고졸'],
     지역: ['서울', '경기', '인천'],
-    경력: ['신입', '경력'],
-    자격증: ['정보처리기사', '워드프로세서', 'TOEIC']
+    경력: ['신입', '경력']
   };
 
   const handleCheckboxChange = (category, item) => {
