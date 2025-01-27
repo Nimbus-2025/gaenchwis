@@ -83,19 +83,22 @@ class APIServer:
         self.crawler_executor = CrawlerExecutor(config)
         self._setup_routes()
 
-        import threading
-        self.crawler_thread = threading.Thread(target=self._run_periodic_crawling)
-        self.crawler_thread.daemon = True # 메인 프로세스 종료 시 자동 종료
-        self.crawler_thread.start()
-
-    def _run_periodic_crawling(self):
-        import time
+        # 서버 시작과 동시에 크롤링 시작
+        self.crawler_executor.logger.info("서버 시작과 함께 크롤링 시작")
         try:
-            self.crawler_executor.logger.info("정기 크롤링 작업 시작")
             result = self.crawler_executor.execute_crawler('saramin')
-            self.crawler_executor.logger.info(f"정기 크롤링 완료: {result}")
+            self.crawler_executor.logger.info(f"크롤링 완료: {result}")
         except Exception as e:
-            self.crawler_executor.logger.error(f"정기 크롤링 중 오류 발생: {str(e)}")
+            self.crawler_executor.logger.error(f"크롤링 중 오류 발생: {str(e)}")
+
+    # def _run_periodic_crawling(self):
+    #     import time
+    #     try:
+    #         self.crawler_executor.logger.info("정기 크롤링 작업 시작")
+    #         result = self.crawler_executor.execute_crawler('saramin')
+    #         self.crawler_executor.logger.info(f"정기 크롤링 완료: {result}")
+    #     except Exception as e:
+    #         self.crawler_executor.logger.error(f"정기 크롤링 중 오류 발생: {str(e)}")
 
     def _setup_routes(self) -> None:
         # API 라우트 설정
