@@ -25,13 +25,3 @@ class TagCategory(str, Enum):
     @classmethod
     def is_valid(cls, category: str) -> bool:
         return category in [item.value for item in cls]
-
-class UserTagCategory(str, Enum):
-    INTEREST = "interest"
-    CAREER = "career"
-    EDUCATION = "education"
-    CERTIFICATE = "certificate"
-    
-    @classmethod
-    def is_valid(cls, category: str) -> bool:
-        return category in [item.value for item in cls]

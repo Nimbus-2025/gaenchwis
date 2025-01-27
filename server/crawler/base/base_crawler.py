@@ -12,7 +12,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
-from common.utils import create_directory
 from common.driver_setup import setup_driver
 
 class BaseCrawler(ABC):
@@ -25,10 +24,9 @@ class BaseCrawler(ABC):
         self.chrome_driver_path = os.getenv('CHROME_DRIVER_PATH', '/usr/local/bin/chromedriver')
         self.headless = os.getenv('HEADLESS', 'true').lower() == 'true'
         
-    # 크롤러 초기화: 디렉토리 생성 및 웹드라이버 설정 
+    # 크롤러 초기화: 웹드라이버 설정 
     def initialize(self):
         try:
-            create_directory(self.output_dir)
             self.driver = setup_driver()
         except Exception as e:
             raise RuntimeError(f"크롤러 초기화 실패: {e}")
