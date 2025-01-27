@@ -25,7 +25,10 @@ def active_job_postings(event, context):
 
             if item_date < today:
                 table.update_item(
-                    Key={'PK': item['PK']},
+                    Key={
+                        'PK': item['PK'],
+                        'SK': item['SK']
+                    },
                     UpdateExpression="""
                         SET #status = :new_status,
                             #gsi1pk = :new_gsi1pk,

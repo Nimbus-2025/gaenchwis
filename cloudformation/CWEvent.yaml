@@ -1,9 +1,5 @@
-Parameters:
-  LambdaRole:
-    Type: String
-    Default: arn:aws:iam::463470980614:role/lambda-execution-role
-
 Resources:
+#--------------------EventBridge
   ActiveJobPostingsEventBridgeRule:
     Type: AWS::Events::Rule
     Properties:
@@ -13,7 +9,19 @@ Resources:
         - Arn: !GetAtt ActiveJobPostingsLambdaFunction.Arn
           Id: LambdaTarget
       State: ENABLED
+  
+  EmailAlarmEventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "cron(0 0 * * ? *)"
+      Targets:
+        - Arn: !GetAtt DeadlineNotificationLambda.Arn
+          Id: DeadlineNotificationLambdaTarget
+#--------------------EventBridge/
 
+
+
+#--------------------LambdaPermission
   ActiveJobPostingsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -22,11 +30,23 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt ActiveJobPostingsEventBridgeRule.Arn
 
+  EmailAlarmLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt DeadlineNotificationLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt EmailAlarmEventBridgeRule.Arn
+#--------------------LambdaPermission/
+
+
+
+#--------------------Lambda
   ActiveJobPostingsLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: Active-Job-Postings
-      Role: !Ref LambdaRole
+      Role: !ImportValue LambdaExecutionRole
       Runtime: python3.9
       Handler: active_job_postings.active_job_postings
       Layers:
@@ -39,7 +59,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: New-Job-Postings-Processing
-      Role: !Ref LambdaRole
+      Role: !ImportValue LambdaExecutionRole
       Runtime: python3.9
       Handler: new_job_postings_processing.new_job_postings_processing
       Layers:
@@ -47,3 +67,17 @@ Resources:
       Code:
         S3Bucket: gaenchwis-lambda 
         S3Key: new_job_postings_processing.zip
+
+  DeadlineNotificationLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: email_alarm
+      Role: !ImportValue LambdaExecutionRole
+      Runtime: python3.9
+      Handler: email_alarm.email_alarm
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: email_alarm.zip
+#--------------------Lambda

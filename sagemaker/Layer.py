@@ -26,8 +26,6 @@ class CombineVectors(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
             nn.Linear(hidden_dim, output_dim)
         )
 
@@ -35,3 +33,20 @@ class CombineVectors(nn.Module):
         combined = torch.cat([position, location, education, skill], dim=-1)
         output = self.fc(combined)
         return output
+    
+def Vector(tags_group, position_model, location_model, education_model, skill_model):
+    position_tensor = torch.tensor(tags_group["position"], dtype=torch.long)
+    location_tensor = torch.tensor(tags_group["location"], dtype=torch.long)
+    education_tensor = torch.tensor(tags_group["education"], dtype=torch.long)
+    skill_tensor = torch.tensor(tags_group["skill"], dtype=torch.long)
+
+    position_vector = position_model(position_tensor)
+    location_vector = location_model(location_tensor)
+    education_vector = education_model(education_tensor)
+    skill_vector = skill_model(skill_tensor)
+
+    combined_model = CombineVectors(input_dim=512)
+
+    combined_vector = combined_model(position_vector, location_vector, education_vector, skill_vector)
+
+    return combined_vector
