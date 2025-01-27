@@ -18,7 +18,7 @@ Parameters:
   MaxECSInstance:
     Description: Maximum ECS EC2 Instance Scaling
     Type: String
-    Default: 10
+    Default: 4
   ECSKey:
     Description: ECS EC2 Instance SSH Key
     Type: String
@@ -30,7 +30,7 @@ Parameters:
   InstanceType:
     Description: ECS EC2 Instance Type
     Type: String
-    Default: t2.micro
+    Default: t3.medium
   AZ1:
     Description: Seoul AZ1
     Type: String
@@ -77,6 +77,10 @@ Outputs:
     Value: !Ref ECSCluster
     Export:
       Name: ECSCluster
+  LambdaExecutionRole:
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: LambdaExecutionRole
   BackendTargetGroup8000:
     Value: !Ref BackendTargetGroup8000
     Export:
@@ -505,6 +509,7 @@ Resources:
             - logs:*
             - dynamodb:*
             - s3:*
+            - ses:*
             Resource: '*'
   UserLoadLambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -1365,9 +1370,9 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AutoScalingGroupName: ECS-AutoScaling-Group
-      MinSize: 5
+      MinSize: 2
       MaxSize: !Ref MaxECSInstance
-      DesiredCapacity: 5
+      DesiredCapacity: 2
       VPCZoneIdentifier:
       - !Ref VPCPrivateSubnet1
       - !Ref VPCPrivateSubnet2
