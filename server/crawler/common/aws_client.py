@@ -13,15 +13,11 @@ class AWSClient:
                 if service_name == 'dynamodb':
                     cls._instances[service_name] = boto3.resource(
                         service_name,
-                        aws_access_key_id=config.AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
                         region_name=config.AWS_REGION
                     )
                 else:
                     cls._instances[service_name] = boto3.client(
                         service_name,
-                        aws_access_key_id=config.AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
                         region_name=config.AWS_REGION
                     )
             except Exception as e:

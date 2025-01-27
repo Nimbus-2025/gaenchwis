@@ -10,7 +10,6 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 # 로컬 애플리케이션
 from base.base_crawler import BaseCrawler
-from common.utils import save_to_csv
 from common.constants import CrawlerConfig
 # AWS 서비스 접근 관련 
 from common.aws_client import AWSClient
@@ -32,9 +31,6 @@ class SaraminCrawler(BaseCrawler):
         # 로깅 설정
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
-        
-        # 현재 디렉토리 경로 설정
-        current_dir = os.path.dirname(os.path.abspath(__file__))
         
         # 파일 핸들러 추가
         fh = logging.FileHandler(os.path.join(self.output_dir, 'saramin_crawler.log'), encoding='utf-8')
@@ -122,7 +118,6 @@ class SaraminCrawler(BaseCrawler):
                 self.logger.error(f"데이터 처리 중 오류 ({job_data['회사명']}): {str(e)}")
                 print(f"전체 처리  실패: {str(e)}")
                 continue                
-                
                 
     def _save_company_info(self, company_id: str, job_data: Dict) -> None:
         # 1. 기업 정보 저장
@@ -560,11 +555,6 @@ class SaraminCrawler(BaseCrawler):
             if saramin_data:
                 print("데이터 처리 시작")
                 try: 
-                    # CSV 파일 저장
-                    output_file = os.path.join(self.output_dir, 'saramin_job.csv')
-                    save_to_csv(saramin_data, output_file)
-                    print(f"CSV 파일 저장 완료: {output_file}")
-                    
                     # DynamoDB에 데이터 저장
                     print("DynamoDB 저장 시작")
                     self.process_and_save_data(saramin_data)
