@@ -12,9 +12,13 @@ phases:
   pre_build:
     commands:
       - |
-        # 모든 검사 로직을 하나의 블록으로 묶습니다
+        # 빌드 진행 여부를 결정하는 플래그 파일 생성
+        touch $CODEBUILD_SRC_DIR/build.env
+        echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
+
         echo "Event = $CODEBUILD_WEBHOOK_EVENT"
 
+        # 변경된 파일 확인
         if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
           echo "Processing Pull Request..."
           git fetch --unshallow || true
@@ -33,47 +37,60 @@ phases:
 
         if [ -z "$CHANGED_FILES" ]; then
           echo "No changed files detected, skipping build..."
-          exit 1
+          exit 0
         fi
 
-        if ! echo "$CHANGED_FILES" | grep -q "^server/essay_service/"; then
+        if echo "$CHANGED_FILES" | grep -q "^server/essay_service/"; then
+          echo "Changes detected in essay_service directory, proceeding with build..."
+          # 빌드 진행 플래그 설정
+          echo "SHOULD_BUILD=true" > $CODEBUILD_SRC_DIR/build.env
+          
+          # ECR 로그인
+          echo "Logging in to Amazon ECR..."
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+          
+          # 환경변수 설정
+          REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/essay-service
+          COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+          IMAGE_TAG=${COMMIT_HASH:=latest}
+          
+          # 환경변수 저장
+          echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
+        else
           echo "No changes in essay_service directory, skipping build..."
-          exit 1
+          exit 0
         fi
-
-        # 여기까지 왔다면 빌드를 진행해야 하는 경우입니다
-        echo "Changes detected in essay_service directory, proceeding with build..."
-
-        # ECR 로그인
-        echo "Logging in to Amazon ECR..."
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-        # 환경변수 설정
-        REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/essay-service
-        COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-        IMAGE_TAG=${COMMIT_HASH:=latest}
-
-        # 환경변수를 다음 단계에서 사용할 수 있도록 export
-        echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
 
   build:
     commands:
-      - . $CODEBUILD_SRC_DIR/build.env
-      - echo Building the Docker image...
-      - cd server/essay_service
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+      - |
+        . $CODEBUILD_SRC_DIR/build.env
+        if [ "$SHOULD_BUILD" = "true" ]; then
+          echo Building the Docker image...
+          cd server/essay_service
+          docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
+          docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+        else
+          echo "Skipping build phase..."
+        fi
 
   post_build:
     commands:
-      - . $CODEBUILD_SRC_DIR/build.env
-      - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest
-      - echo Writing image definitions file...
-      - printf '[{"name":"Gaenchwis-EssayBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
-      - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
+      - |
+        . $CODEBUILD_SRC_DIR/build.env
+        if [ "$SHOULD_BUILD" = "true" ]; then
+          echo Pushing the Docker images...
+          docker push $REPOSITORY_URI:$IMAGE_TAG
+          docker push $REPOSITORY_URI:latest
+          echo Writing image definitions file...
+          printf '[{"name":"Gaenchwis-EssayBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
+        else
+          echo "Skipping post-build phase..."
+          echo "[]" > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
+        fi
 
 artifacts:
   files:
