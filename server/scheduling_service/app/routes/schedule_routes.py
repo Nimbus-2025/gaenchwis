@@ -16,13 +16,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1")
 schedule_repository = ScheduleRepository()
 token_validator = TokenValidator()
 
 class ScheduleCreateResponse(BaseModel):
     message: str
     schedule_id: str
+
+class ScheduleCreate(BaseModel):
+    title: str
+    date: str
+    content: str = ""
 
 @router.options("/{full_path:path}")
 def options_handler(full_path: str):
@@ -81,14 +86,27 @@ def get_user_tokens(
 @router.post("/schedules", response_model=ScheduleCreateResponse)
 def create_schedule(
     request: GeneralScheduleCreate,
-    tokens: Dict = Depends(get_user_tokens)
+    tokens: Dict = Depends(get_user_tokens) 
 ):
     try:
-        schedule_id = schedule_repository.create_general_schedule(tokens["user_id"], request)
-        return ScheduleCreateResponse(
-            message="일정이 성공적으로 저장되었습니다",
+        # tokens에서 실제 user_id 가져오기
+        user_id = tokens["user_id"]
+        schedule_id = schedule_repository.create_general_schedule(user_id, request)
+        
+        # 저장된 일정 조회
+        created_schedule = schedule_repository.get_general_schedule(
+            user_id=user_id,  # 여기도 실제 user_id 사용
             schedule_id=schedule_id
         )
+        
+        return {
+            "id": schedule_id,
+            "title": created_schedule.title,
+            "date": created_schedule.date,
+            "content": created_schedule.content,
+            "type": "schedule",
+            "completed": created_schedule.completed
+        }
     except Exception as e:
         logging.error(f"Error creating schedule: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -146,6 +164,7 @@ def get_schedule_detail(
         logging.error(f"Error getting schedule detail: {str(e)}")
         raise HTTPException(status_code=500, detail="일정 조회 중 오류가 발생했습니다")
 
+
 @router.put("/schedules/{schedule_id}", response_model=Dict)
 def update_schedule(
     schedule_id: str,
@@ -168,6 +187,8 @@ def update_schedule(
     except Exception as e:
         logging.error(f"Error updating schedule: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 @router.delete("/schedules/{schedule_id}", response_model=Dict)
 def delete_schedule(
