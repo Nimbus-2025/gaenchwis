@@ -3,6 +3,15 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      # 변경된 파일 확인
+      - CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git ls-files)
+      - |
+        if echo "$CHANGED_FILES" | grep -q "^server/crawler/"; then
+          echo "Changes detected in crawler directory, proceeding with build..."
+        else
+          echo "No changes in crawler directory, skipping build..."
+          exit 0
+        fi
       # ECR 로그인
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
