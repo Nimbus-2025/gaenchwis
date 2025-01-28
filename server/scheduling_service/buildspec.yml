@@ -17,7 +17,7 @@ phases:
 
   pre_build:
     commands:
-      # [변경 1] 빌드 진행 여부를 결정하는 플래그 파일 생성
+      # 빌드 진행 여부를 결정하는 플래그 파일 생성
       - touch $CODEBUILD_SRC_DIR/build.env
       - echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
 
@@ -28,15 +28,11 @@ phases:
           # PR의 경우
           echo "Processing Pull Request..."
           git fetch --unshallow || true
-          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
-          BEFORE_COMMIT_ID=$(echo $CODEBUILD_WEBHOOK_PREV_COMMIT)
-          AFTER_COMMIT_ID=$(echo $CODEBUILD_WEBHOOK_HEAD_REF)
-          echo "Comparing $BEFORE_COMMIT_ID with $AFTER_COMMIT_ID"
-          CHANGED_FILES=$(git diff --name-only $CODEBUILD_WEBHOOK_PREV_COMMIT $CODEBUILD_WEBHOOK_HEAD_REF || git diff --name-only HEAD^)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
         elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
           # Push의 경우
           echo "Processing Push..."
-          CHANGED_FILES=$(git diff --name-only HEAD^)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
         fi
 
         echo "Changed files:"
