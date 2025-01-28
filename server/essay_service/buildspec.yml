@@ -12,7 +12,12 @@ phases:
   pre_build:
     commands:
       # 변경된 파일 확인
-      - CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git ls-files)
+      - |
+        if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_MERGED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
+          CHANGED_FILES=$(git diff --name-only HEAD^..HEAD)
+        else
+          CHANGED_FILES=$(git diff --name-only $CODEBUILD_SOURCE_VERSION^..$CODEBUILD_SOURCE_VERSION)
+        fi
       - |
         if echo "$CHANGED_FILES" | grep -q "^server/essay_service/"; then
           echo "Changes detected in essay_service directory, proceeding with build..."
