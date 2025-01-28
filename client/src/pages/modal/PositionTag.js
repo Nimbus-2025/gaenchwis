@@ -18,7 +18,7 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
   useEffect(() => {
     const fetchPositionTags = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/tags/skill');
+        const response = await fetch('http://localhost:8003/api/tags/skill');
         const data = await response.json();
         console.log('받아온 태그 데이터:', data); 
         setAllPositionTags(data);

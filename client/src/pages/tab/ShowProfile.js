@@ -59,7 +59,7 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchLocationTags = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/tags/location');
+        const response = await fetch('http://localhost:8003/api/tags/location');
         if (!response.ok) {
           throw new Error('Failed to fetch location tags');
         }

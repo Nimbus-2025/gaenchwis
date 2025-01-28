@@ -20,7 +20,37 @@ const UserPage = () => {
     const [favoriteCompanies, setFavoriteCompanies] = useState([]);
     const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
     const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
+    
 
+    
+    useEffect(() => {
+      const fetchBookmarks = async () => {
+        try {
+          const token = sessionStorage.getItem('token');
+          const userData = sessionStorage.getItem('user');
+          
+          if (!token || !userData) return;
+  
+          const response = await Api(
+            `${Config.server}:8005/api/v1/bookmark/user`,
+            'GET',
+            null,
+            {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          );
+  
+          const bookmarks = await response.json();
+          setBookmarkedJobs(bookmarks.map(bookmark => bookmark.post_id));
+        } catch (error) {
+          console.error('북마크 목록 가져오기 실패:', error);
+        }
+      };
+  
+      fetchBookmarks();
+    }, []); // 컴포넌트 마운트 시 한 번만 실행
+    
     const toggleFavorite = (company) => {
       setFavoriteCompanies((prev) => 
         prev.includes(company) ? prev.filter(c => c !== company) : [...prev, company]
@@ -50,6 +80,8 @@ const UserPage = () => {
   };
   const isLoggedIn = !!userData; // userData가 있으면 true, 없으면 false
 
+  
+
   useEffect(() => {
     try {
       const storedUserData = sessionStorage.getItem('user');
@@ -77,11 +109,18 @@ const UserPage = () => {
       }
     };
 
+    
  
   useEffect(() => {
     fetchJobs(currentPage);
   }, [currentPage]);
-
+  const handleToggleBookmark = (postId) => {
+    setBookmarkedJobs(prev => 
+      prev.includes(postId) 
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     window.scrollTo(0, 0); // 페이지 상단으로 스크롤
@@ -103,6 +142,7 @@ const UserPage = () => {
           </div>
         </>
       )}
+      
 
       <h1 className="job-header">최근 업데이트된 공고입니다.</h1>
       <div className="job-container">
