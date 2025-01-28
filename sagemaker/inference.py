@@ -56,8 +56,8 @@ def output_fn(prediction, accept):
 def NewJobPostingTrain(job_postings_item):
     return NewJobPostings.NewJobPosting(job_postings_item)
 
-def UserRecommendation(tags_group):
-    return Recommendation.Recommendation(tags_group)
+def UserRecommendation(user_id):
+    return Recommendation.Recommendation(user_id)
 
 def InitTrain():
     Training.StartTrain()

@@ -152,3 +152,42 @@ def MakeTagGroup(job_postings_item):
             tags_group[category].append(None)
 
     return tags_group
+
+def MakeUserTagGroup(user_id):
+    dynamodb = boto3.resource('dynamodb')
+    users_table = dynamodb.Table("users")
+
+    user = users_table.get_item(Key={'PK': "USER#"+user_id})
+
+    user_tags_table = dynamodb.Table("user_tags")
+
+    user_tags = user_tags_table.query(
+        KeyConditionExpression="PK = :pk",
+        ExpressionAttributeValues={
+            ":pk": user["PK"]
+        }
+    )
+
+    tags_group = {
+        'skill': [],
+        'location': [],
+        'education': [],
+        'position': []
+    }
+
+    for user_tag in user_tags["Items"]:
+        tags_table = dynamodb.Table("tags")
+
+        tags = tags_table.query(
+            KeyConditionExpression="PK = :pk",
+            ExpressionAttributeValues={
+                ":pk": user_tag["SK"]
+            }
+        )
+        tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+        
+    for category in tags_group:
+        if not tags_group[category]:
+            tags_group[category].append(None)
+    
+    return tags_group

@@ -4,8 +4,10 @@ import torch.nn.functional as F
 import Layer
 import boto3
 
-def Recommendation(tags_group):
+def Recommendation(user_id):
     tags_json = Tag.get_tags_json()
+    tags_group = Tag.MakeUserTagGroup(user_id)
+
 
     for i in range(len(tags_group["position"])):
         tags_group["position"][i]=tags_json["position"].index(tags_group["position"][i])
