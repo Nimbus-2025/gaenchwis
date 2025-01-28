@@ -6,9 +6,20 @@ phases:
       - echo Installing prerequisites...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      # 변경된 파일 확인을 위한 git 설치
+      - yum install -y git
 
   pre_build:
     commands:
+      # 변경된 파일 확인
+      - CHANGED_FILES=$(git diff --name-only $CODEBUILD_WEBHOOK_PREV_COMMIT $CODEBUILD_RESOLVED_SOURCE_VERSION)
+      - |
+        if echo "$CHANGED_FILES" | grep -q "^server/user_service/"; then
+          echo "Changes detected in user_service directory, proceeding with build..."
+        else
+          echo "No changes in user_service directory, skipping build..."
+          exit 0
+        fi
       # ECR 로그인
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
