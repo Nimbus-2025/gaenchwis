@@ -7,9 +7,6 @@ phases:
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
       - yum install -y git
-      - git config --global protocol.version 2
-      - git config --global credential.helper '!aws codecommit credential-helper $@'
-      - git config --global credential.UseHttpPath true
 
   pre_build:
     commands:
@@ -18,50 +15,24 @@ phases:
         touch $CODEBUILD_SRC_DIR/build.env
         echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
 
-        echo "Event = $CODEBUILD_WEBHOOK_EVENT"
-        echo "Before Commit = $CODEBUILD_WEBHOOK_PREV_COMMIT"
-        echo "After Commit = $CODEBUILD_WEBHOOK_HEAD_REF"
+        # 디버깅을 위한 정보 출력
+        echo "Event type: $CODEBUILD_WEBHOOK_EVENT"
+        echo "Source version: $CODEBUILD_SOURCE_VERSION"
 
-        # 디버깅을 위한 환경 변수 출력
-        echo "Webhook Event Type: $CODEBUILD_WEBHOOK_EVENT"
-        echo "Source Version: $CODEBUILD_SOURCE_VERSION"
-        echo "Source Repo: $CODEBUILD_SOURCE_REPO_URL"
-        echo "Previous Commit: $CODEBUILD_WEBHOOK_PREV_COMMIT"
-        echo "Head Ref: $CODEBUILD_WEBHOOK_HEAD_REF"
-        echo "Base Ref: $CODEBUILD_WEBHOOK_BASE_REF"
-
-        # Git 상태 확인
-        git status
-        git branch
-
-        # 변경된 파일 확인
+        # PR이나 push에서 변경된 파일 확인
         if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
-          echo "Checking PR changes..."
-          git fetch origin $CODEBUILD_WEBHOOK_BASE_REF
-          CHANGED_FILES=$(git diff --name-only origin/$CODEBUILD_WEBHOOK_BASE_REF HEAD)
+          echo "PR changes check..."
+          # PR의 경우 전체 파일 목록 확인
+          CHANGED_FILES=$(git ls-tree -r HEAD --name-only)
         elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
-          echo "Checking Push changes..."
-          CHANGED_FILES=$(git diff --name-only HEAD^)
+          echo "Push changes check..."
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
         fi
 
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
-        if [ -z "$CHANGED_FILES" ]; then
-          echo "No changed files detected, skipping build..."
-          aws ecr describe-images --repository-name gaenchwis/user-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
-          if [ $? -eq 0 ]; then
-            # 기존 이미지가 있는 경우
-            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/user-service
-            printf '[{"name":"Gaenchwis-UserBackend","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          else
-            # 기존 이미지가 없는 경우 null 사용
-            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          fi
-          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
-          exit 0
-        fi
-
+        # user_service 디렉토리의 변경 확인
         if echo "$CHANGED_FILES" | grep -q "^server/user_service/"; then
           echo "Changes detected in user_service directory, proceeding with build..."
           # 빌드 진행 플래그 설정

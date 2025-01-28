@@ -88,8 +88,7 @@ app.add_middleware(
     ]
 )
 
-# 주석 넣어봅니다... 제발 좀 돌아가주렴...
-# 주석 추가
+# 진짜 개오바임
 
 app.include_router(router, prefix="/api/v1", tags=["user"])
 
