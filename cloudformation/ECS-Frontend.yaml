@@ -9,7 +9,7 @@ Resources:
         MinimumHealthyPercent: 50
         Alarms:
           AlarmNames:
-          - Frontend Alarm
+            - Frontend Alarm
           Enable: true
           Rollback: true
       DesiredCount: 1
@@ -28,21 +28,21 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
-      - Name: Gaenchwis-Frontend
-        Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/pyj/test_repo/gaenchwis-frontend:1
-        PortMappings:
-        - HostPort: 80
-          ContainerPort: 80
-          Protocol: tcp
-        Environment:
-        - Name: ALB
-          Value: !ImportValue ApplicationLoadBalancer
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-region: ap-northeast-2
-            awslogs-group: !ImportValue FrontendLogGroup
-            awslogs-stream-prefix: ecs-frontend
+        - Name: Gaenchwis-Frontend
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/client-service:latest
+          PortMappings:
+            - HostPort: 80
+              ContainerPort: 80
+              Protocol: tcp
+          Environment:
+            - Name: ALB
+              Value: !ImportValue ApplicationLoadBalancer
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: ap-northeast-2
+              awslogs-group: !ImportValue FrontendLogGroup
+              awslogs-stream-prefix: ecs-frontend
       Family: Gaenchwis-Frontend
       Cpu: 512
       Memory: 512
