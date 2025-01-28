@@ -71,11 +71,11 @@ async def general_exception_handler(request: Request, exc: Exception):
 #     "http://localhost:3000",
 #     "https://gaenchwis.click"
 # ]
-
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    # allow_origins= origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=[
