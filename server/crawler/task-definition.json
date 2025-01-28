@@ -10,7 +10,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/crawler-service",
+          "awslogs-group": "/ecs-backend/Gaenchwis-Backend",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs-crawler"
         }
