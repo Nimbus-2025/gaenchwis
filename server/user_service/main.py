@@ -88,7 +88,6 @@ app.add_middleware(
     ]
 )
 
-# 진짜 마지막 테스트면 좋겠다...
 app.include_router(router, prefix="/api/v1", tags=["user"])
 
 if __name__ == "__main__":

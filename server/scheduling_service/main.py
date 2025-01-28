@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routes.schedule_routes import router
 import logging
+# 주석 추가 테스트
 
 # 로깅 설정
 logging.basicConfig(
