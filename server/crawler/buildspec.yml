@@ -31,6 +31,8 @@ phases:
       # - printf '{"ImageURI":"%s"}' $REPOSITORY_URI:latest > imageDefinitions.json
       - printf '[{"name":"Gaenchwis-Crawler","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
       - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
+      # 새 태스크 정의 등록
+      - aws ecs register-task-definition --cli-input-json file://task-definition.json
 
 artifacts:
   files:
