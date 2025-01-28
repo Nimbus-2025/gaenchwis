@@ -15,12 +15,18 @@ phases:
       - |
         if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
           # PR의 경우
-          git fetch origin $CODEBUILD_SOURCE_VERSION
-          CHANGED_FILES=$(git diff --name-only HEAD..$CODEBUILD_SOURCE_VERSION)
-        else
+          echo "Processing Pull Request..."
+          CHANGED_FILES=$(git diff --name-only origin/$CODEBUILD_SOURCE_BRANCH_NAME)
+        elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
           # Push의 경우
-          CHANGED_FILES=$(git diff --name-only HEAD^)
+          echo "Processing Push..."
+          CHANGED_FILES=$(git diff --name-only HEAD~1)
+        else
+          echo "Default case..."
+          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
         fi
+      - echo "Changed files:"
+      - echo "$CHANGED_FILES"
       - |
         if echo "$CHANGED_FILES" | grep -q "^server/essay_service/"; then
           echo "Changes detected in essay_service directory, proceeding with build..."
