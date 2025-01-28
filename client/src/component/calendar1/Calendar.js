@@ -36,6 +36,8 @@ import {
   WeekdayHeader
 } from './styles/CalendarStyles';
 import styled from 'styled-components';
+import api from '../../api/api';
+import Proxy from '../../api/Proxy';
 
 // 캘린더 렌더링
 const Calendar = () => {
@@ -48,6 +50,7 @@ const Calendar = () => {
   const [filterType, setFilterType] = useState('all');
   const [showYearSelect, setShowYearSelect] = useState(false);
   const [showMonthSelect, setShowMonthSelect] = useState(false);
+  const [schedules, setSchedules] = useState([]);
 
   // 년도 선택 옵션 생성 (현재 년도부터 1950년까지 내림차순)
   const yearOptions = Array.from(
@@ -68,6 +71,36 @@ const Calendar = () => {
   const handleMonthChange = (month) => {
     setCurrent(current.clone().month(month));
     setShowMonthSelect(false);
+  };
+
+  // 일정 조회 함수
+  const fetchSchedules = async () => {
+    try {
+      const response = await api(
+        `${Proxy}/api/v1/schedules`,
+        'GET',
+        null,
+        true
+      );
+
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      setSchedules(response.data);
+    } catch (error) {
+      console.error('일정 조회 중 오류 발생:', error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 일정 조회
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
+
+  // AddSchedule에 전달할 새로고침 함수
+  const handleScheduleUpdate = () => {
+    fetchSchedules();
   };
 
   useEffect(() => {
@@ -164,12 +197,14 @@ const Calendar = () => {
         {activePopup === 'schedule' && (
           <AddSchedule onClose={() =>  setActivePopup(null)}
           type="schedule"
+          onSave={handleScheduleUpdate}
         />
         )}
         {activePopup === 'announcement' && (
           <AddSchedule 
             onClose={() => setActivePopup(null)}
             type="announcement"
+            onSave={handleScheduleUpdate}
           />
         )}
         <Header>

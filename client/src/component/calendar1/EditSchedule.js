@@ -9,6 +9,8 @@ import {
 } from './redux/modules/schedule';  // 경로 수정
 import moment from 'moment';
 import AddSchedule from './AddSchedule';  
+import api from '../../api/api';  // 수정된 import
+import Proxy from '../../api/Proxy';  // 수정된 import
 
 
 // 자기소개서 확인 팝업 컴포넌트
@@ -125,6 +127,80 @@ const EditSchedule = ({ history }) => {
   // 일정 타입 확인
   const isGeneralSchedule = currentSchedule?.type === 'schedule';
 
+  // 일정 상세 조회
+  const fetchScheduleDetail = async () => {
+    try {
+      const response = await api(
+        `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
+        'GET',
+        null,
+        true
+      );
+
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      setFormData(response.data);
+    } catch (error) {
+      console.error('일정 조회 중 오류 발생:', error);
+      alert('일정을 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 일정 수정
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api(
+        `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
+        'PUT',
+        formData,
+        true
+      );
+
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      alert('일정이 수정되었습니다.');
+      dispatch(openEditPopup({ isOpen: false }));
+      if (typeof onSave === 'function') {
+        onSave();
+      }
+    } catch (error) {
+      console.error('일정 수정 중 오류 발생:', error);
+      alert('일정 수정에 실패했습니다.');
+    }
+  };
+
+  // 일정 삭제
+  const handleDelete = async () => {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      try {
+        const response = await api(
+          `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
+          'DELETE',
+          null,
+          true
+        );
+
+        if (response instanceof Error) {
+          throw response;
+        }
+
+        alert('일정이 삭제되었습니다.');
+        dispatch(openEditPopup({ isOpen: false }));
+        if (typeof onDelete === 'function') {
+          onDelete();
+        }
+      } catch (error) {
+        console.error('일정 삭제 중 오류 발생:', error);
+        alert('일정 삭제에 실패했습니다.');
+      }
+    }
+  };
+
   if (!currentSchedule) return null;
 
   return (
@@ -138,57 +214,59 @@ const EditSchedule = ({ history }) => {
         {isGeneralSchedule ? (
           // 일반 일정 확인 양식
           <>
-            <FormGroup>
-              <Label>일정내용</Label>
-              <Input
-                type="text"
-                name="title"
-                value={isEditing ? formData.title : currentSchedule.title || ''}
-                onChange={handleChange}
-                readOnly={!isEditing}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>날짜</Label>
-              <Input
-                type={isEditing ? "date" : "text"}
-                name="date"
-                value={isEditing ? 
-                  formData.date : 
-                  moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
-                onChange={handleChange}
-                readOnly={!isEditing}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>메모</Label>
-              <TextArea>
-                <textarea
-                  name="content"
-                  value={isEditing ? formData.content : currentSchedule.content || ''}
+            <form onSubmit={handleUpdate}>
+              <FormGroup>
+                <Label>일정내용</Label>
+                <Input
+                  type="text"
+                  name="title"
+                  value={isEditing ? formData.title : currentSchedule.title || ''}
                   onChange={handleChange}
                   readOnly={!isEditing}
                 />
-              </TextArea>
-            </FormGroup>
-            <ButtonContainer>
-              <ActionButtonGroup>
-                {!isEditing ? (
-                  <>
-                    <Button onClick={() => setIsEditing(true)}>수정</Button>
-                    <Button onClick={onDelete}>삭제</Button>
-                    <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
-                      닫기
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button onClick={onSave}>저장</Button>
-                    <Button onClick={() => setIsEditing(false)}>취소</Button>
-                  </>
-                )}
-              </ActionButtonGroup>
-            </ButtonContainer>
+              </FormGroup>
+              <FormGroup>
+                <Label>날짜</Label>
+                <Input
+                  type={isEditing ? "date" : "text"}
+                  name="date"
+                  value={isEditing ? 
+                    formData.date : 
+                    moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label>메모</Label>
+                <TextArea>
+                  <textarea
+                    name="content"
+                    value={isEditing ? formData.content : currentSchedule.content || ''}
+                    onChange={handleChange}
+                    readOnly={!isEditing}
+                  />
+                </TextArea>
+              </FormGroup>
+              <ButtonContainer>
+                <ActionButtonGroup>
+                  {!isEditing ? (
+                    <>
+                      <Button onClick={() => setIsEditing(true)}>수정</Button>
+                      <Button onClick={handleDelete}>삭제</Button>
+                      <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
+                        닫기
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button type="submit">저장</Button>
+                      <Button onClick={() => setIsEditing(false)}>취소</Button>
+                    </>
+                  )}
+                </ActionButtonGroup>
+              </ButtonContainer>
+            </form>
           </>
         ) : (
           // 공고 확인 모달창 수정
@@ -290,14 +368,14 @@ const EditSchedule = ({ history }) => {
                         완료
                       </Button>
                     )}
-                    <Button onClick={onDelete}>삭제</Button>
+                    <Button onClick={handleDelete}>삭제</Button>
                     <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
                       닫기
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button onClick={onSave}>저장</Button>
+                    <Button type="submit">저장</Button>
                     <Button onClick={() => setIsEditing(false)}>취소</Button>
                   </>
                 )}

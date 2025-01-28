@@ -6,7 +6,7 @@ import {
   createSchedule,
   updateSchedule  // updateSchedule 추가
 } from './redux/modules/schedule';
-import Api from '../../api/api';
+import api from '../../api/api';
 import Proxy from '../../api/Proxy';
 
 const QuestionSet = styled.div`
@@ -130,14 +130,15 @@ const AddSchedule = ({
           return;
         }
 
-        const response = await Api(
-          `${Proxy.server}/api/v1/schedules`,
+        const response = await api(
+          `${Proxy}/api/v1/schedules`,
           'POST',
           {
             title: scheduleData.title,
             date: scheduleData.date,
             content: scheduleData.content || ''
-          }
+          },
+          true
         );
 
         if (response instanceof Error) {
