@@ -12,7 +12,7 @@ phases:
   pre_build:
     commands:
       # 변경된 파일 확인
-      - CHANGED_FILES=$(git diff --name-only $CODEBUILD_WEBHOOK_PREV_COMMIT $CODEBUILD_RESOLVED_SOURCE_VERSION)
+      - CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git ls-files)
       - |
         if echo "$CHANGED_FILES" | grep -q "^server/job_posting/"; then
           echo "Changes detected in job_posting directory, proceeding with build..."
