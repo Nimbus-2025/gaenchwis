@@ -9,7 +9,7 @@ Resources:
         MinimumHealthyPercent: 50
         Alarms:
           AlarmNames:
-          - User Backend Alarm
+            - User Backend Alarm
           Enable: true
           Rollback: true
       DesiredCount: 1
@@ -28,25 +28,25 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
-      - Name: Gaenchwis-UserBackend
-        Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/user-service:latest
-        PortMappings:
-        - ContainerPort: 8005
-          HostPort: 8005
-          Protocol: tcp
-        Environment:
-        - Name: COGNITO_USER_POOL_ID
-          Value: ap-northeast-2_ltCxps5XQ
-        - Name: COGNITO_APP_CLIENT_ID
-          Value: 6dnsfj8d7327ghh5sg62eqbru0
-        - Name: AWS_REGION
-          Value: ap-northeast-2
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-region: ap-northeast-2
-            awslogs-group: !ImportValue BackendLogGroup
-            awslogs-stream-prefix: ecs-backend
+        - Name: Gaenchwis-UserBackend
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/user-service:latest
+          PortMappings:
+            - ContainerPort: 8005
+              HostPort: 8005
+              Protocol: tcp
+          Environment:
+            - Name: COGNITO_USER_POOL_ID
+              Value: ap-northeast-2_ltCxps5XQ
+            - Name: COGNITO_APP_CLIENT_ID
+              Value: 6dnsfj8d7327ghh5sg62eqbru0
+            - Name: AWS_REGION
+              Value: ap-northeast-2
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: ap-northeast-2
+              awslogs-group: !ImportValue BackendLogGroup
+              awslogs-stream-prefix: ecs-backend
       Family: Gaenchwis-UserBackend
       Cpu: 512
       Memory: 512
