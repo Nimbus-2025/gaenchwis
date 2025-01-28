@@ -84,7 +84,8 @@ const AddSchedule = ({
   type, 
   initialData = null, 
   isEditing = false,
-  currentSchedule = null
+  currentSchedule = null,
+  onSave
 }) => {
   const dispatch = useDispatch();
   const { schedules = [] } = useSelector((state) => state.schedule || {});
@@ -123,7 +124,6 @@ const AddSchedule = ({
     
     if (type === 'schedule') {
       try {
-        // 세션에 저장된 실제 토큰 확인
         const userData = sessionStorage.getItem('user');
         if (!userData) {
           alert('로그인이 필요합니다.');
@@ -144,22 +144,18 @@ const AddSchedule = ({
           throw response;
         }
 
-        // Redux store 업데이트
-        dispatch(createSchedule({
-          id: response.id,
-          title: scheduleData.title,
-          date: scheduleData.date.replaceAll('-', ''),
-          content: scheduleData.content || '',
-          type: 'schedule',
-          backgroundColor: '#74c0fc',
-          completed: false
-        }));
-        
+        // 성공적으로 저장되면 모달 닫기 및 캘린더 새로고침
         onClose();
+        if (typeof onSave === 'function') {
+          onSave();  // 캘린더 컴포넌트 새로고침을 위한 콜백
+        }
       } catch (error) {
-        console.error('일정 추가 실패:', error);
-        alert('일정 추가에 실패했습니다.');
+        console.error('일정 저장 중 오류 발생:', error);
+        alert('일정 저장에 실패했습니다.');
       }
+      onClose();
+
+
     } else if (type === 'announcement') {
       const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
                       scheduleData.deadlineDate.length > currentYear.length + 1 ||
