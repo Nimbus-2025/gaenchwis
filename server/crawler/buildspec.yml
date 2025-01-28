@@ -5,22 +5,29 @@ phases:
     commands:
       - echo Installing git...
       - yum install -y git
+      - git config --global protocol.version 2
 
   pre_build:
     commands:
       # 변경된 파일 확인
+      - echo "Event = $CODEBUILD_WEBHOOK_EVENT"
       - |
         if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
           # PR의 경우
           echo "Processing Pull Request..."
-          CHANGED_FILES=$(git diff --name-only origin/$CODEBUILD_SOURCE_BRANCH_NAME)
+          git fetch --unshallow || true
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          BEFORE_COMMIT_ID=$(echo $CODEBUILD_WEBHOOK_PREV_COMMIT)
+          AFTER_COMMIT_ID=$(echo $CODEBUILD_WEBHOOK_HEAD_REF)
+          echo "Comparing $BEFORE_COMMIT_ID with $AFTER_COMMIT_ID"
+          CHANGED_FILES=$(git diff --name-only $BEFORE_COMMIT_ID $AFTER_COMMIT_ID || git ls-files)
         elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
           # Push의 경우
           echo "Processing Push..."
-          CHANGED_FILES=$(git diff --name-only HEAD~1)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
         else
           echo "Default case..."
-          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
+          CHANGED_FILES=$(git ls-files)
         fi
       - echo "Changed files:"
       - echo "$CHANGED_FILES"
