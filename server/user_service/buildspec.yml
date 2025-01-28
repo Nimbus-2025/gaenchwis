@@ -22,6 +22,18 @@ phases:
         echo "Before Commit = $CODEBUILD_WEBHOOK_PREV_COMMIT"
         echo "After Commit = $CODEBUILD_WEBHOOK_HEAD_REF"
 
+        # 디버깅을 위한 환경 변수 출력
+        echo "Webhook Event Type: $CODEBUILD_WEBHOOK_EVENT"
+        echo "Source Version: $CODEBUILD_SOURCE_VERSION"
+        echo "Source Repo: $CODEBUILD_SOURCE_REPO_URL"
+        echo "Previous Commit: $CODEBUILD_WEBHOOK_PREV_COMMIT"
+        echo "Head Ref: $CODEBUILD_WEBHOOK_HEAD_REF"
+        echo "Base Ref: $CODEBUILD_WEBHOOK_BASE_REF"
+
+        # Git 상태 확인
+        git status
+        git branch
+
         # 변경된 파일 확인
         if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
           CHANGED_FILES=$(git diff --name-only $CODEBUILD_WEBHOOK_PREV_COMMIT $CODEBUILD_WEBHOOK_HEAD_REF || git diff --name-only HEAD^)
