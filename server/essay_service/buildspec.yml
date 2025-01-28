@@ -37,6 +37,16 @@ phases:
 
         if [ -z "$CHANGED_FILES" ]; then
           echo "No changed files detected, skipping build..."
+          aws ecr describe-images --repository-name gaenchwis/essay-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
+          if [ $? -eq 0 ]; then
+            # 기존 이미지가 있는 경우
+            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/essay-service
+            printf '[{"name":"Gaenchwis-EssayBackend","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          else
+            # 기존 이미지가 없는 경우 null 사용
+            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          fi
+          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
           exit 0
         fi
 
@@ -59,6 +69,17 @@ phases:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
         else
           echo "No changes in essay_service directory, skipping build..."
+          # 기존 이미지를 사용하는 imageDefinitions.json 생성
+          aws ecr describe-images --repository-name gaenchwis/essay-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
+          if [ $? -eq 0 ]; then
+            # 기존 이미지가 있는 경우
+            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/essay-service
+            printf '[{"name":"Gaenchwis-EssayBackend","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          else
+            # 기존 이미지가 없는 경우 null 사용
+            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          fi
+          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
           exit 0
         fi
 
@@ -88,8 +109,6 @@ phases:
           envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
         else
           echo "Skipping post-build phase..."
-          echo "[]" > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
         fi
 
 artifacts:

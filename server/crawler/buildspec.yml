@@ -9,7 +9,7 @@ phases:
 
   pre_build:
     commands:
-      # 빌드 진행 여부를 결정하는 플래그 파일 생성
+      # [변경 1] 빌드 진행 여부를 결정하는 플래그 파일 생성
       - touch $CODEBUILD_SRC_DIR/build.env
       - echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
 
@@ -36,31 +36,42 @@ phases:
 
       - echo "Changed files:"
       - echo "$CHANGED_FILES"
+      # [변경 2] 빌드 스킵 로직 수정 - 기존 이미지 정보 활용
       - |
-        if echo "$CHANGED_FILES" | grep -q "^server/crawler/"; then
-          echo "Changes detected in crawler directory, proceeding with build..."
-          # 빌드 진행 플래그 설정
-          echo "SHOULD_BUILD=true" > $CODEBUILD_SRC_DIR/build.env
-          
-          # ECR 로그인
-          echo "Logging in to Amazon ECR..."
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          
-          # 환경변수 설정
-          REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
-          IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-          
-          # 환경변수 저장
-          echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
-        else
+        if [ -z "$CHANGED_FILES" ] || ! echo "$CHANGED_FILES" | grep -q "^server/crawler/"; then
           echo "No changes in crawler directory, skipping build..."
-          # 빈 artifacts 파일 생성
-          echo "[]" > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
+          # 기존 이미지를 사용하는 imageDefinitions.json 생성
+          aws ecr describe-images --repository-name gaenchwis/crawler-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
+          if [ $? -eq 0 ]; then
+            # 기존 이미지가 있는 경우
+            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
+            printf '[{"name":"Gaenchwis-Crawler","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          else
+            # 기존 이미지가 없는 경우 null 사용
+            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
+          fi
+          # task-definition.json 복사
+          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
           exit 0
         fi
 
+        # [변경 3] 빌드 진행 시 환경 변수 설정
+        echo "Changes detected in crawler directory, proceeding with build..."
+        echo "SHOULD_BUILD=true" > $CODEBUILD_SRC_DIR/build.env
+
+        # ECR 로그인
+        echo "Logging in to Amazon ECR..."
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+        # 환경변수 설정
+        REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
+        IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+        # 환경변수 저장
+        echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
+
+  # [변경 4] build 단계에 조건부 실행 추가
   build:
     commands:
       - |
@@ -75,6 +86,7 @@ phases:
           echo "Skipping build phase..."
         fi
 
+  # [변경 5] post_build 단계에 조건부 실행 추가
   post_build:
     commands:
       - |
