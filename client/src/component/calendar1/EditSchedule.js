@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';  // useEffect 추가
-import { useDispatch, useSelector } from 'react-redux';  // useSelector 추가
+import React, { useState, useEffect } from 'react';  
+import { useDispatch, useSelector } from 'react-redux';  
 import styled from 'styled-components';
 import { MdChevronLeft } from 'react-icons/md';
 import { 
   openEditPopup, 
   updateSchedule, 
   deleteSchedule 
-} from './redux/modules/schedule';  // 경로 수정
+} from './redux/modules/schedule';  
 import moment from 'moment';
 import AddSchedule from './AddSchedule';  
-import api from '../../api/api';  // 수정된 import
-import Proxy from '../../api/Proxy';  // 수정된 import
+import api from '../../api/api';  
+import Proxy from '../../api/Proxy';  
 
 
 // 자기소개서 확인 팝업 컴포넌트
