@@ -71,6 +71,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 #     "http://localhost:3000",
 #     "https://gaenchwis.click"
 # ]
+
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
@@ -86,6 +87,9 @@ app.add_middleware(
         "user_id"
     ]
 )
+
+# 주석 넣어봅니다... 제발 좀 돌아가주렴...
+# 주석 추가
 
 app.include_router(router, prefix="/api/v1", tags=["user"])
 

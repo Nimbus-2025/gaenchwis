@@ -6,7 +6,6 @@ WORKDIR /app
 
 # 필요한 패키지 설치
 COPY requirements.txt .
-# COPY .env /app/.env
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 소스 복사
