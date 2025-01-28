@@ -6,6 +6,8 @@ import {
   createSchedule,
   updateSchedule  // updateSchedule 추가
 } from './redux/modules/schedule';
+import Api from '../../api/api';
+import Proxy from '../../api/Proxy';
 
 const QuestionSet = styled.div`
   margin-bottom: 30px;
@@ -116,18 +118,48 @@ const AddSchedule = ({
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (type === 'schedule') {
-      // 일반 일정 추가
-      dispatch(createSchedule({
-        title: scheduleData.title,
-        date: scheduleData.date.replaceAll('-', ''),
-        content: scheduleData.content || '',
-        type: 'schedule',
-        backgroundColor: '#74c0fc'
-      }));
+      try {
+        // 세션에 저장된 실제 토큰 확인
+        const userData = sessionStorage.getItem('user');
+        if (!userData) {
+          alert('로그인이 필요합니다.');
+          return;
+        }
+
+        const response = await Api(
+          `${Proxy.server}/api/v1/schedules`,
+          'POST',
+          {
+            title: scheduleData.title,
+            date: scheduleData.date,
+            content: scheduleData.content || ''
+          }
+        );
+
+        if (response instanceof Error) {
+          throw response;
+        }
+
+        // Redux store 업데이트
+        dispatch(createSchedule({
+          id: response.id,
+          title: scheduleData.title,
+          date: scheduleData.date.replaceAll('-', ''),
+          content: scheduleData.content || '',
+          type: 'schedule',
+          backgroundColor: '#74c0fc',
+          completed: false
+        }));
+        
+        onClose();
+      } catch (error) {
+        console.error('일정 추가 실패:', error);
+        alert('일정 추가에 실패했습니다.');
+      }
     } else if (type === 'announcement') {
       const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
                       scheduleData.deadlineDate.length > currentYear.length + 1 ||
