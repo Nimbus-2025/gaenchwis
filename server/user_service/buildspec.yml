@@ -13,10 +13,13 @@ phases:
     commands:
       # 변경된 파일 확인
       - |
-        if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_MERGED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
-          CHANGED_FILES=$(git diff --name-only HEAD^..HEAD)
+        if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
+          # PR의 경우
+          git fetch origin $CODEBUILD_SOURCE_VERSION
+          CHANGED_FILES=$(git diff --name-only HEAD..$CODEBUILD_SOURCE_VERSION)
         else
-          CHANGED_FILES=$(git diff --name-only $CODEBUILD_SOURCE_VERSION^..$CODEBUILD_SOURCE_VERSION)
+          # Push의 경우
+          CHANGED_FILES=$(git diff --name-only HEAD^)
         fi
       - |
         if echo "$CHANGED_FILES" | grep -q "^server/user_service/"; then
