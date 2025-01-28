@@ -116,4 +116,4 @@ artifacts:
     - task-definition.json
     - imageDefinitions.json
   base-directory: $CODEBUILD_SRC_DIR/
-  discard-paths: yess
+  discard-paths: yes
