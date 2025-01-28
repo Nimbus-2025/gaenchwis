@@ -6,7 +6,6 @@ from ..repositories.user_repository import UserRepository
 from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkResponse, InterestCompanyCreate, InterestCompanyResponse
 from ..core.security.token_validator import TokenValidator
 
-# 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

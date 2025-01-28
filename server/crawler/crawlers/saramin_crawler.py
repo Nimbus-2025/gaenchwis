@@ -1,17 +1,13 @@
-# Python 내장 라이브러리 
 import os
 import hashlib
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional
-# 외부 라이브러리 
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-# 로컬 애플리케이션
 from base.base_crawler import BaseCrawler
 from common.constants import CrawlerConfig
-# AWS 서비스 접근 관련 
 from common.aws_client import AWSClient
 from common.enums import TagCategory, JobStatus
 from common.constants import TableNames
