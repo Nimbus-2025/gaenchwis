@@ -95,7 +95,6 @@ class Applies(TypedDict):
     interview_date: Optional[datetime]          # 면접 일정
     final_date: Optional[datetime]              # 최종 발표 일정
     memo: Optional[str]                         # 공고 일정 메모 
-    is_resulted: bool                           # 합격 여부 (default: False)
     created_at: datetime
     updated_at: datetime
     
