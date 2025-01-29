@@ -70,7 +70,11 @@ def StartTrain(tags_groups=None):
     education_model = Layer.TagsTrainModel(education_tags, 128)
     skill_model = Layer.TagsTrainModel(skill_tags, 128)
 
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3',
+        aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+        aws_secret_access_key="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",
+        region_name="ap-northeast-2"
+    )
     bucket_name = "gaenchwis-sagemaker"
 
     def s3_file_exists(bucket, key):

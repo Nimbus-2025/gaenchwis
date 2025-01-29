@@ -1,15 +1,55 @@
+import Layer
+import torch
 import json
 import NewJobPostings
 import Training
 import recommendation
 import Tag
+import boto3
 
 def model_fn(model_dir):
-    # SageMaker 엔드포인트에서 모델 로드를 처리할 경우 사용
-    # 여기서는 단순히 호출만 가능하도록 로직 정의
-    return None
+    tags_json = Tag.get_tags_json()
+    
+    position_tags=len(tags_json["position"])
+    location_tags=len(tags_json["location"])
+    education_tags=len(tags_json["education"])
+    skill_tags=len(tags_json["skill"])
 
-def predict_fn(input_data, model):
+    s3 = boto3.client('s3',
+        aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+        aws_secret_access_key="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",
+        region_name="ap-northeast-2"
+    )
+    bucket_name = "gaenchwis-sagemaker"
+
+    position_model = Layer.TagsTrainModel(position_tags, 128)
+    location_model = Layer.TagsTrainModel(location_tags, 128)
+    education_model = Layer.TagsTrainModel(education_tags, 128)
+    skill_model = Layer.TagsTrainModel(skill_tags, 128)
+    
+    s3.download_file(bucket_name, "position_model.pth", "position_model.pth")
+    s3.download_file(bucket_name, "location_model.pth", "location_model.pth")
+    s3.download_file(bucket_name, "education_model.pth", "education_model.pth")
+    s3.download_file(bucket_name, "skill_model.pth", "skill_model.pth")
+
+    position_model.load_state_dict(torch.load("position_model.pth"), strict=False)
+    location_model.load_state_dict(torch.load("location_model.pth"), strict=False)
+    education_model.load_state_dict(torch.load("education_model.pth"), strict=False)
+    skill_model.load_state_dict(torch.load("skill_model.pth"), strict=False)
+
+    position_model.eval()
+    location_model.eval()
+    education_model.eval()
+    skill_model.eval()
+
+    return {
+        "position_model": position_model,
+        "location_model": location_model,
+        "education_model": education_model,
+        "skill_model": skill_model
+    }
+
+def predict_fn(input_data, models):
     try:
         data = json.loads(input_data)
         logic_type = data.get("logic_type")
@@ -30,7 +70,7 @@ def predict_fn(input_data, model):
 
 def input_fn(request_body, content_type):
     if content_type == "application/json":
-        return request_body
+        return json.loads(request_body)
     else:
         raise ValueError("Unsupported content type: {content_type}")
 
