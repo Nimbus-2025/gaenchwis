@@ -5,8 +5,13 @@ import Main from './page/Main';
 import User from './component/User';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
-function App() {
+window.onerror = function(message, source, lineno, colno, error) {
+  if (message.includes("A listener indicated an asynchronous response")) {
+      return true;
+  }
+};
 
+function App() {
   return (
     <div className="App">
       <header className="App-header">

@@ -51,11 +51,10 @@ def post_applies(event, context):
             'post_id':get_post["Items"][0].get("post_id"),
             'user_id':user_id,
             'post_name':get_post["Items"][0].get("post_name"),
-            'apply_date': time,
             'created_at': time,
             'updated_at': time,
             'GSI1PK':"POST#"+get_post["Items"][0].get("post_id"),
-            'GSI1SK':"abc"
+            'GSI1SK': time
         }
         table.put_item(Item=applies)
         if title:
