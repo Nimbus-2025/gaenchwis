@@ -447,7 +447,7 @@ class SaraminCrawler(BaseCrawler):
         
     def crawl_jobs(self) -> List[Dict]:
         saramin_list = []
-        max_pages = 2
+        max_pages = 10
         
         for page in range(1, max_pages + 1):
             try:
