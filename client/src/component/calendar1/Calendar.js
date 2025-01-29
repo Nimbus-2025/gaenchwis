@@ -77,7 +77,7 @@ const Calendar = () => {
   const fetchSchedules = async () => {
     try {
       const response = await api(
-        `${Proxy}/api/v1/schedules`,
+        `${Proxy}:8006/api/v1/schedules`,
         'GET',
         null,
         true

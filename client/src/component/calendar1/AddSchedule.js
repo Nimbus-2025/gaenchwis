@@ -125,38 +125,60 @@ const AddSchedule = ({
     if (type === 'schedule') {
       try {
         const userData = sessionStorage.getItem('user');
+        console.log('세션 스토리지 데이터:', userData); // 디버깅용
+        
         if (!userData) {
           alert('로그인이 필요합니다.');
           return;
         }
+        
+        // 세션 데이터 확인 및 로깅
+        const parsedUserData = JSON.parse(userData);
+        console.log('파싱된 유저 데이터:', {
+          access_token: parsedUserData.access_token,
+          id_token: parsedUserData.id_token,
+          user_id: parsedUserData.user_id
+        });
+
+        // 날짜 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+        const formattedDate = scheduleData.date.replaceAll('-', '');
+
+        const requestData = {
+          title: scheduleData.title,
+          date: formattedDate,
+          content: scheduleData.content || ''
+        };
+        
+        console.log('전송할 데이터:', requestData);
+        console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules`);
+        console.log('요청 헤더:', {
+          access_token: parsedUserData.access_token,
+          id_token: parsedUserData.id_token,
+          user_id: parsedUserData.user_id
+        });
 
         const response = await api(
-          `${Proxy}/api/v1/schedules`,
+          `${Proxy.server}:8006/api/v1/schedules`,
           'POST',
-          {
-            title: scheduleData.title,
-            date: scheduleData.date,
-            content: scheduleData.content || ''
-          },
-          true
+          requestData
         );
+
+        console.log('서버 응답:', response);
 
         if (response instanceof Error) {
           throw response;
         }
 
-        // 성공적으로 저장되면 모달 닫기 및 캘린더 새로고침
+        alert('일정이 성공적으로 저장되었습니다.');
         onClose();
         if (typeof onSave === 'function') {
-          onSave();  // 캘린더 컴포넌트 새로고침을 위한 콜백
+          onSave();
         }
       } catch (error) {
-        console.error('일정 저장 중 오류 발생:', error);
+        console.error('일정 저장 중 오류:', error);
+        console.error('에러 상세:', error.response || error); // 상세 에러 정보 출력
         alert('일정 저장에 실패했습니다.');
       }
-      onClose();
-
-
     } else if (type === 'announcement') {
       const hasAnyDate = scheduleData.date.length > currentYear.length + 1 ||
                       scheduleData.deadlineDate.length > currentYear.length + 1 ||
