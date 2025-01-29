@@ -43,9 +43,9 @@ class ScheduleRepository:
                 'GSI1SK': request.date,
                 'schedule_id': schedule_id,
                 'user_id': user_id,
-                'date': request.date,
-                'title': request.title,
-                'content': request.content,
+                'schedule_date': request.date,
+                'schedule_title': request.title,
+                'schedule_content': request.content,
                 'is_completed': False,
                 'created_at': current_time,
                 'updated_at': current_time
@@ -148,10 +148,10 @@ class ScheduleRepository:
     def _get_date_field(self, date_type: str) -> str:
         """날짜 타입에 따른 필드명 반환"""
         date_fields = {
-            '서류 마감': 'document_deadline',
-            '서류 합격 발표': 'coding_test_date',
-            '면접': 'interview_date',
-            '최종발표': 'announcement_date'
+            '공고 마감일': 'deadline_date',
+            '서류 합격 발표': 'document_result_date',
+            '면접 일정': 'deadline_date',
+            '최종발표': 'final_date'
         }
         return date_fields.get(date_type)
 
