@@ -553,6 +553,13 @@ Resources:
       FunctionName: !GetAtt PostAppliesLambdaFunction.Arn
       Principal: elasticloadbalancing.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
+  RecommendationLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt RecommendationLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
 #--------------------IAM Role/
 
 
@@ -863,6 +870,28 @@ Resources:
       Actions:
       - Type: forward
         TargetGroupArn: !Ref PostAppliesLambdaTargetGroup
+  
+  #Recommendation Lambda TargetGroup
+  RecommendationLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Recom-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt RecommendationLambdaFunction.Arn
+  #Recommendation Lambda ListenerRule
+  RecommendationLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 7
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /recommendation
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref RecommendationLambdaTargetGroup
 
   #Backend TargetGroup 8000
   BackendTargetGroup8000:
@@ -1325,6 +1354,18 @@ Resources:
       Code:
         S3Bucket: gaenchwis-lambda 
         S3Key: post_applies.zip
+  RecommendationLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Recommendation
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: recommendation.recommendation
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: recommendation.zip
 #--------------------Lambda/
 
 

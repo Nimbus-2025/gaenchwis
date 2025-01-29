@@ -1,5 +1,6 @@
 import boto3
 import json
+import requests
 
 dynamodb = boto3.client('dynamodb')
 
@@ -14,12 +15,21 @@ def new_job_postings_processing(event, context):
                 sk = new_image['SK']['S']
                 
                 print(f"Processing new item with PK: {pk}, SK: {sk}")
+                print(new_image)
+                response=requests.post(
+                    "https://runtime.sagemaker.ap-northeast-2.amazonaws.com/endpoints/gaenchwis-sagemaker-recommendation/invocations",
+                    data=json.dumps({
+                        "logic_type": "NewJobPostingTrain",
+                        "payload": clean_dynamodb_image(new_image)
+                    })
+                )
+                print(response)
+                recommend_vector_a = "a"
+                recommend_vector_b = "b"
+                recommend_vector_c = "c"
+                recommend_vector_d = "d"
                 
-                learning_value_1 = "a"
-                learning_value_2 = "b"
-                learning_value_3 = "c"
-                
-                update_dynamodb_item(pk, sk, learning_value_1, learning_value_2, learning_value_3)
+                #update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
                 
         return {
             'statusCode': 200,
@@ -33,7 +43,14 @@ def new_job_postings_processing(event, context):
             'body': json.dumps('Error processing stream')
         }
 
-def update_dynamodb_item(pk, sk, value1, value2, value3):
+def clean_dynamodb_image(dynamodb_image):
+    clean_data = {}
+    for key, value in dynamodb_image.items():
+        clean_data[key] = list(value.values())[0]
+    print(clean_data)
+    return clean_data
+
+def update_dynamodb_item(pk, sk, value1, value2, value3, value4):
     try:
         response = dynamodb.update_item(
             TableName=TABLE_NAME,
@@ -41,11 +58,12 @@ def update_dynamodb_item(pk, sk, value1, value2, value3):
                 'PK': {'S': pk},
                 'SK': {'S': sk}
             },
-            UpdateExpression="SET learning_value_1 = :val1, learning_value_2 = :val2, learning_value_3 = :val3",
+            UpdateExpression="SET recommend_vector_a = :val1, recommend_vector_b = :val2, recommend_vector_c = :val3, recommend_vector_d = :val4",
             ExpressionAttributeValues={
-                ':val1': {'N': str(value1)},
-                ':val2': {'N': str(value2)},
-                ':val3': {'N': str(value3)}
+                ':val1': {'S': str(value1)},
+                ':val2': {'S': str(value2)},
+                ':val3': {'S': str(value3)},
+                ':val4': {'S': str(value4)}
             }
         )
         print(f"Item with PK: {pk}, SK: {sk} updated successfully: {response}")

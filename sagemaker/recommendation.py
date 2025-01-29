@@ -47,7 +47,7 @@ def Recommendation(user_id):
 
     user_vector = Layer.Vector(tags_group, position_model, location_model, education_model, skill_model).tolist()
     
-    return BestRecommendation(user_vector)
+    return BestRecommendation(user_vector)[:5]
 
 def BestRecommendation(user_vector):
     dynamodb = boto3.resource('dynamodb')

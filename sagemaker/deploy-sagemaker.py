@@ -16,4 +16,4 @@ predictor = model.deploy(
     endpoint_name="gaenchwis-sagemaker-recommendation"
 )
 
-print("🚀 SageMaker 엔드포인트 배포 완료!")
+print("SageMaker 엔드포인트 배포 완료!")

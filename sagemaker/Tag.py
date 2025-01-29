@@ -205,10 +205,21 @@ def MakeUserTagGroup(user_id):
                 ":pk": user_tag["SK"]
             }
         )
-        tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+
+        if tags["tag_category"]=="position":
+            position_range = [int(num) for num in re.findall(r"\d+", tags["tag_name"])]
+            if len(position_range) == 2 or "년" in tags["tag_name"] or "↑" in tags["tag_name"] or "↓" in tags["tag_name"] or "경력" in tags["tag_name"]:
+                tags_group["position"].extend(range(1, 21))
+            else:
+                tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+        else:
+            tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
         
     for category in tags_group:
         if not tags_group[category]:
             tags_group[category].append(None)
+        else:
+            if category=="position":
+                tags_group["position"]=list(dict.fromkeys(tags_group["position"]))
     
     return tags_group
