@@ -19,7 +19,7 @@ def tags_json_init():
         'position': [None]
     }
     for i in range(20):
-        tags["position"].append((i+1)+"년")
+        tags["position"].append(i+1)
 
     tags['position'].extend([
         "신입",
@@ -27,7 +27,8 @@ def tags_json_init():
         "인턴직",
         "프리랜서",
         "계약직",
-        "파견직"
+        "파견직",
+        "위촉직"
     ])
 
     for item in data:
@@ -43,19 +44,34 @@ def tags_json_init():
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
     
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    s3.upload_file("tags.json", bucket_name, "tags.json")
+    
     return tags
 
 def get_tags_json():
-    try:
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    def s3_file_exists(bucket, key):
+        try:
+            s3.head_object(Bucket=bucket, Key=key)
+            return True
+        except s3.exceptions.ClientError:
+            return False
+    
+    if s3_file_exists(bucket_name, "tags.json"):
+        s3.download_file(bucket_name, "tags.json", "tags.json")
         with open("tags.json", 'r') as json_file:
-            print("Tag Json already exist.")
             return json.load(json_file)
-    except:
+    else:
         print("Tag Json does not exist.")
         return tags_json_init()
 
-def tags_json_update(new_tags, tags = get_tags_json()):
-    
+def tags_json_update(new_tags):
+    tags = get_tags_json()
     for category in new_tags:
         for new_tag in tags[category]:
             if new_tag not in tags[category]:
@@ -69,6 +85,11 @@ def tags_json_update(new_tags, tags = get_tags_json()):
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
 
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    s3.upload_file("tags.json", bucket_name, "tags.json")
+
     return tags
     
 def new_tag_add(category, tag_name, tags_json, tags_group):
@@ -77,7 +98,7 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
             category: [tag_name]
         }
         tags_json = tags_json_update(new_tags)
-    tags_group[category].append(tags_json[category].index(tag_name))
+    tags_group[category].append(tag_name)
     
     return tags_json, tags_group
 
@@ -151,4 +172,54 @@ def MakeTagGroup(job_postings_item):
         if not tags_group[category]:
             tags_group[category].append(None)
 
+    return tags_group
+
+def MakeUserTagGroup(user_id):
+    dynamodb = boto3.resource('dynamodb')
+    users_table = dynamodb.Table("users")
+
+    user = users_table.get_item(Key={'PK': "USER#"+user_id})
+
+    user_tags_table = dynamodb.Table("user_tags")
+
+    user_tags = user_tags_table.query(
+        KeyConditionExpression="PK = :pk",
+        ExpressionAttributeValues={
+            ":pk": user["PK"]
+        }
+    )
+
+    tags_group = {
+        'skill': [],
+        'location': [],
+        'education': [],
+        'position': []
+    }
+
+    for user_tag in user_tags["Items"]:
+        tags_table = dynamodb.Table("tags")
+
+        tags = tags_table.query(
+            KeyConditionExpression="PK = :pk",
+            ExpressionAttributeValues={
+                ":pk": user_tag["SK"]
+            }
+        )
+
+        if tags["tag_category"]=="position":
+            position_range = [int(num) for num in re.findall(r"\d+", tags["tag_name"])]
+            if len(position_range) == 2 or "년" in tags["tag_name"] or "↑" in tags["tag_name"] or "↓" in tags["tag_name"] or "경력" in tags["tag_name"]:
+                tags_group["position"].extend(range(1, 21))
+            else:
+                tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+        else:
+            tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+        
+    for category in tags_group:
+        if not tags_group[category]:
+            tags_group[category].append(None)
+        else:
+            if category=="position":
+                tags_group["position"]=list(dict.fromkeys(tags_group["position"]))
+    
     return tags_group
