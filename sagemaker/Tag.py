@@ -44,11 +44,7 @@ def tags_json_init():
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
     
-    s3 = boto3.client('s3',
-        aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-        aws_secret_access_key="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",
-        region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
@@ -56,11 +52,7 @@ def tags_json_init():
     return tags
 
 def get_tags_json():
-    s3 = boto3.client('s3',
-        aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-        aws_secret_access_key="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",
-        region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     def s3_file_exists(bucket, key):
@@ -93,11 +85,7 @@ def tags_json_update(new_tags):
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
 
-    s3 = boto3.client('s3',
-        aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-        aws_secret_access_key="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",
-        region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")

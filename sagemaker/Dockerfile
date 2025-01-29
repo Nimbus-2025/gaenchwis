@@ -1,9 +1,23 @@
-FROM 763104351884.dkr.ecr.ap-northeast-2.amazonaws.com/pytorch-inference:2.0.1-cpu-py310
+FROM ubuntu:18.04
 
-WORKDIR /opt/ml/model
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+         wget \
+         python3-pip \
+         python3-setuptools \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir boto3 numpy flask gunicorn torch torchvision
+RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
 
-COPY . /opt/ml/model/code
+RUN pip install flask torch boto3 numpy
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "code.inference:app"]
+ENV PYTHONUNBUFFERED=TRUE
+ENV PYTHONDONTWRITEBYTECODE=TRUE
+ENV PATH="/opt/program:${PATH}"
+
+EXPOSE 8080
+# Set up the program in the image
+COPY . /opt/program
+WORKDIR /opt/program
+
+ENTRYPOINT ["python", "route.py"]
