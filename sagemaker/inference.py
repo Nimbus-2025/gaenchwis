@@ -1,7 +1,7 @@
 import json
 import NewJobPostings
 import Training
-import Recommendation
+import recommendation
 import Tag
 
 def model_fn(model_dir):
@@ -10,44 +10,31 @@ def model_fn(model_dir):
     return None
 
 def predict_fn(input_data, model):
-    """
-    SageMaker 엔드포인트로 들어온 추론 요청을 처리하는 함수.
-    요청 데이터에서 "logic_type"에 따라 A, B, 또는 C 로직을 실행합니다.
-    
-    Args:
-        input_data (str): JSON 형식의 입력 데이터.
-        model: SageMaker 엔드포인트가 로드한 모델 (현재 사용되지 않음).
-
-    Returns:
-        dict: 요청에 따른 결과 또는 에러 메시지.
-    """
     try:
-        # 요청 데이터 파싱
         data = json.loads(input_data)
         logic_type = data.get("logic_type")
         payload = data.get("payload")
 
-        if logic_type == "A":
-            return A_logic(payload)
-        elif logic_type == "B":
-            return B_logic(payload)
-        elif logic_type == "C":
-            return C_logic(payload)
-        else:
-            return {"error": "Invalid logic_type specified. Use A, B, or C."}
-
+        if logic_type == "NewJobPostingTrain":
+            return NewJobPostingTrain(payload)
+        elif logic_type == "UserRecommendation":
+            return UserRecommendation(payload)
+        elif logic_type == "InitTrain":
+            return InitTrain()
+        elif logic_type == "InitJobPosting":
+            return InitJobPosting()
+        elif logic_type == "InitTagJson":
+            return InitTagJson()
     except Exception as e:
         return {"error": f"Exception occurred: {str(e)}"}
 
 def input_fn(request_body, content_type):
-    """HTTP 요청 데이터를 파싱"""
     if content_type == "application/json":
         return request_body
     else:
         raise ValueError("Unsupported content type: {content_type}")
 
 def output_fn(prediction, accept):
-    """추론 결과를 HTTP 응답 형식으로 변환"""
     if accept == "application/json":
         return json.dumps(prediction), "application/json"
     else:
@@ -57,13 +44,16 @@ def NewJobPostingTrain(job_postings_item):
     return NewJobPostings.NewJobPosting(job_postings_item)
 
 def UserRecommendation(user_id):
-    return Recommendation.Recommendation(user_id)
+    return recommendation.Recommendation(user_id)
 
 def InitTrain():
     Training.StartTrain()
+    return "Train Completed"
     
 def InitJobPosting():
     NewJobPostings.InitJobPosting()
+    return "JobPosting Vector created"
 
 def InitTagJson():
     Tag.tags_json_init()
+    return "Tag Json created"

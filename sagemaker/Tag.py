@@ -19,7 +19,7 @@ def tags_json_init():
         'position': [None]
     }
     for i in range(20):
-        tags["position"].append((i+1)+"년")
+        tags["position"].append(i+1)
 
     tags['position'].extend([
         "신입",
@@ -27,7 +27,8 @@ def tags_json_init():
         "인턴직",
         "프리랜서",
         "계약직",
-        "파견직"
+        "파견직",
+        "위촉직"
     ])
 
     for item in data:
@@ -43,19 +44,34 @@ def tags_json_init():
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
     
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    s3.upload_file("tags.json", bucket_name, "tags.json")
+    
     return tags
 
 def get_tags_json():
-    try:
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    def s3_file_exists(bucket, key):
+        try:
+            s3.head_object(Bucket=bucket, Key=key)
+            return True
+        except s3.exceptions.ClientError:
+            return False
+    
+    if s3_file_exists(bucket_name, "tags.json"):
+        s3.download_file(bucket_name, "tags.json", "tags.json")
         with open("tags.json", 'r') as json_file:
-            print("Tag Json already exist.")
             return json.load(json_file)
-    except:
+    else:
         print("Tag Json does not exist.")
         return tags_json_init()
 
-def tags_json_update(new_tags, tags = get_tags_json()):
-    
+def tags_json_update(new_tags):
+    tags = get_tags_json()
     for category in new_tags:
         for new_tag in tags[category]:
             if new_tag not in tags[category]:
@@ -69,6 +85,11 @@ def tags_json_update(new_tags, tags = get_tags_json()):
     with open("tags.json", 'w') as json_file:
         json.dump(tags, json_file, indent=2)
 
+    s3 = boto3.client('s3')
+    bucket_name = "gaenchwis-sagemaker"
+
+    s3.upload_file("tags.json", bucket_name, "tags.json")
+
     return tags
     
 def new_tag_add(category, tag_name, tags_json, tags_group):
@@ -77,7 +98,7 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
             category: [tag_name]
         }
         tags_json = tags_json_update(new_tags)
-    tags_group[category].append(tags_json[category].index(tag_name))
+    tags_group[category].append(tag_name)
     
     return tags_json, tags_group
 
