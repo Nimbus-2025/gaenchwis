@@ -30,28 +30,30 @@ def InitJobPosting():
     )
 
     for job_postings_item in job_postings["Items"]:
-        a,b,c,d = NewJobPosting(job_postings_item)
-        job_postings_table.update_item(
-            Key={
-                'PK': job_postings_item['PK'],
-                'SK': job_postings_item['SK']
-            },
-            UpdateExpression="""
-                SET #recommend_vector_a = :recommend_vector_a,
-                    #recommend_vector_b = :recommend_vector_b,
-                    #recommend_vector_c = :recommend_vector_c,
-                    #recommend_vector_d = :recommend_vector_d
-            """,
-            ExpressionAttributeNames={
-                '#recommend_vector_a': 'recommend_vector_a',
-                '#recommend_vector_b': 'recommend_vector_b',
-                '#recommend_vector_c': 'recommend_vector_c',
-                '#recommend_vector_d': 'recommend_vector_d'
-            },
-            ExpressionAttributeValues={
-                ':recommend_vector_a': str(a),
-                ':recommend_vector_b': str(b),
-                ':recommend_vector_c': str(c),
-                ':recommend_vector_d': str(d)
-            }
-        )
+        if not job_postings_item.get('recommend_vector_a'):
+            print(job_postings_item.get('recommend_vector_a'))
+            a,b,c,d = NewJobPosting(job_postings_item)
+            job_postings_table.update_item(
+                Key={
+                    'PK': job_postings_item['PK'],
+                    'SK': job_postings_item['SK']
+                },
+                UpdateExpression="""
+                    SET #recommend_vector_a = :recommend_vector_a,
+                        #recommend_vector_b = :recommend_vector_b,
+                        #recommend_vector_c = :recommend_vector_c,
+                        #recommend_vector_d = :recommend_vector_d
+                """,
+                ExpressionAttributeNames={
+                    '#recommend_vector_a': 'recommend_vector_a',
+                    '#recommend_vector_b': 'recommend_vector_b',
+                    '#recommend_vector_c': 'recommend_vector_c',
+                    '#recommend_vector_d': 'recommend_vector_d'
+                },
+                ExpressionAttributeValues={
+                    ':recommend_vector_a': str(a),
+                    ':recommend_vector_b': str(b),
+                    ':recommend_vector_c': str(c),
+                    ':recommend_vector_d': str(d)
+                }
+            )

@@ -30,7 +30,8 @@ def tags_json_init():
         "프리랜서",
         "계약직",
         "파견직",
-        "위촉직"
+        "위촉직",
+        "아르바이트"
     ])
 
     for item in data:
@@ -75,9 +76,7 @@ def get_tags_json():
 def tags_json_update(new_tags):
     tags = get_tags_json()
     for category in new_tags:
-        for new_tag in tags[category]:
-            if new_tag not in tags[category]:
-                tags[category].append(new_tag)
+        tags[category].extend(new_tags[category])
     
     tags["skill_num"]=len(tags["skill"])
     tags["location_num"]=len(tags["location"])
@@ -100,15 +99,15 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
             category: [tag_name]
         }
         tags_json = tags_json_update(new_tags)
+        with open("tags.json", 'w', encoding="utf-8") as json_file:
+            json.dump(tags_json, json_file, indent=2, ensure_ascii=False)
+
+        s3 = boto3.client('s3')
+        bucket_name = "gaenchwis-sagemaker"
+
+        s3.upload_file("tags.json", bucket_name, "tags.json")
+
     tags_group[category].append(tag_name)
-    
-    with open("tags.json", 'w', encoding="utf-8") as json_file:
-        json.dump(tags_json, json_file, indent=2, ensure_ascii=False)
-
-    s3 = boto3.client('s3')
-    bucket_name = "gaenchwis-sagemaker"
-
-    s3.upload_file("tags.json", bucket_name, "tags.json")
 
     return tags_json, tags_group
 
