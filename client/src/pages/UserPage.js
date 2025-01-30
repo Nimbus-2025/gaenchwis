@@ -20,7 +20,37 @@ const UserPage = () => {
     const [favoriteCompanies, setFavoriteCompanies] = useState([]);
     const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
     const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
+    
 
+    
+    useEffect(() => {
+      const fetchBookmarks = async () => {
+        try {
+          const token = sessionStorage.getItem('token');
+          const userData = sessionStorage.getItem('user');
+          
+          if (!token || !userData) return;
+  
+          const response = await Api(
+            `${Config.server}:8005/api/v1/bookmark/user`,
+            'GET',
+            null,
+            {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          );
+  
+          const bookmarks = await response.json();
+          setBookmarkedJobs(bookmarks.map(bookmark => bookmark.post_id));
+        } catch (error) {
+          console.error('북마크 목록 가져오기 실패:', error);
+        }
+      };
+  
+      fetchBookmarks();
+    }, []); // 컴포넌트 마운트 시 한 번만 실행
+    
     const toggleFavorite = (company) => {
       setFavoriteCompanies((prev) => 
         prev.includes(company) ? prev.filter(c => c !== company) : [...prev, company]
@@ -37,6 +67,7 @@ const UserPage = () => {
       prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     );
   };
+  
 
   const handleLoginClick = () => {
     navigate('/'); // 로그인 페이지로 이동
@@ -47,7 +78,9 @@ const UserPage = () => {
     sessionStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
     navigate('/'); // 메인 페이지로 이동
   };
+  const isLoggedIn = !!userData; // userData가 있으면 true, 없으면 false
 
+  
 
   useEffect(() => {
     try {
@@ -76,17 +109,41 @@ const UserPage = () => {
       }
     };
 
+    
  
   useEffect(() => {
     fetchJobs(currentPage);
   }, [currentPage]);
-
+  const handleToggleBookmark = (postId) => {
+    setBookmarkedJobs(prev => 
+      prev.includes(postId) 
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     window.scrollTo(0, 0); // 페이지 상단으로 스크롤
   };
   return (
     <div>
+      {/* 로그인 상태일 때만 맞춤공고 섹션 표시 */}
+      {isLoggedIn && (
+        <>
+          <h1 className="job-header">맞춤공고 입니다.</h1>
+          <div className="job-container">
+            {/* 맞춤공고 관련 컨텐츠 */}
+            {loading ? (
+              <div>로딩 중...</div>
+            ) : (
+              // 여기에 맞춤공고 JobCard들을 매핑
+              <div>맞춤공고 컨텐츠</div>
+            )}
+          </div>
+        </>
+      )}
+      
+
       <h1 className="job-header">최근 업데이트된 공고입니다.</h1>
       <div className="job-container">
         

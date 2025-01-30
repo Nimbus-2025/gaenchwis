@@ -36,39 +36,31 @@ const SearchResult = ({ searchQuery }) => {
       console.log('검색 쿼리:', searchQuery);
       
       setIsLoading(true);
-    try {
-      const response = await Api(`${Config.server}:8003/api/jobs?query=${encodeURIComponent(searchQuery)}&page=${currentPage}&per_page=10`, 'GET');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      console.log('받은 데이터:', data);
-      
-      // 데이터가 배열인 경우 직접 설정
-      if (Array.isArray(data)) {
-        setResults(data);
-        setTotalPages(Math.ceil(data.length / 10));
-      } 
-      // 데이터가 객체인 경우 items 배열 확인
-      else if (data && data.items) {
-        setResults(data.items);
-        setTotalPages(data.total_pages);
-        setTotalItems(data.total_items);
-      }
-      // 둘 다 아닌 경우 빈 배열로 설정
-      else {
+      try {
+        const apiUrl = `${Config.server}:8003/api/jobs?query=${encodeURIComponent(searchQuery)}&page=${currentPage}&per_page=10`;
+        console.log('요청 URL:', apiUrl);
+        
+        const response = await Api(apiUrl, 'GET');
+        console.log('응답 데이터:', response);
+        
+        if (!response || response.error) {
+          throw new Error(response?.error || '데이터를 불러오는데 실패했습니다');
+        }
+        
+        // response가 이미 JSON 데이터이므로 바로 사용
+        setResults(response.items || []);
+        setTotalItems(response.total_items || 0);
+        setTotalPages(Math.ceil((response.total_items || 0) / ITEMS_PER_PAGE));
+        
+      } catch (err) {
+        console.error('검색 결과 조회 중 오류:', err);
+        setError(err.message);
         setResults([]);
         setTotalPages(0);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching results:', err);
-      setError(err.message);
-      setResults([]);
-      setTotalPages(0);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
     fetchSearchResults();
   }, [searchQuery, currentPage]);

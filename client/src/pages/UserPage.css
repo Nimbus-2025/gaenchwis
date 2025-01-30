@@ -69,7 +69,7 @@
     display: flex; /* Flexbox 사용 */
     justify-content: space-between; /* 항목 간의 간격을 균등하게 배분 */
     margin: 20px auto; /* 위쪽 여백과 가운데 정렬 */
-    width: 80%; /* 전체 너비의 80% */
+    width: 600px; /* 전체 너비의 80% */
     
 }
 

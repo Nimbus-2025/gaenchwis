@@ -258,6 +258,49 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
         print(f"Error in get_filtered_jobs: {str(e)}")
         return {'items': [], 'total_items': 0, 'total_pages': 0}
 
+
+
+
+def organize_position_tags(tags):
+    position_categories = {
+        "개발자": [],
+        "디자이너": [],
+        "기획자": [],
+        "엔지니어": []
+    }
+    
+    for tag in tags:
+        # 개발자 관련 태그
+        if "개발자" in tag or "프론트엔드" in tag or "백엔드" in tag or "프로그래머" in tag or "개발" in tag:
+            position_categories["개발자"].append(tag)
+        # 디자이너 관련 태그
+        elif "디자이너" in tag or "디자인" in tag:
+            position_categories["디자이너"].append(tag)
+        # 기획자 관련 태그
+        elif "기획" in tag or "매니저" in tag or "PM" in tag:
+            position_categories["기획자"].append(tag)
+        elif "엔지니어" in tag or "SE" in tag:
+            position_categories["엔지니어"].append(tag)
+    
+    return position_categories
+
+def organize_location_tags(tags):
+    organized = {
+        "서울": [],
+        "경기": [],
+        "인천": []
+    }
+    
+    for tag in tags:
+        if tag.startswith("서울"):
+            organized["서울"].append(tag)
+        elif tag.startswith("경기"):
+            organized["경기"].append(tag)
+        elif tag.startswith("인천"):
+            organized["인천"].append(tag)
+    
+    return organized
+
 @app.route('/api/jobs', methods=['GET'])
 def get_jobs():
     try:
@@ -291,28 +334,45 @@ def get_jobs():
         print(f"Error in get_jobs: {str(e)}")
         return jsonify({"error": str(e)}), 50
 
-@app.route('/api/tags/education', methods=['GET'])
-def get_education_tags():
+@app.route('/api/tags/<tag_type>', methods=['GET'])
+def get_tags(tag_type):
     try:
+
+        tag_types = {
+            'education': 'TAG#education',
+            'skill': 'TAG#skill',
+            'location': 'TAG#location',
+        }
         dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
         table = dynamodb.Table('tags')
         
         response = table.scan(
             FilterExpression='SK = :sk_value',
             ExpressionAttributeValues={
-                ':sk_value': 'TAG#education'
+                ':sk_value': tag_types[tag_type]
             },
             ExpressionAttributeNames={
                 '#n': 'tag_name'
+                
             },
             ProjectionExpression='#n'
         )
         
         tag_names = [item['tag_name'] for item in response.get('Items', [])]
+
+        if tag_type == 'location':
+            organized_tags = organize_location_tags(tag_names)
+            return jsonify(organized_tags)
+
+        elif tag_type == 'skill':
+            organized_tags = organize_position_tags(tag_names)
+            print("Organized position tags:", organized_tags)  # 디버깅용
+            return jsonify(organized_tags)
+
         return jsonify(tag_names)
         
     except ClientError as e:
-        print(f"Error fetching education tags: {str(e)}")
+        print(f"Error fetching {tag_type} tags: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/v1/healthcheck', methods=['GET'])

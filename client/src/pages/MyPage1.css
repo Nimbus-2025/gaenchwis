@@ -65,7 +65,7 @@ button:active {
   
   .rectangle-container {
     display: flex; /* Flexbox 사용 */
-    height:1100px;
+    height:1000px;
     width: 1250px;
     justify-content: center; /* 가로 방향으로 가운데 정렬 */
     align-items: center; /* 세로 방향으로 가운데 정렬 */
