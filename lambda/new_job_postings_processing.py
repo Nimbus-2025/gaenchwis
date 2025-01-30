@@ -19,7 +19,7 @@ def new_job_postings_processing(event, context):
                 print(new_image)
                 client = boto3.client("sagemaker-runtime")
                 response = client.invoke_endpoint(
-                    EndpointName="gaenchwis-sagemaker-recommendation",
+                    EndpointName="gaenchwis-recommendation",
                     ContentType="application/json",
                     Body=json.dumps({
                         "logic_type": "NewJobPostingTrain",

@@ -24,7 +24,7 @@ def recommendation(event, context):
     try:
         client = boto3.client("sagemaker-runtime")
         response = client.invoke_endpoint(
-            EndpointName="gaenchwis-sagemaker-recommendation",
+            EndpointName="gaenchwis-recommendation",
             ContentType="application/json",
             Body=json.dumps({
                 "logic_type": "UserRecommendation",
