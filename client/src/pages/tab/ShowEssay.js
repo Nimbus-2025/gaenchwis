@@ -10,18 +10,14 @@ const ShowEssay = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [essays, setEssays] = useState([]);
   const [selectedEssay, setSelectedEssay] = useState(null);
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [searchType, setSearchType] = useState('question');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [splitView, setSplitView] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [questions, setQuestions] = useState([
-    { essay_ask: '', essay_content: '' },
-  ]);
-  const [postingSelects, setPostingSelects] = useState([
-    { id: 1, post_id: '', company_id: '' },
-  ]);
+  const [questions, setQuestions] = useState([{ question: '', answer: '' }]);
+  const [postingSelects, setPostingSelects] = useState([]);
 
   const PAGE_SIZE = 10;
 
@@ -53,21 +49,42 @@ const ShowEssay = () => {
     }
   };
 
+  // 공고 목록 조회
+  const fetchJobPostings = async () => {
+    try {
+      const response = await Api(
+        `${Proxy.server}:8002/api/v1/job-postings`,
+        'GET',
+      );
+      if (response.job_postings) {
+        setJobPostings(response.job_postings);
+      }
+    } catch (error) {
+      console.error('공고 목록을 불러오는데 실패했습니다:', error);
+    }
+  };
+
+  // popUp이 열릴 때 공고 목록 조회
+  useEffect(() => {
+    if (isPopupOpen) {
+      fetchJobPostings();
+    }
+  }, [isPopupOpen]);
+
   // 자기소개서 생성
   const createEssay = async (essayData = { questions, postingSelects }) => {
     try {
       const formattedData = {
         questions: essayData.questions.map((q) => ({
-          essay_ask: q.essay_ask,
-          essay_content: q.essay_content,
+          essay_ask: q.question,
+          essay_content: q.answer,
         })),
-        job_postings:
-          essayData.postingSelects
-            ?.filter((select) => select.post_id && select.company_id)
-            .map((select) => ({
-              post_id: select.post_id,
-              company_id: select.company_id,
-            })) || [],
+        job_postings: essayData.postingSelects
+          .filter((select) => select.post_id && select.company_id)
+          .map((select) => ({
+            post_id: select.post_id,
+            company_id: select.company_id,
+          })),
       };
 
       const response = await Api(
@@ -80,7 +97,7 @@ const ShowEssay = () => {
         await fetchEssays();
         setIsPopupOpen(false);
         setQuestions([{ question: '', answer: '' }]);
-        setPostingSelects([{ id: 1 }]);
+        setPostingSelects([]);
       }
     } catch (error) {
       console.error('자기소개서 생성에 실패했습니다:', error);
@@ -89,11 +106,11 @@ const ShowEssay = () => {
   };
 
   // 자기소개서 수정
-  const updateEssay = async (essayId, updateDate) => {
+  const updateEssay = async (essayId, updateData) => {
     try {
       const formattedData = {
-        essay_ask: updateDate.essay_id,
-        essay_content: updateDate.essay_content,
+        essay_ask: updateData.question,
+        essay_content: updateData.answer,
       };
 
       await Api(
@@ -102,7 +119,7 @@ const ShowEssay = () => {
         formattedData,
       );
 
-      fetchEssayDetail(essayId);
+      await fetchEssayDetail(essayId);
     } catch (error) {
       console.error('자기소개서 수정에 실패했습니다.');
     }
@@ -181,11 +198,21 @@ const ShowEssay = () => {
 
     try {
       if (selectedEssay) {
-        await updateEssay(selectedEssay.essay_id, questions[0]);
+        console.log('수정 요청 데이터: ', {
+          essayId: selectedEssay.essay_id,
+          questionData: questions[0],
+        });
+
+        await updateEssay(selectedEssay.essay_id, {
+          question: questions[0].question,
+          answer: questions[0].answer,
+        });
       } else {
         await createEssay({ questions, postingSelects });
       }
+      await fetchEssays();
       setIsPopupOpen(false);
+      setSelectedEssay(null);
     } catch (error) {
       console.error('자기소개서 저장/수정에 실패했습니다:', error);
     }
@@ -270,14 +297,14 @@ const ShowEssay = () => {
       {/* 정렬 버튼 */}
       <div className="sort-buttons">
         <button
-          className={`sort-button ${sortOrder === 'desc' ? 'active' : ''}`}
-          onClick={() => handleSortChange('desc')}
+          className={`sort-button ${sortOrder === 'asc' ? 'active' : ''}`}
+          onClick={() => handleSortChange('asc')}
         >
           최신순
         </button>
         <button
-          className={`sort-button ${sortOrder === 'asc' ? 'active' : ''}`}
-          onClick={() => handleSortChange('asc')}
+          className={`sort-button ${sortOrder === 'desc' ? 'active' : ''}`}
+          onClick={() => handleSortChange('desc')}
         >
           오래된순
         </button>
@@ -353,6 +380,8 @@ const ShowEssay = () => {
                       {
                         question: selectedEssay.essay_ask,
                         answer: selectedEssay.essay_content,
+                        essay_ask: selectedEssay.essay_ask,
+                        essay_content: selectedEssay.essay_content,
                       },
                     ]);
                     setIsPopupOpen(true);
