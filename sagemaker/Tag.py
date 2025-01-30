@@ -3,10 +3,16 @@ import json
 import re
 
 def tags_json_init():
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
+
     table = dynamodb.Table("tags")
     response = table.scan()
     data = response['Items']
+
 
     tags = {
         'skill_num': 0,
@@ -41,18 +47,26 @@ def tags_json_init():
     tags["education_num"]=len(tags["education"])
     tags["position_num"]=len(tags["position"])
 
-    with open("tags.json", 'w') as json_file:
-        json.dump(tags, json_file, indent=2)
-    
-    s3 = boto3.client('s3')
+    with open("tags.json", 'w', encoding="utf-8") as json_file:
+        json.dump(tags, json_file, indent=2, ensure_ascii=False)
+
+    s3 = boto3.client('s3',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
-    
+
     return tags
 
 def get_tags_json():
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     bucket_name = "gaenchwis-sagemaker"
 
     def s3_file_exists(bucket, key):
@@ -64,7 +78,7 @@ def get_tags_json():
     
     if s3_file_exists(bucket_name, "tags.json"):
         s3.download_file(bucket_name, "tags.json", "tags.json")
-        with open("tags.json", 'r') as json_file:
+        with open("tags.json", 'r', encoding="utf-8") as json_file:
             return json.load(json_file)
     else:
         print("Tag Json does not exist.")
@@ -82,10 +96,14 @@ def tags_json_update(new_tags):
     tags["education_num"]=len(tags["education"])
     tags["position_num"]=len(tags["position"])
 
-    with open("tags.json", 'w') as json_file:
-        json.dump(tags, json_file, indent=2)
+    with open("tags.json", 'w', encoding="utf-8") as json_file:
+        json.dump(tags, json_file, indent=2, ensure_ascii=False)
 
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
@@ -100,10 +118,26 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
         tags_json = tags_json_update(new_tags)
     tags_group[category].append(tag_name)
     
+    with open("tags.json", 'w', encoding="utf-8") as json_file:
+        json.dump(tags_json, json_file, indent=2, ensure_ascii=False)
+
+    s3 = boto3.client('s3',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
+    bucket_name = "gaenchwis-sagemaker"
+
+    s3.upload_file("tags.json", bucket_name, "tags.json")
+
     return tags_json, tags_group
 
 def train_tags_group():
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     job_postings_table = dynamodb.Table("job_postings")
 
     tags_groups = []
@@ -123,7 +157,11 @@ def train_tags_group():
     return tags_groups
 
 def MakeTagGroup(job_postings_item):
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     job_tags_table = dynamodb.Table("job_tags")
 
     job_tags = job_tags_table.query(
@@ -175,17 +213,17 @@ def MakeTagGroup(job_postings_item):
     return tags_group
 
 def MakeUserTagGroup(user_id):
-    dynamodb = boto3.resource('dynamodb')
-    users_table = dynamodb.Table("users")
-
-    user = users_table.get_item(Key={'PK': "USER#"+user_id})
-
+    dynamodb = boto3.resource('dynamodb',
+    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
+    aws_secret_access_key="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",
+    region_name="ap-northeast-2"
+    )
     user_tags_table = dynamodb.Table("user_tags")
 
     user_tags = user_tags_table.query(
         KeyConditionExpression="PK = :pk",
         ExpressionAttributeValues={
-            ":pk": user["PK"]
+            ":pk": "USER#"+user_id
         }
     )
 
@@ -196,25 +234,18 @@ def MakeUserTagGroup(user_id):
         'position': []
     }
 
-    for user_tag in user_tags["Items"]:
-        tags_table = dynamodb.Table("tags")
-
-        tags = tags_table.query(
-            KeyConditionExpression="PK = :pk",
-            ExpressionAttributeValues={
-                ":pk": user_tag["SK"]
-            }
-        )
-
+    for tags in user_tags["Items"]:
+        if not tags:
+            break
         if tags["tag_category"]=="position":
             position_range = [int(num) for num in re.findall(r"\d+", tags["tag_name"])]
             if len(position_range) == 2 or "년" in tags["tag_name"] or "↑" in tags["tag_name"] or "↓" in tags["tag_name"] or "경력" in tags["tag_name"]:
                 tags_group["position"].extend(range(1, 21))
             else:
-                tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+                tags_group[tags["tag_category"]].append(tags["tag_name"])
         else:
-            tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
-        
+            tags_group[tags["tag_category"]].append(tags["tag_name"])
+
     for category in tags_group:
         if not tags_group[category]:
             tags_group[category].append(None)

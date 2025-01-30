@@ -13,7 +13,7 @@ model = Model(
 predictor = model.deploy(
     initial_instance_count=1,
     instance_type="ml.m5.large",
-    endpoint_name="gaenchwis-sagemaker-recommendation"
+    endpoint_name="gaenchwis-recommendation"
 )
 
 print("SageMaker 엔드포인트 배포 완료!")

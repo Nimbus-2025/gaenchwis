@@ -21,22 +21,21 @@ def ping():
 
 @app.route('/invocations', methods=['POST'])
 def predict_fn():
-    data = flask.request.get_json()
-    print(data)
+    data = flask.request.get_data().decode("utf-8")
     try:
-        logic_type = data.get("logic_type")
-        payload = data.get("payload")
+        logic_type = json.loads(data).get("logic_type")
+        payload = json.loads(data).get("payload")
 
         if logic_type == "NewJobPostingTrain":
-            return flask.jsonify(NewJobPostingTrain(payload))
+            return json.dumps(NewJobPostingTrain(payload))
         elif logic_type == "UserRecommendation":
-            return flask.jsonify(UserRecommendation(payload))
+            return json.dumps(UserRecommendation(payload))
         elif logic_type == "InitTrain":
-            return flask.jsonify(InitTrain())
+            return json.dumps(InitTrain())
         elif logic_type == "InitJobPosting":
-            return flask.jsonify(InitJobPosting())
+            return json.dumps(InitJobPosting())
         elif logic_type == "InitTagJson":
-            return flask.jsonify(InitTagJson())
+            return json.dumps(InitTagJson())
     except Exception as e:
         return {"error": f"Exception occurred: {str(e)}"}
 
@@ -48,15 +47,16 @@ def UserRecommendation(user_id):
 
 def InitTrain():
     Training.StartTrain()
-    return "Train Completed"
+    return {"message":"Train Completed"}
     
 def InitJobPosting():
     NewJobPostings.InitJobPosting()
-    return "JobPosting Vector created"
+    return {"message":"JobPosting Vector created"}
 
 def InitTagJson():
     Tag.tags_json_init()
-    return "Tag Json created"
+    print("avsdf")
+    return {"message":"Tag Json created"}
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=8080, debug=True)
