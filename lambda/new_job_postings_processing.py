@@ -14,16 +14,20 @@ def new_job_postings_processing(event, context):
                 new_image = record['dynamodb']['NewImage']
                 pk = new_image['PK']['S']
                 sk = new_image['SK']['S']
+                if new_image.get('recommend_vector_a'):
+                    print("Exists Records")
+                    break
                 
                 print(f"Processing new item with PK: {pk}, SK: {sk}")
-                print(new_image)
+                clean_data = clean_dynamodb_image(new_image)
+                print(clean_data)
                 client = boto3.client("sagemaker-runtime")
                 response = client.invoke_endpoint(
                     EndpointName="gaenchwis-recommendation",
                     ContentType="application/json",
                     Body=json.dumps({
                         "logic_type": "NewJobPostingTrain",
-                        "payload": clean_dynamodb_image(new_image)
+                        "payload": clean_data
                     })
                 )
                 data=json.loads(response['Body'].read().decode("utf-8"))

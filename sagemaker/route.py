@@ -27,15 +27,15 @@ def predict_fn():
         payload = json.loads(data).get("payload")
 
         if logic_type == "NewJobPostingTrain":
-            return json.dumps(NewJobPostingTrain(payload))
+            return json.dumps(NewJobPostingTrain(payload), ensure_ascii=False)
         elif logic_type == "UserRecommendation":
-            return json.dumps(UserRecommendation(payload))
+            return json.dumps(UserRecommendation(payload), ensure_ascii=False)
         elif logic_type == "InitTrain":
-            return json.dumps(InitTrain())
+            return json.dumps(InitTrain(), ensure_ascii=False)
         elif logic_type == "InitJobPosting":
-            return json.dumps(InitJobPosting())
+            return json.dumps(InitJobPosting(), ensure_ascii=False)
         elif logic_type == "InitTagJson":
-            return json.dumps(InitTagJson())
+            return json.dumps(InitTagJson(), ensure_ascii=False)
     except Exception as e:
         return {"error": f"Exception occurred: {str(e)}"}
 
@@ -55,7 +55,6 @@ def InitJobPosting():
 
 def InitTagJson():
     Tag.tags_json_init()
-    print("avsdf")
     return {"message":"Tag Json created"}
 
 if __name__ == '__main__':

@@ -50,3 +50,12 @@ def Vector(tags_group, position_model, location_model, education_model, skill_mo
     combined_vector = combined_model(position_vector, location_vector, education_vector, skill_vector)
 
     return combined_vector
+
+def ModifyLayer(checkpoint, model_state):
+    old_emb, new_emb = checkpoint["embedding.weight"], model_state["embedding.weight"]
+    num_old, num_new, emb_dim = old_emb.shape[0], new_emb.shape[0], new_emb.shape[1]
+
+    checkpoint["embedding.weight"] = (
+        torch.cat([old_emb, torch.randn(num_new - num_old, emb_dim) * 0.01], dim=0) if num_new > num_old else old_emb[:num_new, :]
+    )
+    return checkpoint
