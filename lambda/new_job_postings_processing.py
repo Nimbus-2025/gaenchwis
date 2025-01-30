@@ -7,29 +7,33 @@ dynamodb = boto3.client('dynamodb')
 TABLE_NAME = 'job_postings'
 
 def new_job_postings_processing(event, context):
+    print(event)
     try:
         for record in event['Records']:
-            if record['eventName'] == 'INSERT':
+            if record['eventName'] == 'MODIFY':
                 new_image = record['dynamodb']['NewImage']
                 pk = new_image['PK']['S']
                 sk = new_image['SK']['S']
                 
                 print(f"Processing new item with PK: {pk}, SK: {sk}")
                 print(new_image)
-                response=requests.post(
-                    "https://runtime.sagemaker.ap-northeast-2.amazonaws.com/endpoints/gaenchwis-sagemaker-recommendation/invocations",
-                    data=json.dumps({
+                client = boto3.client("sagemaker-runtime")
+                response = client.invoke_endpoint(
+                    EndpointName="gaenchwis-sagemaker-recommendation",
+                    ContentType="application/json",
+                    Body=json.dumps({
                         "logic_type": "NewJobPostingTrain",
                         "payload": clean_dynamodb_image(new_image)
                     })
                 )
-                print(response)
-                recommend_vector_a = "a"
-                recommend_vector_b = "b"
-                recommend_vector_c = "c"
-                recommend_vector_d = "d"
+                data=json.loads(response['Body'].read().decode("utf-8"))
+                print(data)
+                recommend_vector_a = data[0]
+                recommend_vector_b = data[1]
+                recommend_vector_c = data[2]
+                recommend_vector_d = data[3]
                 
-                #update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
+                update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
                 
         return {
             'statusCode': 200,
@@ -44,11 +48,19 @@ def new_job_postings_processing(event, context):
         }
 
 def clean_dynamodb_image(dynamodb_image):
-    clean_data = {}
-    for key, value in dynamodb_image.items():
-        clean_data[key] = list(value.values())[0]
-    print(clean_data)
-    return clean_data
+    def clean_value(value):
+        if isinstance(value, dict):
+            key, val = next(iter(value.items()))
+            if key == "M":
+                return {k: clean_value(v) for k, v in val.items()}
+            elif key == "L":
+                return [clean_value(v) for v in val]
+            else:
+                return val
+        return value
+
+    return {key: clean_value(value) for key, value in dynamodb_image.items()}
+
 
 def update_dynamodb_item(pk, sk, value1, value2, value3, value4):
     try:

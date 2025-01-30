@@ -1,6 +1,5 @@
 import boto3
 import json
-import requests
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
@@ -23,20 +22,23 @@ def recommendation(event, context):
     user_id = head['user_id']
 
     try:
-        response=requests.post(
-            "https://runtime.sagemaker.ap-northeast-2.amazonaws.com/endpoints/gaenchwis-sagemaker-recommendation/invocations",
-            data=json.dumps({
+        client = boto3.client("sagemaker-runtime")
+        response = client.invoke_endpoint(
+            EndpointName="gaenchwis-sagemaker-recommendation",
+            ContentType="application/json",
+            Body=json.dumps({
                 "logic_type": "UserRecommendation",
                 "payload": user_id
             })
         )
-        print(response)
+        data=json.loads(response['Body'].read().decode("utf-8"))
+        print(data)
         return {
             'statusCode': 200,
             'headers': header,
             'body': json.dumps({
                 "message":'Recommendation Loaded',
-                "data":response
+                "data":data
             })
         }
     except ClientError as e:

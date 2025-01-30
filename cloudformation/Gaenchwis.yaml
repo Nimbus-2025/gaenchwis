@@ -510,6 +510,7 @@ Resources:
             - dynamodb:*
             - s3:*
             - ses:*
+            - sagemaker:*
             Resource: '*'
   UserLoadLambdaInvokePermission:
     Type: AWS::Lambda::Permission

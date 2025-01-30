@@ -176,16 +176,12 @@ def MakeTagGroup(job_postings_item):
 
 def MakeUserTagGroup(user_id):
     dynamodb = boto3.resource('dynamodb')
-    users_table = dynamodb.Table("users")
-
-    user = users_table.get_item(Key={'PK': "USER#"+user_id})
-
     user_tags_table = dynamodb.Table("user_tags")
 
     user_tags = user_tags_table.query(
         KeyConditionExpression="PK = :pk",
         ExpressionAttributeValues={
-            ":pk": user["PK"]
+            ":pk": "USER#"+user_id
         }
     )
 
@@ -196,24 +192,15 @@ def MakeUserTagGroup(user_id):
         'position': []
     }
 
-    for user_tag in user_tags["Items"]:
-        tags_table = dynamodb.Table("tags")
-
-        tags = tags_table.query(
-            KeyConditionExpression="PK = :pk",
-            ExpressionAttributeValues={
-                ":pk": user_tag["SK"]
-            }
-        )
-
+    for tags in user_tags["Items"]:
         if tags["tag_category"]=="position":
             position_range = [int(num) for num in re.findall(r"\d+", tags["tag_name"])]
             if len(position_range) == 2 or "년" in tags["tag_name"] or "↑" in tags["tag_name"] or "↓" in tags["tag_name"] or "경력" in tags["tag_name"]:
                 tags_group["position"].extend(range(1, 21))
             else:
-                tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+                tags_group[tags["tag_category"]].append(tags["tag_name"])
         else:
-            tags_group[tags["Items"][0]["tag_category"]].append(tags["Items"][0]["tag_name"])
+            tags_group[tags["tag_category"]].append(tags["tag_name"])
         
     for category in tags_group:
         if not tags_group[category]:
