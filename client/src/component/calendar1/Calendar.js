@@ -76,18 +76,39 @@ const Calendar = () => {
   // 일정 조회 함수
   const fetchSchedules = async () => {
     try {
-      const response = await api(
-        `${Proxy}:8006/api/v1/schedules`,
-        'GET',
-        null,
-        true
-      );
-
-      if (response instanceof Error) {
-        throw response;
+      const userData = sessionStorage.getItem('user');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        return;
       }
 
-      setSchedules(response.data);
+      const parsedUserData = JSON.parse(userData);
+      const userId = parsedUserData.user_id;
+
+      const response = await api(
+        `${Proxy.server}:8006/api/v1/schedules?userId=${userId}`,
+        'GET',
+        null,
+        {
+          access_token: parsedUserData.access_token,
+          id_token: parsedUserData.id_token,
+          user_id: userId
+        }
+      );
+
+      console.log('서버 응답:', response);
+
+      // 서버 응답에서 Array 데이터 직접 처리
+      if (response && response.data && Array.isArray(response.data)) {
+        const scheduleList = response.data.map(schedule => ({
+          id: schedule.schedule_id,
+          title: schedule.schedule_title,
+          date: schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')
+        }));
+
+        console.log('변환된 일정 목록:', scheduleList);
+        setSchedules(scheduleList);
+      }
     } catch (error) {
       console.error('일정 조회 중 오류 발생:', error);
     }
@@ -98,9 +119,39 @@ const Calendar = () => {
     fetchSchedules();
   }, []);
 
-  // AddSchedule에 전달할 새로고침 함수
-  const handleScheduleUpdate = () => {
-    fetchSchedules();
+  // 일정 클릭 핸들러
+  const handleScheduleClick = (schedule) => {
+    dispatch(openEditPopup({ isOpen: true, schedule }));
+  };
+
+  // 날짜별 일정 렌더링 (제목만 표시)
+  const renderSchedules = (date) => {
+    if (!Array.isArray(schedules)) return null;
+
+    const daySchedules = schedules.filter(schedule => 
+      schedule.date === date.format('YYYY-MM-DD')
+    );
+
+    return daySchedules.map((schedule) => (
+      <div 
+        key={schedule.id}
+        className="schedule-item"
+        onClick={() => handleScheduleClick(schedule)}
+        style={{
+          padding: '2px 4px',
+          margin: '1px 0',
+          backgroundColor: '#e3f2fd',
+          borderRadius: '2px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {schedule.title}
+      </div>
+    ));
   };
 
   useEffect(() => {
@@ -197,14 +248,12 @@ const Calendar = () => {
         {activePopup === 'schedule' && (
           <AddSchedule onClose={() =>  setActivePopup(null)}
           type="schedule"
-          onSave={handleScheduleUpdate}
         />
         )}
         {activePopup === 'announcement' && (
           <AddSchedule 
             onClose={() => setActivePopup(null)}
             type="announcement"
-            onSave={handleScheduleUpdate}
           />
         )}
         <Header>

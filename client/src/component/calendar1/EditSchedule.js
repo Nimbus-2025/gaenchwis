@@ -9,7 +9,7 @@ import {
 } from './redux/modules/schedule';  // 경로 수정
 import moment from 'moment';
 import AddSchedule from './AddSchedule';  
-import api from '../../api/api';  // 수정된 import
+import api from '../../api/api';  // 수정된 부분
 import Proxy from '../../api/Proxy';  // 수정된 import
 
 
@@ -63,24 +63,44 @@ const EditSchedule = ({ history }) => {
     resume: ''
   });
 
-  useEffect(() => {
-    if (currentSchedule) {
-      const formatDate = (dateString) => {
-        if (!dateString) return '';
-        return `${dateString.slice(0, 4)}-${dateString.slice(4, 6)}-${dateString.slice(6)}`;
+  // 일정 상세 정보 조회
+  const fetchScheduleDetail = async () => {
+    try {
+      const userData = sessionStorage.getItem('user');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const parsedUserData = JSON.parse(userData);
+      console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
+      
+      const response = await api(
+        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
+        'GET'
+      );
+
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      // 날짜 형식 변환 (YYYYMMDD -> YYYY-MM-DD)
+      const formattedData = {
+        ...response.data,
+        date: response.data.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')
       };
 
-      setFormData({
-        title: currentSchedule.title || '',
-        company: currentSchedule.company || '',
-        tag: currentSchedule.tag || '',
-        date: formatDate(currentSchedule.date),
-        deadlineDate: formatDate(currentSchedule.deadlineDate),
-        interviewDate: formatDate(currentSchedule.interviewDate),
-        finalDate: formatDate(currentSchedule.finalDate),
-        content: currentSchedule.content || '',
-        resume: currentSchedule.resume || ''
-      });
+      setFormData(formattedData);
+    } catch (error) {
+      console.error('일정 조회 중 오류:', error);
+      alert('일정을 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 컴포넌트 마운트 시 상세 정보 조회
+  useEffect(() => {
+    if (currentSchedule?.id) {
+      fetchScheduleDetail();
     }
   }, [currentSchedule]);
 
@@ -127,77 +147,88 @@ const EditSchedule = ({ history }) => {
   // 일정 타입 확인
   const isGeneralSchedule = currentSchedule?.type === 'schedule';
 
-  // 일정 상세 조회
-  const fetchScheduleDetail = async () => {
-    try {
-      const response = await api(
-        `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
-        'GET',
-        null,
-        true
-      );
-
-      if (response instanceof Error) {
-        throw response;
-      }
-
-      setFormData(response.data);
-    } catch (error) {
-      console.error('일정 조회 중 오류 발생:', error);
-      alert('일정을 불러오는데 실패했습니다.');
-    }
-  };
-
-  // 일정 수정
+  // 일정 수정 핸들러
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      const userData = sessionStorage.getItem('user');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const parsedUserData = JSON.parse(userData);
+      console.log('파싱된 유저 데이터:', {
+        access_token: parsedUserData.access_token,
+        id_token: parsedUserData.id_token,
+        user_id: parsedUserData.user_id
+      });
+
+      // 날짜 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+      const requestData = {
+        ...formData,
+        date: formData.date.replaceAll('-', '')
+      };
+
+      console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
+      console.log('전송할 데이터:', requestData);
+      
       const response = await api(
-        `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
+        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
         'PUT',
-        formData,
-        true
+        requestData
       );
+
+      console.log('서버 응답:', response);
 
       if (response instanceof Error) {
         throw response;
       }
 
-      alert('일정이 수정되었습니다.');
+      alert('일정이 성공적으로 수정되었습니다.');
       dispatch(openEditPopup({ isOpen: false }));
-      if (typeof onSave === 'function') {
-        onSave();
-      }
     } catch (error) {
-      console.error('일정 수정 중 오류 발생:', error);
+      console.error('일정 수정 중 오류:', error);
+      console.error('에러 상세:', error.response || error);
       alert('일정 수정에 실패했습니다.');
     }
   };
 
-  // 일정 삭제
+  // 일정 삭제 핸들러
   const handleDelete = async () => {
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      try {
-        const response = await api(
-          `${Proxy}/api/v1/schedules/${currentSchedule.id}`,
-          'DELETE',
-          null,
-          true
-        );
-
-        if (response instanceof Error) {
-          throw response;
-        }
-
-        alert('일정이 삭제되었습니다.');
-        dispatch(openEditPopup({ isOpen: false }));
-        if (typeof onDelete === 'function') {
-          onDelete();
-        }
-      } catch (error) {
-        console.error('일정 삭제 중 오류 발생:', error);
-        alert('일정 삭제에 실패했습니다.');
+    try {
+      const userData = sessionStorage.getItem('user');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        return;
       }
+
+      const parsedUserData = JSON.parse(userData);
+      console.log('파싱된 유저 데이터:', {
+        access_token: parsedUserData.access_token,
+        id_token: parsedUserData.id_token,
+        user_id: parsedUserData.user_id
+      });
+
+      console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
+      
+      const response = await api(
+        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
+        'DELETE'
+      );
+
+      console.log('서버 응답:', response);
+
+      if (response instanceof Error) {
+        throw response;
+      }
+
+      alert('일정이 성공적으로 삭제되었습니다.');
+      dispatch(openEditPopup({ isOpen: false }));
+    } catch (error) {
+      console.error('일정 삭제 중 오류:', error);
+      console.error('에러 상세:', error.response || error);
+      alert('일정 삭제에 실패했습니다.');
     }
   };
 
