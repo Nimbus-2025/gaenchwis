@@ -373,54 +373,54 @@ class EssayRepository:
             error_message = e.response['Error']['Message']
             raise Exception(f"Failed to search essays: {error_code} - {error_message}")
         
-def get_essay_list(
-    self,
-    user_id: str,
-    sort_order: SortOrder = SortOrder.DESC,
-    page: int = 1,
-    page_size: int = 10
-) -> dict:
-    try:
-        # 자기소개서 목록 조회
-        response = self.table.query(
-            KeyConditionExpression='PK = :pk',
-            ExpressionAttributeValues={
-                ':pk': f"USER#{user_id}",
-            },
-            ScanIndexForward=sort_order == SortOrder.ASC,  # DESC면 False, ASC면 True
-        )
-        
-        items = response.get('Items', [])
-        total_count = len(items)
-        
-        # 페이지네이션 처리
-        start_idx = (page - 1) * page_size
-        end_idx = start_idx + page_size
-        paged_items = items[start_idx:end_idx] if start_idx < total_count else []
-        
-        # EssayListItem 스키마에 맞게 응답 구성
-        essays = []
-        for item in paged_items:
-            essay_id = item['SK'].split('#')[1]  # "ESSAY#uuid" 형태에서 uuid 추출
-            essays.append({
-                'essay_id': essay_id,
-                'essay_ask': item['essay_ask'],
-                'created_at': item['created_at']  # ISO 형식의 날짜 문자열
-            })
-        
-        # EssayListResponse 스키마에 맞게 최종 응답 구성
-        return {
-            'essays': essays,
-            'total_count': total_count,
-            'current_page': page,
-            'total_pages': (total_count + page_size - 1) // page_size
-        }
+    def get_essay_list(
+        self,
+        user_id: str,
+        sort_order: SortOrder = SortOrder.DESC,
+        page: int = 1,
+        page_size: int = 10
+    ) -> dict:
+        try:
+            # 자기소개서 목록 조회
+            response = self.table.query(
+                KeyConditionExpression='PK = :pk',
+                ExpressionAttributeValues={
+                    ':pk': f"USER#{user_id}",
+                },
+                ScanIndexForward=sort_order == SortOrder.ASC,  # DESC면 False, ASC면 True
+            )
             
-    except ClientError as e:
-        self.logger.error(f"Error in get_essay_list: {str(e)}")
-        error_code = e.response['Error']['Code']
-        error_message = e.response['Error']['Message']
-        raise Exception(f"Failed to get essay list: {error_code} - {error_message}")
-    except Exception as e:
-        self.logger.error(f"Unexpected error in get_essay_list: {str(e)}")
-        raise Exception(f"Failed to get essay list: {str(e)}")
+            items = response.get('Items', [])
+            total_count = len(items)
+            
+            # 페이지네이션 처리
+            start_idx = (page - 1) * page_size
+            end_idx = start_idx + page_size
+            paged_items = items[start_idx:end_idx] if start_idx < total_count else []
+            
+            # EssayListItem 스키마에 맞게 응답 구성
+            essays = []
+            for item in paged_items:
+                essay_id = item['SK'].split('#')[1]  # "ESSAY#uuid" 형태에서 uuid 추출
+                essays.append({
+                    'essay_id': essay_id,
+                    'essay_ask': item['essay_ask'],
+                    'created_at': item['created_at']  # ISO 형식의 날짜 문자열
+                })
+            
+            # EssayListResponse 스키마에 맞게 최종 응답 구성
+            return {
+                'essays': essays,
+                'total_count': total_count,
+                'current_page': page,
+                'total_pages': (total_count + page_size - 1) // page_size
+            }
+                
+        except ClientError as e:
+            self.logger.error(f"Error in get_essay_list: {str(e)}")
+            error_code = e.response['Error']['Code']
+            error_message = e.response['Error']['Message']
+            raise Exception(f"Failed to get essay list: {error_code} - {error_message}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error in get_essay_list: {str(e)}")
+            raise Exception(f"Failed to get essay list: {str(e)}")
