@@ -14,7 +14,7 @@ def NewJobPosting(job_postings_item):
 
     result = Layer.Vector(tags_group, position_model, location_model, education_model, skill_model)
 
-    return result
+    return result.tolist()
 
 def InitJobPosting():
     dynamodb = boto3.resource('dynamodb')
@@ -30,7 +30,7 @@ def InitJobPosting():
     )
 
     for job_postings_item in job_postings["Items"]:
-        a,b,c,d = NewJobPosting(job_postings_item).tolist()
+        a,b,c,d = NewJobPosting(job_postings_item)
         job_postings_table.update_item(
             Key={
                 'PK': job_postings_item['PK'],

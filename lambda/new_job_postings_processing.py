@@ -14,6 +14,9 @@ def new_job_postings_processing(event, context):
                 new_image = record['dynamodb']['NewImage']
                 pk = new_image['PK']['S']
                 sk = new_image['SK']['S']
+                if new_image.get('recommend_vector_a'):
+                    print("Exists Records")
+                    break
                 
                 print(f"Processing new item with PK: {pk}, SK: {sk}")
                 clean_data = clean_dynamodb_image(new_image)
