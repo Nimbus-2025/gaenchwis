@@ -34,6 +34,7 @@ Resources:
           Memory: 512
           Cpu: 512
           Command: ["sh", "-c", "sleep 7200 && exec exit 0"]
+          StopTimeout: 10
           LogConfiguration:
             LogDriver: awslogs
             Options:

@@ -69,7 +69,7 @@ def BestRecommendation(user_vector):
             c=job_postings_item.get("recommend_vector_c")
             d=job_postings_item.get("recommend_vector_d")
             x1_tensor = torch.tensor(user_vector, dtype=torch.float32)
-            x1_tensor = torch.tensor([a,b,c,d], dtype=torch.float32)
+            x1_tensor = torch.tensor([float(a),float(b),float(c),float(d)], dtype=torch.float32)
             similarity = F.cosine_similarity(x1_tensor.unsqueeze(0), x2_tensor.unsqueeze(0), dim=0)
             result.append([similarity, job_postings_item])
     
