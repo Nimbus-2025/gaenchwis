@@ -56,6 +56,53 @@ const ShowProfile = ({ userData }) => {
     fetchEducationTags();
   }, []);
 
+  
+
+  useEffect(() => {
+    fetchUserLocationTags();
+  }, []);
+
+  const fetchUserLocationTags = async () => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const token = sessionStorage.getItem('token');  // 토큰 가져오기
+      const userId = user?.user_id;
+      
+      if (!userId) {
+        console.error('사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+      
+      const response = await fetch('http://localhost:8005/api/v1/user/tags/location', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // 토큰 추가
+          'User-Id': userId,
+        },
+        credentials: 'include'
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('불러온 위치 태그:', data);
+      
+      // 데이터 구조에 따라 처리
+      if (Array.isArray(data)) {
+        setSelectedLocations(data);
+      } else if (data.tags && Array.isArray(data.tags)) {
+        setSelectedLocations(data.tags.map(tag => 
+          typeof tag === 'string' ? tag : tag.tag_name
+        ));
+      }
+    } catch (error) {
+      console.error('위치 태그 조회 중 에러:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchLocationTags = async () => {
       try {
@@ -121,10 +168,50 @@ const ShowProfile = ({ userData }) => {
     setIsEditModalOpen(true); // 수정 모달 열기
   };
 
-  const handleApplyLocations = (locations) => {
-    setSelectedLocations(locations);
-    setIsModalOpen(false);
+
+  const handleApplyLocations = async (selectedTags) => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const userId = user?.user_id;
+  
+      // 선택된 태그들을 API 요청 형식으로 변환
+      const tagsData = selectedTags.map((tagName, index) => ({
+        tag_id: `loc_${index + 1}`,
+        tag_name: tagName,
+        tag_type: 'location'
+      }));
+  
+      // fetch를 사용한 API 호출
+      const response = await fetch(`http://localhost:8005/api/v1/user/tags/location`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Id': userId || '',
+          'Origin': 'http://localhost:3000'
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({
+          tags: tagsData
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('태그 저장 응답:', data);
+  
+      // 상태 업데이트
+      setSelectedLocations(selectedTags);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('태그 저장 중 에러:', error);
+      alert('태그 저장에 실패했습니다.');
+    }
   };
+  
 
   return (
     <div>
@@ -254,15 +341,12 @@ const ShowProfile = ({ userData }) => {
         </div>
       </div>
       <LocationTag
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      allLocationTags={allLocationTags}
-      selectedTags={selectedLocations}
-      onApply={(selectedTags) => {
-        setSelectedLocations(selectedTags);
-        setIsModalOpen(false);
-      }}
-    />
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        allLocationTags={allLocationTags}
+        selectedTags={selectedLocations}
+        onApply={handleApplyLocations}  // 수정된 핸들러 사용
+      />
        <Modal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 

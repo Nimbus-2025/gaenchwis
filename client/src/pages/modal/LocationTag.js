@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import './LocationTag.css';
+import Api from '../../api/api';
+import Config from '../../api/Config';
 
 const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }) => {
   const [tempSelectedTags, setTempSelectedTags] = useState(selectedTags);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleTagClick = (tag) => {
     if (tempSelectedTags.includes(tag)) {
@@ -11,7 +14,9 @@ const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }
       setTempSelectedTags([...tempSelectedTags, tag]);
     }
   };
+  
 
+  
   // 지역 전체 선택 처리
   const handleRegionSelect = (region, tags) => {
     if (tags.every(tag => tempSelectedTags.includes(tag))) {
@@ -26,6 +31,40 @@ const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }
         }
       });
       setTempSelectedTags(newTags);
+    }
+  };
+  const handleApply = async () => {
+    setIsLoading(true);
+    try {
+      // 선택된 태그들을 API 요청 형식에 맞게 변환
+      const tagsData = tempSelectedTags.map((tagName, tag, index) => ({
+        tag_id: tag.tag_id,
+        tag_name: tag.tag_name || tag, 
+        tag_type: 'location'
+      }));
+      
+      console.log('전송할 태그 데이터:', tagsData);  // 디버깅용
+      // API 호출하여 태그 업데이트
+      const response = await Api(
+        `${Config.server}:8005/api/v1/user/tags/location`,
+        'PUT',
+        {
+          tags: tagsData
+        }
+      );
+
+      console.log('\n=== API 응답 데이터 ===');
+      console.log('응답 전체:', response);
+      console.log('업데이트된 태그들:', response.tags);
+
+      // 성공적으로 저장되면 부모 컴포넌트에 알림
+      onApply(tempSelectedTags);
+      onClose();
+    } catch (error) {
+      console.error('태그 저장 중 에러:', error);
+      alert('태그 저장에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,8 +102,20 @@ const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }
           ))}
         </div>
         <div className="modal-buttons">
-          <button className="apply-button" onClick={() => onApply(tempSelectedTags)}>적용</button>
-          <button className="cancel-button" onClick={onClose}>취소</button>
+          <button 
+            className="apply-button" 
+            onClick={handleApply}
+            disabled={isLoading}
+          >
+            {isLoading ? '저장 중...' : '적용'}
+          </button>
+          <button 
+            className="cancel-button" 
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            취소
+          </button>
         </div>
       </div>
     </div>

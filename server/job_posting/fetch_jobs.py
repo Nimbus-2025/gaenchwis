@@ -353,6 +353,7 @@ def get_tags(tag_type):
             },
             ExpressionAttributeNames={
                 '#n': 'tag_name'
+                
             },
             ProjectionExpression='#n'
         )
