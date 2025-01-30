@@ -71,11 +71,7 @@ def StartTrain(tags_groups=None):
     education_model = Layer.TagsTrainModel(education_tags, 128)
     skill_model = Layer.TagsTrainModel(skill_tags, 128)
 
-    s3 = boto3.client('s3',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     def s3_file_exists(bucket, key):
@@ -92,16 +88,24 @@ def StartTrain(tags_groups=None):
 
     if position_model_exists:
         s3.download_file(bucket_name, "position_model.pth", "position_model.pth")
-        position_model.load_state_dict(torch.load("position_model.pth"), strict=False)
+        checkpoint = torch.load("position_model.pth")
+        model_state = position_model.state_dict()
+        position_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
     if location_model_exists:
         s3.download_file(bucket_name, "location_model.pth", "location_model.pth")
-        location_model.load_state_dict(torch.load("location_model.pth"), strict=False)
+        checkpoint = torch.load("location_model.pth")
+        model_state = location_model.state_dict()
+        location_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
     if education_model_exists:
         s3.download_file(bucket_name, "education_model.pth", "education_model.pth")
-        education_model.load_state_dict(torch.load("education_model.pth"), strict=False)
+        checkpoint = torch.load("education_model.pth")
+        model_state = education_model.state_dict()
+        education_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
     if skill_model_exists:
         s3.download_file(bucket_name, "skill_model.pth", "skill_model.pth")
-        skill_model.load_state_dict(torch.load("skill_model.pth"), strict=False)
+        checkpoint = torch.load("skill_model.pth")
+        model_state = skill_model.state_dict()
+        skill_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
     
     position_model=Train("position", position_train, position_model, lr=0.01)
     location_model=Train("location", location_train, location_model, lr=0.01)

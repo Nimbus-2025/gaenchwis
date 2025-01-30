@@ -3,11 +3,7 @@ import json
 import re
 
 def tags_json_init():
-    dynamodb = boto3.resource('dynamodb',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    dynamodb = boto3.resource('dynamodb')
 
     table = dynamodb.Table("tags")
     response = table.scan()
@@ -50,11 +46,7 @@ def tags_json_init():
     with open("tags.json", 'w', encoding="utf-8") as json_file:
         json.dump(tags, json_file, indent=2, ensure_ascii=False)
 
-    s3 = boto3.client('s3',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
@@ -62,11 +54,7 @@ def tags_json_init():
     return tags
 
 def get_tags_json():
-    s3 = boto3.client('s3',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     def s3_file_exists(bucket, key):
@@ -99,11 +87,7 @@ def tags_json_update(new_tags):
     with open("tags.json", 'w', encoding="utf-8") as json_file:
         json.dump(tags, json_file, indent=2, ensure_ascii=False)
 
-    s3 = boto3.client('s3',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
@@ -121,11 +105,7 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
     with open("tags.json", 'w', encoding="utf-8") as json_file:
         json.dump(tags_json, json_file, indent=2, ensure_ascii=False)
 
-    s3 = boto3.client('s3',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
 
     s3.upload_file("tags.json", bucket_name, "tags.json")
@@ -133,11 +113,7 @@ def new_tag_add(category, tag_name, tags_json, tags_group):
     return tags_json, tags_group
 
 def train_tags_group():
-    dynamodb = boto3.resource('dynamodb',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    dynamodb = boto3.resource('dynamodb')
     job_postings_table = dynamodb.Table("job_postings")
 
     tags_groups = []
@@ -157,11 +133,7 @@ def train_tags_group():
     return tags_groups
 
 def MakeTagGroup(job_postings_item):
-    dynamodb = boto3.resource('dynamodb',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    dynamodb = boto3.resource('dynamodb')
     job_tags_table = dynamodb.Table("job_tags")
 
     job_tags = job_tags_table.query(
@@ -213,11 +185,7 @@ def MakeTagGroup(job_postings_item):
     return tags_group
 
 def MakeUserTagGroup(user_id):
-    dynamodb = boto3.resource('dynamodb',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    dynamodb = boto3.resource('dynamodb')
     user_tags_table = dynamodb.Table("user_tags")
 
     user_tags = user_tags_table.query(

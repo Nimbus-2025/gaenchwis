@@ -17,11 +17,7 @@ def NewJobPosting(job_postings_item):
     return result
 
 def InitJobPosting():
-    dynamodb = boto3.resource('dynamodb',
-    aws_access_key_id="AKIAWX2IF5YDAMM7FH4V",
-    aws_secret_access_key="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",
-    region_name="ap-northeast-2"
-    )
+    dynamodb = boto3.resource('dynamodb')
     job_postings_table = dynamodb.Table("job_postings")
 
 
