@@ -100,25 +100,35 @@ const EditSchedule = ({ setSchedules }) => {
     }));
   };
 
-  const onSave = () => {
-    const formatDate = (dateString) => dateString.replaceAll('-', '');
-    
-    dispatch(updateSchedule({
-      ...currentSchedule,
+  const onSave = async (type) => {
+    const requestData = {
       ...formData,
-      date: formatDate(formData.date),
-      deadlineDate: formData.deadlineDate ? formatDate(formData.deadlineDate) : '',
-      interviewDate: formData.interviewDate ? formatDate(formData.interviewDate) : '',
-      finalDate: formData.finalDate ? formatDate(formData.finalDate) : ''
-    }));
-    
-    setIsEditing(false);
+      type:type
+    };
+
+    const response = await api(
+      `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
+      'PUT',
+      requestData
+    );
+
+    if (response && Array.isArray(response)) {
+      const scheduleList = response.map(schedule => ({
+        type: schedule.schedule_type ? schedule.schedule_type : "schedule",
+        id: schedule.schedule_id,
+        title: schedule.schedule_title,
+        date: schedule.schedule_date ? schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+        schedule_deadline: schedule.schedule_deadline ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+        document_result_date: schedule.document_result_date ? schedule.document_result_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+        interview_date: schedule.interview_date ? schedule.interview_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+        final_date: schedule.final_date ? schedule.final_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+        schedule_content: schedule.schedule_content,
+        is_completes: schedule.is_completes
+      }));
+      console.log('변환된 일정 목록:', scheduleList);
+      setSchedules(scheduleList);
   };
 
-  const onDelete = () => {
-    dispatch(deleteSchedule(currentSchedule.id));  // id만 전달하도록 수정
-    dispatch(openEditPopup({ isOpen: false }));
-  };
 
   const onComplete = () => {
     dispatch(updateSchedule({
@@ -302,7 +312,7 @@ const EditSchedule = ({ setSchedules }) => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                readOnly={!isEditing}
+                readOnly={true}
               />
             </FormGroup>
             <FormGroup>
@@ -312,7 +322,7 @@ const EditSchedule = ({ setSchedules }) => {
                 name="title"
                 value={formData.company}
                 onChange={handleChange}
-                readOnly={!isEditing}
+                readOnly={true}
               />
             </FormGroup>
             <FormGroup>
@@ -379,7 +389,6 @@ const EditSchedule = ({ setSchedules }) => {
                 {!isEditing ? (
                   <>
                     <Button onClick={() => setIsEditing(true)}>수정</Button>
-                    <Button onClick={() => handleDelete()}>삭제</Button>
                     <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
                       닫기
                     </Button>
