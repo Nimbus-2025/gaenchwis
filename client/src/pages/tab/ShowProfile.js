@@ -19,13 +19,16 @@ const ShowProfile = ({ userData }) => {
   const [email, setEmail] = useState(userData?.email || '정보 없음');
   const [name, setName] = useState(userData?.name || '정보 없음');
   const [positionTags, setPositionTags] = useState([]);
-  const [educationTags, setEducationTags] = useState([]);
   const [error, setError] = useState(null);
   const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
-  const [allEducationTags, setAllEducationTags] = useState([]);
   const [allLocationTags, setAllLocationTags] = useState([]);
   const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
   const [selectedPositionTags, setSelectedPositionTags] = useState([]);
+  const [isLocationTagModalOpen, setIsLocationTagModalOpen] = useState(false);
+  const [isEducationTagModalOpen, setIsEducationTagModalOpen] = useState(false); // 추가
+  const [allEducationTags, setAllEducationTags] = useState([]);
+  const [educationTags, setEducationTags] = useState([]);
+  const [isPositionTagModalOpen, setIsPositionTagModalOpen] = useState(false);
 
   const tagOrder = {
     '대학교(4년)': 1,
@@ -47,7 +50,7 @@ const ShowProfile = ({ userData }) => {
         );
 
         setAllEducationTags(sortedTags);  // 모든 가능한 태그 설정
-        setEducationTags([]); // 초기에는 선택된 태그 없음
+        // 초기에는 선택된 태그 없음
       } catch (error) {
         console.error('Error fetching education tags:', error);
       }
@@ -102,6 +105,54 @@ const ShowProfile = ({ userData }) => {
       console.error('위치 태그 조회 중 에러:', error);
     }
   };
+  useEffect(() => {
+    const fetchUserEducationTags = async () => {
+      try {
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const token = sessionStorage.getItem('token');
+        const userId = user?.user_id;
+        
+        if (!userId) {
+          console.error('사용자 정보를 찾을 수 없습니다.');
+          return;
+        }
+        
+        const response = await fetch('http://localhost:8005/api/v1/user/tags/education', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Id': userId,
+          },
+          credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        console.log('교육 태그 원본 데이터:', data);
+        
+        if (data.tags && Array.isArray(data.tags)) {
+          const tagNames = data.tags.map(tag => tag.tag_name);
+          console.log('변환된 교육 태그:', tagNames);
+          setEducationTags(prev => {
+            console.log('이전 교육 태그:', prev);
+            console.log('새로운 교육 태그:', tagNames);
+            return tagNames;
+          });
+        }
+      } catch (error) {
+        console.error('교육 태그 조회 중 에러:', error);
+      }
+    };
+
+    fetchUserEducationTags();
+  }, []);
+
+  // 교육 태그 변경 감지
+  useEffect(() => {
+    console.log('교육 태그 상태 변경됨:', educationTags);
+  }, [educationTags]);
 
   useEffect(() => {
     const fetchLocationTags = async () => {
@@ -120,6 +171,78 @@ const ShowProfile = ({ userData }) => {
 
     fetchLocationTags();
   }, []);
+
+  useEffect(() => {
+    const fetchPositionTags = async () => {
+      try {
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const token = sessionStorage.getItem('token');
+        const userId = user?.user_id;
+        
+        if (!userId) return;
+
+        const response = await fetch('http://localhost:8005/api/v1/user/tags/position', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Id': userId,
+          },
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('태그 조회 실패');
+        }
+
+        const data = await response.json();
+        console.log('불러온 직무 태그:', data);
+        
+        if (data.tags && Array.isArray(data.tags)) {
+          const tagNames = data.tags.map(tag => tag.tag_name);
+          setPositionTags(tagNames);
+        }
+      } catch (error) {
+        console.error('직무 태그 조회 중 에러:', error);
+      }
+    };
+
+    fetchPositionTags();
+  }, []);
+
+  const handlePositionTagApply = async (selectedTags) => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const token = sessionStorage.getItem('token');
+      const userId = user?.user_id;
+
+      const response = await fetch('http://localhost:8005/api/v1/user/tags/position', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'User-Id': userId,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          tags: selectedTags.map(tag => ({
+            tag_id: tag,
+            tag_name: tag,
+            tag_type: 'position'
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('태그 저장 실패');
+      }
+
+      setPositionTags(selectedTags);
+    } catch (error) {
+      console.error('직무 태그 저장 중 에러:', error);
+    }
+  };
+
 
   const handleApplyEducationTags = (selectedTags) => {
     setEducationTags(selectedTags);
@@ -211,6 +334,50 @@ const ShowProfile = ({ userData }) => {
       alert('태그 저장에 실패했습니다.');
     }
   };
+
+
+const handleEducationTagApply = async (selectedTags) => {
+  try {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    const userId = user?.user_id;
+
+    // 선택된 태그들을 API 요청 형식으로 변환
+    const tagsData = selectedTags.map((tagName, index) => ({
+      tag_id: `loc_${index + 1}`,
+      tag_name: tagName,
+      tag_type: 'education'
+    }));
+
+    // fetch를 사용한 API 호출
+    const response = await fetch(`http://localhost:8005/api/v1/user/tags/education`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Id': userId || '',
+        'Origin': 'http://localhost:3000'
+      },
+      mode: 'cors',
+      credentials: 'include',
+      body: JSON.stringify({
+        tags: tagsData
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('태그 저장 응답:', data);
+
+    // 상태 업데이트
+    setEducationTags(selectedTags);
+    setIsEducationTagModalOpen(false); 
+  } catch (error) {
+    console.error('태그 저장 중 에러:', error);
+    alert('태그 저장에 실패했습니다.');
+  }
+};
   
 
   return (
@@ -227,8 +394,10 @@ const ShowProfile = ({ userData }) => {
                 <p>이메일 주소: {email}</p>
                  
           </div>
-        </div>
+          </div>
+        <div className="button-wrapper">
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
+        </div>
         <h4>입사지원 현황</h4>
         <div className="status-box">
         <div className="status-container">
@@ -297,38 +466,39 @@ const ShowProfile = ({ userData }) => {
                     <h4>학력</h4>
                     <button 
           className="add-tag-button"
-          onClick={() => setIsEducationModalOpen(true)}
+          onClick={() => setIsEducationTagModalOpen(true)}
         >
           +
         </button>
         </div>
             <div className="tag-list">
-              {educationTags.length > 0 ? (
-                educationTags.map((tag, index) => (
-                  <span key={index} className="tag-item">
-                    {tag}
-                  </span>
-                ))
-              ) : (
-                <span className="no-tags">태그 없음</span>
-              )}
-              
+                {console.log('렌더링 시점 educationTags:', educationTags)}
+                {Array.isArray(educationTags) && educationTags.length > 0 ? (
+                  educationTags.map((tag, index) => (
+                    <span key={index} className="tag-item">
+                      {console.log('렌더링하는 태그:', tag)}
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="no-tags">태그 없음</span>
+                )}
             </div>
             </div>
           </div>
           <div className="info-box1">
           <div className="info-box-header">
-          <h4>관심 직무</h4>
+          <h4>관심 직무 / 스킬</h4>
           <button 
             className="add-tag-button"
-            onClick={() => setIsPositionModalOpen(true)}
+            onClick={() => setIsPositionTagModalOpen(true)}
           >
             +
           </button>
         </div>
         <div className="tag-list">
-          {selectedPositionTags.length > 0 ? (
-            selectedPositionTags.map((tag, index) => (
+          {positionTags && positionTags.length > 0 ? (
+            positionTags.map((tag, index) => (
               <span key={index} className="tag-item">
                 {tag}
               </span>
@@ -355,19 +525,23 @@ const ShowProfile = ({ userData }) => {
                 email={email}
                 phone={phone}
             />
+       {isEducationTagModalOpen && (
         <EducationTag
-        isOpen={isEducationModalOpen}
-        onClose={() => setIsEducationModalOpen(false)}
-        allEducationTags={allEducationTags}
-        selectedTags={educationTags}
-        onApply={handleApplyEducationTags}
-      />
+          isOpen={isEducationTagModalOpen}
+          onClose={() => setIsEducationTagModalOpen(false)}
+          allEducationTags={allEducationTags}
+          selectedTags={educationTags}
+          onApply={handleEducationTagApply}
+        />
+      )}
+      {isPositionTagModalOpen && (
       <PositionTag
-  isOpen={isPositionModalOpen}
-  onClose={() => setIsPositionModalOpen(false)}
-  selectedTags={selectedPositionTags}
-  onApply={handlePositionTagsApply}
+  isOpen={isPositionTagModalOpen}
+  onClose={() => setIsPositionTagModalOpen(false)}
+  selectedTags={positionTags}
+  onApply={handlePositionTagApply}
 />
+)}
     </div>
     
   );

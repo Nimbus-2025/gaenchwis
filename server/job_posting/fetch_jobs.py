@@ -9,7 +9,15 @@ load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, 
+     resources={r"/api/*": {
+         "origins": ["http://localhost:3000"],
+         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Authorization"],
+         "supports_credentials": True
+     }})
+
+
 
 # aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 # aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -21,6 +29,8 @@ dynamodb = boto3.resource(
     # aws_access_key_id=aws_access_key_id,
     # aws_secret_access_key=aws_secret_access_key
 )
+
+
 
 def get_tag_names(job_tags, dynamodb):
     try:
@@ -266,8 +276,13 @@ def organize_position_tags(tags):
         "개발자": [],
         "디자이너": [],
         "기획자": [],
-        "엔지니어": []
+        "엔지니어": [],
+        "데이터": [],
+        "보안": []
     }
+
+
+
     
     for tag in tags:
         # 개발자 관련 태그
@@ -281,8 +296,67 @@ def organize_position_tags(tags):
             position_categories["기획자"].append(tag)
         elif "엔지니어" in tag or "SE" in tag:
             position_categories["엔지니어"].append(tag)
+        elif "데이터" in tag or "인공지능" in tag or "사이언티스트" in tag:
+            position_categories["데이터"].append(tag)
+        elif "보안" in tag or "정보보호" in tag:
+            position_categories["보안"].append(tag)
     
     return position_categories
+
+
+def organize_skill_tags(tags):
+    skill_categories = {
+        "개발": [],
+        "디자인": [],
+        "데이터": [],
+        "서버/네트워크": [],
+        "일반": []
+    }
+    
+    for tag in tags:
+        # 개발 관련 스킬
+        if "java" in tag.lower() or "python" in tag.lower() or "javascript" in tag.lower() or "react" in tag.lower() or \
+           "node" in tag.lower() or "spring" in tag.lower() or "mysql" in tag.lower() or "mongodb" in tag.lower() or \
+           "php" in tag.lower() or "html" in tag.lower() or "css" in tag.lower() or "aws" in tag.lower() or \
+           "docker" in tag.lower() or "kubernetes" in tag.lower() or "git" in tag.lower() or "c++" in tag.lower() or \
+           "파이썬" in tag.lower():
+            skill_categories["개발"].append(tag)
+            
+        # 디자인 관련 스킬
+        elif "figma" in tag.lower() or "adobe" in tag.lower() or "photoshop" in tag.lower() or \
+             "illustrator" in tag.lower() or "ui" in tag.lower() or "ux" in tag.lower() or \
+             "웹디자인" in tag.lower() or "sketch" in tag.lower() or "xd" in tag.lower() or \
+             "premiere" in tag.lower() or "after effects" in tag.lower() or "어도비" in tag.lower() or \
+             "포토샵" in tag.lower():
+            skill_categories["디자인"].append(tag)
+            
+        # 데이터 관련 스킬
+        elif "sql" in tag.lower() or "python" in tag.lower() or \
+             "tableau" in tag.lower() or "power bi" in tag.lower() or "데이터" in tag.lower() or \
+             "머신러닝" in tag.lower() or "통계" in tag.lower() or "분석" in tag.lower() or \
+             "빅데이터" in tag.lower() or "hadoop" in tag.lower() or "spark" in tag.lower():
+            skill_categories["데이터"].append(tag)
+            
+        # 서버/네트워크 관련 스킬
+        elif "linux" in tag.lower() or "ubuntu" in tag.lower() or "centos" in tag.lower() or \
+             "docker" in tag.lower() or "kubernetes" in tag.lower() or "aws" in tag.lower() or \
+             "azure" in tag.lower() or "네트워크" in tag.lower() or "무선" in tag.lower() or \
+             "유선" in tag.lower() or "서버" in tag.lower() or "클라우드" in tag.lower() or \
+             "devops" in tag.lower() or "ci/cd" in tag.lower() or "jenkins" in tag.lower() or \
+             "apache" in tag.lower() or "nginx" in tag.lower() or "보안" in tag.lower() or \
+             "방화벽" in tag.lower() or "시스템관리" in tag.lower() or "인프라" in tag.lower() or \
+             "vmware" in tag.lower() or "가상화" in tag.lower():
+            skill_categories["서버/네트워크"].append(tag)
+            
+        # 일반 스킬
+        elif "office" in tag.lower() or "excel" in tag.lower() or "powerpoint" in tag.lower() or \
+             "word" in tag.lower() or "문서" in tag.lower() or "한글" in tag.lower() or \
+             "기획" in tag.lower() or "보고서" in tag.lower() or "커뮤니케이션" in tag.lower():
+            skill_categories["일반"].append(tag)
+    
+    return skill_categories
+
+    
 
 def organize_location_tags(tags):
     organized = {
@@ -337,15 +411,19 @@ def get_jobs():
 @app.route('/api/tags/<tag_type>', methods=['GET'])
 def get_tags(tag_type):
     try:
-
-        tag_types = {
-            'education': 'TAG#education',
-            'skill': 'TAG#skill',
-            'location': 'TAG#location',
-        }
         dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
         table = dynamodb.Table('tags')
         
+        tag_types = {
+            'education': 'TAG#education',
+            'location': 'TAG#location',
+            'position': 'TAG#skill',
+            'skill': 'TAG#skill'
+        }
+        
+        if tag_type not in tag_types:
+            return jsonify({"error": "Invalid tag type"}), 400
+            
         response = table.scan(
             FilterExpression='SK = :sk_value',
             ExpressionAttributeValues={
@@ -353,33 +431,25 @@ def get_tags(tag_type):
             },
             ExpressionAttributeNames={
                 '#n': 'tag_name'
-                
             },
             ProjectionExpression='#n'
         )
         
         tag_names = [item['tag_name'] for item in response.get('Items', [])]
+        print(f"Retrieved {tag_type} tags:", tag_names)  # 디버깅용
 
-        if tag_type == 'location':
-            organized_tags = organize_location_tags(tag_names)
-            return jsonify(organized_tags)
-
+        if tag_type == 'position':
+            return jsonify(organize_position_tags(tag_names))
         elif tag_type == 'skill':
-            organized_tags = organize_position_tags(tag_names)
-            print("Organized position tags:", organized_tags)  # 디버깅용
-            return jsonify(organized_tags)
-
-        return jsonify(tag_names)
+            return jsonify(organize_skill_tags(tag_names))
+        elif tag_type == 'location':
+            return jsonify(organize_location_tags(tag_names))
+        else:
+            return jsonify(tag_names)
         
-    except ClientError as e:
-        print(f"Error fetching {tag_type} tags: {str(e)}")
+    except Exception as e:
+        print(f"Error in get_tags: {str(e)}")  # 에러 로깅
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/v1/healthcheck', methods=['GET'])
-def healthcheck():
-    return jsonify({
-        'message': "Clear"
-    })
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=8003)  # host='0.0.0.0' 추가
+    app.run(host='0.0.0.0', debug=True, port=8003)

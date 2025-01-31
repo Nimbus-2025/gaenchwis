@@ -20,9 +20,52 @@ const UserPage = () => {
     const [favoriteCompanies, setFavoriteCompanies] = useState([]);
     const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
     const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
-    
+    const [recommendedJobs, setRecommendedJobs] = useState([]); // 추천 공고를 위한 state 추가
+  const [recommendLoading, setRecommendLoading] = useState(true);
+  const isLoggedIn = !!userData;  
 
-    
+    const fetchRecommendedJobs = async () => {
+      try {
+        setRecommendLoading(true);
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const token = sessionStorage.getItem('token');
+        
+        if (!user || !token) return;
+  
+        const response = await Api('https://alb.gaenchwis.click/recommendation', 'GET');
+        console.log(response)
+        if (!response.ok) {
+          throw new Error('추천 공고 조회 실패');
+        }
+  
+        const data = await response.json();
+        console.log('추천 공고 데이터:', data); // 받아온 데이터 확인
+        setRecommendedJobs(data);
+      } catch (error) {
+        console.error('추천 공고 조회 중 에러:', error);
+      } finally {
+        setRecommendLoading(false);
+      }
+    }; 
+
+    useEffect(() => {
+      try {
+        const storedUserData = sessionStorage.getItem('user');
+        if (storedUserData) {
+          setUserData(JSON.parse(storedUserData));
+        }
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+      }
+    }, []);
+  
+
+    useEffect(() => {
+      if (isLoggedIn) {
+        fetchRecommendedJobs();
+      }
+    }, [isLoggedIn]);
+  
     useEffect(() => {
       const fetchBookmarks = async () => {
         try {
@@ -78,7 +121,6 @@ const UserPage = () => {
     sessionStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
     navigate('/'); // 메인 페이지로 이동
   };
-  const isLoggedIn = !!userData; // userData가 있으면 true, 없으면 false
 
   
 
@@ -132,12 +174,23 @@ const UserPage = () => {
         <>
           <h1 className="job-header">맞춤공고 입니다.</h1>
           <div className="job-container">
-            {/* 맞춤공고 관련 컨텐츠 */}
-            {loading ? (
-              <div>로딩 중...</div>
+            {recommendLoading ? (
+              <div>맞춤 공고 로딩 중...</div>
+            ) : recommendedJobs.length > 0 ? (
+              recommendedJobs.map(job => (
+                <JobCard
+                  key={job.post_id}
+                  job={job}
+                  favoriteCompanies={favoriteCompanies}
+                  bookmarkedJobs={bookmarkedJobs}
+                  appliedJobs={appliedJobs}
+                  onToggleFavorite={toggleFavorite}
+                  onToggleBookmark={toggleBookmark}
+                  onToggleApplied={toggleApplied}
+                />
+              ))
             ) : (
-              // 여기에 맞춤공고 JobCard들을 매핑
-              <div>맞춤공고 컨텐츠</div>
+              <div>맞춤 공고가 없습니다.</div>
             )}
           </div>
         </>
