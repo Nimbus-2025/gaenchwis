@@ -1,7 +1,6 @@
 // ShowEssay.js
 import { useState, useEffect } from 'react';
 import './ShowEssay.css';
-import Config from '../../api/Config';
 import Proxy from '../../api/Proxy';
 import Api from '../../api/api';
 
@@ -18,6 +17,7 @@ const ShowEssay = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [questions, setQuestions] = useState([{ question: '', answer: '' }]);
   const [postingSelects, setPostingSelects] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]);
 
   const PAGE_SIZE = 10;
 
@@ -57,7 +57,7 @@ const ShowEssay = () => {
         'GET',
       );
       if (response.job_postings) {
-        setJobPostings(response.job_postings);
+        setPostingSelects(response.job_postings);
       }
     } catch (error) {
       console.error('공고 목록을 불러오는데 실패했습니다:', error);
@@ -67,9 +67,24 @@ const ShowEssay = () => {
   // popUp이 열릴 때 공고 목록 조회
   useEffect(() => {
     if (isPopupOpen) {
-      fetchJobPostings();
+      fetchAppliedJobs();
     }
   }, [isPopupOpen]);
+
+  // 지원한 공고 목록 조회 함수
+  const fetchAppliedJobs = async () => {
+    try {
+      const response = await Api(
+        `${Proxy.server}:8002/api/v1/applied-jobs`,
+        'GET',
+      );
+      if (response.applied_jobs) {
+        setAppliedJobs(response.applied_jobs);
+      }
+    } catch (error) {
+      console.log('지원한 공고 목록을 불러오는데 실패했습니다: ', error);
+    }
+  };
 
   // 자기소개서 생성
   const createEssay = async (essayData = { questions, postingSelects }) => {
@@ -220,6 +235,10 @@ const ShowEssay = () => {
 
   const handlePostingSelectChange = (index, field, value) => {
     const newPostingSelects = [...postingSelects];
+    if (!newPostingSelects[index]) {
+      newPostingSelects[index] = {};
+    }
+
     newPostingSelects[index][field] = value;
     setPostingSelects(newPostingSelects);
   };
@@ -481,10 +500,34 @@ const ShowEssay = () => {
                       +
                     </button>
                   </div>
-                  {postingSelects.map((select) => (
-                    <select key={select.id} className="posting-select">
+                  {postingSelects.map((select, index) => (
+                    <select
+                      key={select.id}
+                      className="posting-select"
+                      onChange={(e) => {
+                        const [postId, companyId] = e.target.value.split('|');
+                        handlePostingSelectChange(index, 'post_id', postId);
+                        handlePostingSelectChange(
+                          index,
+                          'company_id',
+                          companyId,
+                        );
+                      }}
+                      value={
+                        select.post_id
+                          ? `${select.post_id}|${select.company_id}`
+                          : ''
+                      }
+                    >
                       <option value="">공고를 선택해주세요</option>
-                      {/* 여기에 실제 채용공고 옵션들이 들어갈 예정 */}
+                      {appliedJobs.map((job) => (
+                        <option
+                          key={job.SK}
+                          value={`${job.post_id}|${job.company_id}`}
+                        >
+                          {job.post_name}
+                        </option>
+                      ))}
                     </select>
                   ))}
                 </div>
