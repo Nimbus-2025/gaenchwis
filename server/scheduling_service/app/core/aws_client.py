@@ -21,7 +21,7 @@ class AWSClient:
         if service_name not in cls._instances:
             try:
                 credentials = {
-                    'region_name': config.aws.region or 'ap-northeast-2'  # 기본 리전 설정
+                    'region_name': config.aws.region or 'ap-northeast-2',
                 }
 
                 if service_name == 'dynamodb':

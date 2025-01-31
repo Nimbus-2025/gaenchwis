@@ -81,11 +81,7 @@ const Plan = styled.span`
   border-radius: 4px;
   background-color: ${props => {
     // 일반 일정인 경우
-    if (props.scheduleType === 'schedule' && 
-        !props.scheduleTitle?.includes('공고 마감') && 
-        !props.scheduleTitle?.includes('서류 합격 발표') && 
-        !props.scheduleTitle?.includes('면접') && 
-        !props.scheduleTitle?.includes('최종 발표')) {
+    if (props.scheduletype === 'schedule') {
       return '#74c0fc';  // 하늘색
     }
     // 취업 관련 일정인 경우
@@ -208,7 +204,7 @@ const Day = ({ dateInfo, className }) => {
   const titleClassName = `title ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''} ${isHoliday ? 'holiday' : ''}`;
 
   const openPopup = (schedule) => {
-    dispatch(openEditPopup({ isOpen: true, schedule }));
+    dispatch(openEditPopup({ isOpen: true, schedule}));
   };
 
   schedule.sort((a, b) => a.time - b.time);
@@ -237,8 +233,8 @@ const Day = ({ dateInfo, className }) => {
       <Plan
         key={`${s.id || idx}`}
         className={`${s.completed ? 'completed' : ''}`}
-        scheduleType={s.type}
-        scheduleTitle={s.title}
+        scheduletype={s.type}
+        scheduletitle={s.title}
         onClick={e => {
           e.stopPropagation();
           openPopup(s);

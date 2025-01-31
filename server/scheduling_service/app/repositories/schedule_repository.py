@@ -4,6 +4,7 @@ import logging
 import uuid
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
+import re
 
 from app.core.aws_client import AWSClient
 from app.schemas.scheduling_schema import GeneralScheduleCreate
@@ -26,6 +27,7 @@ class ScheduleRepository:
             self.dynamodb = AWSClient.get_client('dynamodb')
             self.table = self.dynamodb.Table('schedules')  # 일반 일정 테이블
             self.apply_table = self.dynamodb.Table('applies')  # 취업 일정 테이블
+            self.job_postings = self.dynamodb.Table('job_postings')
 
         except Exception as e:
             logging.error(f"Error initializing repository: {str(e)}")
@@ -57,29 +59,29 @@ class ScheduleRepository:
         except Exception as e:
             raise Exception(f"Failed to create schedule: {str(e)}")
 
-    def get_schedules(self, user_id: str, schedule_type: str, year_month: str) -> List[Dict]:
+    def get_schedules(self, user_id: str, schedule_type: str) -> List[Dict]:
         """일정 조회"""
 
-        print(f"get_schedules: {user_id}, {schedule_type}, {year_month}")
+        print(f"get_schedules: {user_id}, {schedule_type}")
 
         try:
             if schedule_type == "general":
-                return self._get_general_schedules(user_id, year_month)
+                return self._get_general_schedules(user_id)
             elif schedule_type == "apply":
-                return self._get_apply_schedules(user_id, year_month)
+                return self._get_apply_schedules(user_id)
             else:  # all
-                general_schedules = self._get_general_schedules(user_id, year_month)
-                apply_schedules = self._get_apply_schedules(user_id, year_month)
-
-                return sorted(general_schedules + apply_schedules, key=lambda x: x['schedule_date'])
+                general_schedules = self._get_general_schedules(user_id)
+                apply_schedules = self._get_apply_schedules(user_id)
+                
+                return general_schedules + apply_schedules
                 
         except Exception as e:
             raise Exception(f"Failed to get schedules: {str(e)}")
 
-    def _get_general_schedules(self, user_id: str, year_month: str) -> List[Dict]:
+    def _get_general_schedules(self, user_id: str) -> List[Dict]:
         """일반 일정 조회"""
         try:
-            print(f"_get_general_schedules - user_id: {user_id}, year_month: {year_month}")
+            print(f"_get_general_schedules - user_id: {user_id}")
             
             response = self.table.query(
                 KeyConditionExpression=Key('PK').eq(f"USER#{user_id}") & 
@@ -88,14 +90,10 @@ class ScheduleRepository:
             schedules = response.get('Items', [])
             print(f"Found schedules before filtering: {schedules}")
             
-            # year_month 형식을 YYYY-MM에서 YYYYMM으로 변환
-            filter_date = year_month.replace('-', '')
-            print(f"filter_date: {filter_date}")
-            
             # 해당 월의 일정만 필터링
             filtered_schedules = [
                 schedule for schedule in schedules 
-                if schedule['schedule_date'].startswith(filter_date)
+                if schedule['schedule_date']
             ]
             print(f"Filtered schedules: {filtered_schedules}")
             
@@ -105,7 +103,7 @@ class ScheduleRepository:
             print(f"Error in _get_general_schedules: {str(e)}")
             raise Exception(f"Failed to get general schedules: {str(e)}")
 
-    def _get_apply_schedules(self, user_id: str, year_month: str) -> List[Dict]:
+    def _get_apply_schedules(self, user_id: str) -> List[Dict]:
         """취업 일정 조회"""
         try:
             response = self.apply_table.query(
@@ -113,31 +111,37 @@ class ScheduleRepository:
                 Key('SK').begins_with('APPLY#')
             )
             apply_schedules = response.get('Items', [])
-            
+            print(apply_schedules)
             formatted_schedules = []
             for apply in apply_schedules:
-                dates = [
-                    ('서류 마감', apply.get('apply_date')),
-                    ('면접', apply.get('interview_date')),
-                    ('최종발표', apply.get('final_date'))
-                ]
+                deadline = apply.get('deadline_date')
+
+                if deadline and deadline !="채용시":
+                    deadline = re.sub(r"\(.*\)", "", deadline).strip()
+                    current_year = datetime.now().year
+                    deadline = datetime.strptime(f"{current_year}.{deadline}", "%Y.%m.%d").strftime("%Y%m%d")
+
+
+                job = self.job_postings.query(
+                    IndexName="JobPostId",
+                    KeyConditionExpression="post_id = :post_id",
+                    ExpressionAttributeValues={
+                        ":post_id": apply['SK'].split("#")[1]
+                    }
+                )
                 
-                for date_type, date in dates:
-                    if date and date.startswith(year_month):
-                        formatted_schedules.append({
-                            'PK': f"USER#{user_id}",
-                            'SK': f"SCHEDULE#{apply['post_id']}_{date_type}",
-                            'schedule_id': f"{apply['post_id']}_{date_type}",
-                            'user_id': user_id,
-                            'schedule_date': date,
-                            'schedule_title': f"{date_type}",
-                            'schedule_content': f"Post ID: {apply['post_id']}",
-                            'is_completes': apply.get('is_resulted', False),
-                            'created_at': apply['created_at'],
-                            'updated_at': apply['updated_at'],
-                            'GSI1PK': "SCHEDULE#ALL",
-                            'GSI1SK': date
-                        })
+                formatted_schedules.append({
+                    'schedule_type': "applies",
+                    'company': f"{job['Items'][0]['company_name']}",
+                    'schedule_id': f"{apply['post_id']}",
+                    'schedule_deadline': deadline,
+                    'document_result_date': apply.get('document_result_date'),
+                    'interview_date': apply.get('interview_date'),
+                    'final_date': apply.get('final_date'),
+                    'schedule_title': f"{apply['post_name']}",
+                    'schedule_content': f"{apply.get('memo')}",
+                    'is_completes': apply.get('is_resulted', False),
+                })
                         
             return formatted_schedules
             
@@ -186,6 +190,42 @@ class ScheduleRepository:
             
             # 전체 항목을 새로운 데이터로 업데이트
             self.table.put_item(Item=updated_item)
+            
+            return True
+            
+        except Exception as e:
+            raise Exception(f"Failed to update schedule: {str(e)}")
+    
+    def update_apply_schedule(self, user_id: str, schedule_id: str, request: Dict) -> bool:
+        """일정을 수정합니다."""
+        try:
+            # 먼저 기존 항목이 있는지 확인
+            response = self.apply_table.get_item(
+                Key={
+                    'PK': f"USER#{user_id}",
+                    'SK': f"APPLY#{schedule_id}"
+                }
+            )
+            
+            if 'Item' not in response:
+                raise Exception("지원 공고을 찾을 수 없습니다")
+
+            existing_item = response['Item']
+            current_time = datetime.now().isoformat()
+            
+            # 기존 항목 업데이트
+            updated_item = existing_item.copy()  # 기존 항목을 복사
+            
+            # 필요한 필드만 업데이트
+            updated_item.update({
+                'document_result_date':request['documentResultDate'],
+                'final_date':request['finalDate'],
+                'interview_date':request['interviewDate'],
+                'memo':request['content'],
+                'updated_at': current_time
+            })
+            
+            self.apply_table.put_item(Item=updated_item)
             
             return True
             

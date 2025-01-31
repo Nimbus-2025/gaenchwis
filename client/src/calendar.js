@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import styled from 'styled-components';
@@ -16,6 +16,7 @@ const theme = createTheme({
 const App = () => {
   const { isOpenEditPopup, isOpenAddPopup } = useSelector((state) => state.schedule);
   const dispatch = useDispatch();
+  const [schedules, setSchedules] = useState([]);
 
   const handleCloseAdd = () => {
     console.log('닫기 함수 호출');
@@ -32,11 +33,14 @@ const App = () => {
         <Title>CALENDAR</Title>
         <ContentWrapper>
           <Routes>
-            <Route path="/" element={<Calendar />} />
-            <Route path="/edit/:id" element={<EditSchedule />} />
+            <Route path="/" element={<Calendar schedules={schedules} setSchedules={setSchedules}/>} />
+            <Route path="/edit/:id" element={<EditSchedule setSchedules={setSchedules}/>} />
           </Routes>
-          {isOpenEditPopup && <EditSchedule />}
-          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} />}
+          {isOpenEditPopup && <EditSchedule setSchedules={setSchedules}/>}
+          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} 
+            type="schedule"
+            setSchedules={setSchedules}
+          />}
         </ContentWrapper>
       </AppWrapper>
     </ThemeProvider>
