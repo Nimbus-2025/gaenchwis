@@ -208,7 +208,7 @@ const Day = ({ dateInfo, className }) => {
   const titleClassName = `title ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''} ${isHoliday ? 'holiday' : ''}`;
 
   const openPopup = (schedule) => {
-    dispatch(openEditPopup({ isOpen: true, schedule }));
+    dispatch(openEditPopup({ isOpen: true, schedule}));
   };
 
   schedule.sort((a, b) => a.time - b.time);

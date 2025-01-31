@@ -73,7 +73,7 @@ export const ButtonWrapper = styled.div`
   &:hover .subBtn {
     opacity: 1;
     visibility: visible;
-    top: 0;
+    top: 40px;
   }
 
   & > svg {
@@ -112,7 +112,7 @@ export const ButtonWrapper = styled.div`
   .popup-buttons {
     position: absolute;
     left: calc(100% + 5mm);
-    top: 50%;
+    top: 25%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;

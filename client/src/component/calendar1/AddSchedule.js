@@ -85,7 +85,8 @@ const AddSchedule = ({
   initialData = null, 
   isEditing = false,
   currentSchedule = null,
-  onSave
+  onSave,
+  setSchedules
 }) => {
   const dispatch = useDispatch();
   const { schedules = [] } = useSelector((state) => state.schedule || {});
@@ -131,7 +132,7 @@ const AddSchedule = ({
         }
 
         const response = await Api(
-          `${Proxy.server}:8006/api/v1/schedules`,
+          `http://localhost:8006/api/v1/api/v1/schedules`,
           'POST',
           {
             title: scheduleData.title,
@@ -139,6 +140,23 @@ const AddSchedule = ({
             content: scheduleData.content || ''
           }
         );
+
+        if (response && Array.isArray(response)) {
+          const scheduleList = response.map(schedule => ({
+            type: schedule.schedule_type ? schedule.schedule_type : "schedule",
+            id: schedule.schedule_id,
+            title: schedule.schedule_title,
+            date: schedule.schedule_date ? schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+            schedule_deadline: schedule.schedule_deadline ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+            document_result_date: schedule.document_result_date ? schedule.document_result_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+            interview_date: schedule.interview_date ? schedule.interview_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+            final_date: schedule.final_date ? schedule.final_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+            schedule_content: schedule.schedule_content,
+            is_completes: schedule.is_completes
+          }));
+          console.log('변환된 일정 목록:', scheduleList);
+          setSchedules(scheduleList);
+        }
 
         if (response instanceof Error) {
           throw response;

@@ -20,10 +20,6 @@ router = APIRouter(prefix="/api/v1")
 schedule_repository = ScheduleRepository()
 token_validator = TokenValidator()
 
-class ScheduleCreateResponse(BaseModel):
-    message: str
-    schedule_id: str
-
 class ScheduleCreate(BaseModel):
     title: str
     date: str
@@ -83,7 +79,7 @@ def get_user_tokens(
         logger.error(f"Token validation failed: {str(e)}")
         raise HTTPException(status_code=401, detail=str(e))
     
-@router.post("/schedules", response_model=ScheduleCreateResponse)
+@router.post("/schedules")
 def create_schedule(
     request: GeneralScheduleCreate,
     tokens: Dict = Depends(get_user_tokens) 
@@ -94,24 +90,17 @@ def create_schedule(
         schedule_id = schedule_repository.create_general_schedule(user_id, request)
         
         # 저장된 일정 조회
-        created_schedule = schedule_repository.get_general_schedule(
+        created_schedule = schedule_repository.get_schedules(
             user_id=user_id,  # 여기도 실제 user_id 사용
-            schedule_id=schedule_id
+            schedule_type="all"
         )
         
-        return {
-            "id": schedule_id,
-            "title": created_schedule.title,
-            "date": created_schedule.date,
-            "content": created_schedule.content,
-            "type": "schedule",
-            "completed": created_schedule.completed
-        }
+        return created_schedule
     except Exception as e:
         logging.error(f"Error creating schedule: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/schedules", response_model=List[ScheduleResponse])
+@router.get("/schedules")
 def get_schedules(
     schedule_type: str = Query("all", description="조회할 일정 유형 (all/general/apply)"),
     year_month: str = Query(
@@ -136,7 +125,7 @@ def get_schedules(
         
         print(f"before get_schedules: {schedule_type}, {year_month}")
             
-        schedules = schedule_repository.get_schedules(user_id, schedule_type, year_month)
+        schedules = schedule_repository.get_schedules(user_id, schedule_type)
         return schedules
             
     except Exception as e:
@@ -190,7 +179,7 @@ def update_schedule(
 
 
 
-@router.delete("/schedules/{schedule_id}", response_model=Dict)
+@router.delete("/schedules/{schedule_id}")
 def delete_schedule(
     schedule_id: str,
     tokens: Dict = Depends(get_user_tokens)
@@ -203,7 +192,8 @@ def delete_schedule(
         )
         
         if success:
-            return {"message": "일정이 성공적으로 삭제되었습니다"}
+            schedules = schedule_repository.get_schedules(tokens["user_id"], "all")
+            return schedules
             
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

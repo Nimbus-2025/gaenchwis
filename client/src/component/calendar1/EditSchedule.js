@@ -39,7 +39,7 @@ const ResumeViewPopup = ({ onClose, content }) => {
   );
 };
 
-const EditSchedule = ({ history }) => {
+const EditSchedule = ({ setSchedules }) => {
   const dispatch = useDispatch();
   const { currentSchedule, schedules = [] } = useSelector((state) => state.schedule || {});
   
@@ -54,13 +54,11 @@ const EditSchedule = ({ history }) => {
   const [formData, setFormData] = useState({
     title: '',
     company: '',
-    tag: '',
-    date: '',
+    documentResultDate: '',
     deadlineDate: '',
     interviewDate: '',
     finalDate: '',
-    content: '',
-    resume: ''
+    content: ''
   });
 
   // 일정 상세 정보 조회
@@ -72,25 +70,15 @@ const EditSchedule = ({ history }) => {
         return;
       }
 
-      const parsedUserData = JSON.parse(userData);
-      console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
-      
-      const response = await api(
-        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
-        'GET'
-      );
-
-      if (response instanceof Error) {
-        throw response;
-      }
-
-      // 날짜 형식 변환 (YYYYMMDD -> YYYY-MM-DD)
-      const formattedData = {
-        ...response.data,
-        date: response.data.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')
-      };
-
-      setFormData(formattedData);
+      setFormData({
+        title:currentSchedule.title,
+        company:currentSchedule.company,
+        deadlineDate:currentSchedule.schedule_deadline,
+        interviewDate:currentSchedule.interview_date,
+        documentResultDate:currentSchedule.document_result_date,
+        finalDate:currentSchedule.final_date,
+        content:currentSchedule.schedule_content
+      });
     } catch (error) {
       console.error('일정 조회 중 오류:', error);
       alert('일정을 불러오는데 실패했습니다.');
@@ -138,12 +126,6 @@ const EditSchedule = ({ history }) => {
       completed: true
     }));
   };
-
-  const isAnnouncementRelated = currentSchedule.title?.includes('공고 마감') ||
-    currentSchedule.title?.includes('서류 합격 발표') ||
-    currentSchedule.title?.includes('면접') ||
-    currentSchedule.title?.includes('최종 발표');
-
   // 일정 타입 확인
   const isGeneralSchedule = currentSchedule?.type === 'schedule';
 
@@ -166,8 +148,7 @@ const EditSchedule = ({ history }) => {
 
       // 날짜 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
       const requestData = {
-        ...formData,
-        date: formData.date.replaceAll('-', '')
+        ...formData
       };
 
       console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
@@ -193,7 +174,6 @@ const EditSchedule = ({ history }) => {
       alert('일정 수정에 실패했습니다.');
     }
   };
-
   // 일정 삭제 핸들러
   const handleDelete = async () => {
     try {
@@ -213,11 +193,26 @@ const EditSchedule = ({ history }) => {
       console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
       
       const response = await api(
-        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
+        `http://localhost:8006/api/v1/api/v1/schedules/${currentSchedule.id}`,
         'DELETE'
       );
 
-      console.log('서버 응답:', response);
+      if (response && Array.isArray(response)) {
+        const scheduleList = response.map(schedule => ({
+          type: schedule.schedule_type ? schedule.schedule_type : "schedule",
+          id: schedule.schedule_id,
+          title: schedule.schedule_title,
+          date: schedule.schedule_date ? schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          schedule_deadline: schedule.schedule_deadline ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          document_result_date: schedule.document_result_date ? schedule.document_result_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          interview_date: schedule.interview_date ? schedule.interview_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          final_date: schedule.final_date ? schedule.final_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          schedule_content: schedule.schedule_content,
+          is_completes: schedule.is_completes
+        }));
+        console.log('변환된 일정 목록:', scheduleList);
+        setSchedules(scheduleList);
+      }
 
       if (response instanceof Error) {
         throw response;
@@ -245,79 +240,12 @@ const EditSchedule = ({ history }) => {
         {isGeneralSchedule ? (
           // 일반 일정 확인 양식
           <>
-            <form onSubmit={handleUpdate}>
-              <FormGroup>
-                <Label>일정내용</Label>
-                <Input
-                  type="text"
-                  name="title"
-                  value={isEditing ? formData.title : currentSchedule.title || ''}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>날짜</Label>
-                <Input
-                  type={isEditing ? "date" : "text"}
-                  name="date"
-                  value={isEditing ? 
-                    formData.date : 
-                    moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>메모</Label>
-                <TextArea>
-                  <textarea
-                    name="content"
-                    value={isEditing ? formData.content : currentSchedule.content || ''}
-                    onChange={handleChange}
-                    readOnly={!isEditing}
-                  />
-                </TextArea>
-              </FormGroup>
-              <ButtonContainer>
-                <ActionButtonGroup>
-                  {!isEditing ? (
-                    <>
-                      <Button onClick={() => setIsEditing(true)}>수정</Button>
-                      <Button onClick={handleDelete}>삭제</Button>
-                      <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
-                        닫기
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button type="submit">저장</Button>
-                      <Button onClick={() => setIsEditing(false)}>취소</Button>
-                    </>
-                  )}
-                </ActionButtonGroup>
-              </ButtonContainer>
-            </form>
-          </>
-        ) : (
-          // 공고 확인 모달창 수정
-          <>
             <FormGroup>
-              <Label>공고명</Label>
+              <Label>일정내용</Label>
               <Input
                 type="text"
                 name="title"
-                value={isAnnouncementRelated ? formData.title.split(' ')[1] : formData.title}
-                onChange={handleChange}
-                readOnly={!isEditing}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>기업명</Label>
-              <Input
-                type="text"
-                name="company"
-                value={formData.company}
+                value={isEditing ? formData.title : currentSchedule.title || ''}
                 onChange={handleChange}
                 readOnly={!isEditing}
               />
@@ -334,53 +262,12 @@ const EditSchedule = ({ history }) => {
                 readOnly={!isEditing}
               />
             </FormGroup>
-            {isAnnouncementRelated && !isEditing && (
-              <RelatedDates>
-                <h4>관련 중요 일자</h4>
-                {[
-                  { type: '공고 마감', date: 'date', includes: '공고 마감' },
-                  { type: '서류 합격 발표', date: 'deadlineDate', includes: '서류 합격 발표' },
-                  { type: '면접 일자', date: 'interviewDate', includes: '면접' },
-                  { type: '최종 발표 일자', date: 'finalDate', includes: '최종 발표' }
-                ].map(({ type, date, includes }) => {
-                  // 현재 보고 있는 일정 타입은 건너뛰기
-                  if (currentSchedule?.title?.includes(includes)) {
-                    return (
-                      <div className="date-row current" key={type}>
-                        <span className="label">{type}</span>
-                        <span className="value">
-                          {moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
-                          <span className="current-tag">(현재 일정)</span>
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  // 같은 회사의 다른 일정들 찾기
-                  const relatedSchedule = safeSchedules.find(s => 
-                    s.company === currentSchedule.company && 
-                    s.title?.includes(includes)
-                  );
-
-                  return (
-                    <div className="date-row" key={type}>
-                      <span className="label">{type}</span>
-                      <span className="value">
-                        {relatedSchedule?.date ? 
-                          moment(relatedSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일') : 
-                          '일정 미정'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </RelatedDates>
-            )}
             <FormGroup>
               <Label>메모</Label>
               <TextArea>
                 <textarea
                   name="content"
-                  value={formData.content}
+                  value={isEditing ? formData.content : currentSchedule.schedule_content || ''}
                   onChange={handleChange}
                   readOnly={!isEditing}
                 />
@@ -391,22 +278,115 @@ const EditSchedule = ({ history }) => {
                 {!isEditing ? (
                   <>
                     <Button onClick={() => setIsEditing(true)}>수정</Button>
-                    {currentSchedule.type !== 'announcement' && (
-                      <Button
-                        disabled={currentSchedule.completed}
-                        onClick={onComplete}
-                      >
-                        완료
-                      </Button>
-                    )}
-                    <Button onClick={handleDelete}>삭제</Button>
+                    <Button onClick={() => handleDelete()}>삭제</Button>
                     <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
                       닫기
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button type="submit">저장</Button>
+                    <Button onClick={() => handleUpdate()}>저장</Button>
+                    <Button onClick={() => setIsEditing(false)}>취소</Button>
+                  </>
+                )}
+              </ActionButtonGroup>
+            </ButtonContainer>
+          </>
+        ) : (
+          // 공고 확인 모달창 수정
+          <>
+            <FormGroup>
+              <Label>공고명</Label>
+              <Input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>기업명</Label>
+              <Input
+                type="text"
+                name="title"
+                value={formData.company}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>공고 마감</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.deadlineDate : 
+                  moment(currentSchedule.schedule_deadline, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>서류 발표 일정</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.documentResultDate : 
+                  moment(currentSchedule.document_result_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>면접 일정</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.interviewDate : 
+                  moment(currentSchedule.interview_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>최종 발표 일정</Label>
+              <Input
+                type={isEditing ? "date" : "text"}
+                name="date"
+                value={isEditing ? 
+                  formData.finalDate : 
+                  moment(currentSchedule.final_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>메모</Label>
+              <TextArea>
+                <textarea
+                  name="content"
+                  value={isEditing ? formData.content : currentSchedule.schedule_content || ''}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+              </TextArea>
+            </FormGroup>
+            <ButtonContainer>
+              <ActionButtonGroup>
+                {!isEditing ? (
+                  <>
+                    <Button onClick={() => setIsEditing(true)}>수정</Button>
+                    <Button onClick={() => handleDelete()}>삭제</Button>
+                    <Button onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
+                      닫기
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={() => handleUpdate()}>저장</Button>
                     <Button onClick={() => setIsEditing(false)}>취소</Button>
                   </>
                 )}
@@ -415,12 +395,6 @@ const EditSchedule = ({ history }) => {
           </>
         )}
       </Body>
-      {showResumePopup && (
-        <ResumeViewPopup
-          onClose={() => setShowResumePopup(false)}
-          content={currentSchedule.resume || ''}
-        />
-      )}
     </Popup>
   );
 };

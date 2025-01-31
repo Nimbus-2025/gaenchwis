@@ -33,13 +33,16 @@ class ScheduleType(str, Enum):
     APPLY = "apply"      # 취업 일정
 
 class ScheduleResponse(BaseModel):
+    schedule_type: Optional[str]
     schedule_id: str
     schedule_title: str
-    schedule_date: str
+    schedule_date: Optional[str]
     schedule_content: Optional[str]
     is_completed: bool = False  # 완료 상태 필드 추가
-    created_at: str
-    updated_at: str
+    schedule_deadline: Optional[str]
+    document_result_date: Optional[str]
+    interview_date: Optional[str]
+    final_date: Optional[str]
 
 # 일정 상세 조회 응답을 위한 스키마 추가
 class ScheduleDetailResponse(BaseModel):

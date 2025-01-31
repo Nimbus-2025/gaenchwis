@@ -40,7 +40,7 @@ import api from '../../api/api';
 import Proxy from '../../api/Proxy';
 
 // 캘린더 렌더링
-const Calendar = () => {
+const Calendar = ({setSchedules, schedules}) => {
   const { thisMonth, isOpenEditPopup, isFilter, isOpenAddPopup } = useSelector(
     (state) => state.schedule
   );
@@ -50,7 +50,6 @@ const Calendar = () => {
   const [filterType, setFilterType] = useState('all');
   const [showYearSelect, setShowYearSelect] = useState(false);
   const [showMonthSelect, setShowMonthSelect] = useState(false);
-  const [schedules, setSchedules] = useState([]);
 
   // 년도 선택 옵션 생성 (현재 년도부터 1950년까지 내림차순)
   const yearOptions = Array.from(
@@ -86,26 +85,26 @@ const Calendar = () => {
       const userId = parsedUserData.user_id;
 
       const response = await api(
-        `${Proxy.server}:8006/api/v1/schedules?userId=${userId}`,
-        'GET',
-        null,
-        {
-          access_token: parsedUserData.access_token,
-          id_token: parsedUserData.id_token,
-          user_id: userId
-        }
+        `http://localhost:8006/api/v1/api/v1/schedules`,
+        'GET'
       );
 
       console.log('서버 응답:', response);
 
       // 서버 응답에서 Array 데이터 직접 처리
-      if (response && response.data && Array.isArray(response.data)) {
-        const scheduleList = response.data.map(schedule => ({
+      if (response && Array.isArray(response)) {
+        const scheduleList = response.map(schedule => ({
+          type: schedule.schedule_type ? schedule.schedule_type : "schedule",
           id: schedule.schedule_id,
           title: schedule.schedule_title,
-          date: schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')
+          date: schedule.schedule_date ? schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          schedule_deadline: schedule.schedule_deadline ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          document_result_date: schedule.document_result_date ? schedule.document_result_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          interview_date: schedule.interview_date ? schedule.interview_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          final_date: schedule.final_date ? schedule.final_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          schedule_content: schedule.schedule_content,
+          is_completes: schedule.is_completes
         }));
-
         console.log('변환된 일정 목록:', scheduleList);
         setSchedules(scheduleList);
       }
@@ -118,41 +117,6 @@ const Calendar = () => {
   useEffect(() => {
     fetchSchedules();
   }, []);
-
-  // 일정 클릭 핸들러
-  const handleScheduleClick = (schedule) => {
-    dispatch(openEditPopup({ isOpen: true, schedule }));
-  };
-
-  // 날짜별 일정 렌더링 (제목만 표시)
-  const renderSchedules = (date) => {
-    if (!Array.isArray(schedules)) return null;
-
-    const daySchedules = schedules.filter(schedule => 
-      schedule.date === date.format('YYYY-MM-DD')
-    );
-
-    return daySchedules.map((schedule) => (
-      <div 
-        key={schedule.id}
-        className="schedule-item"
-        onClick={() => handleScheduleClick(schedule)}
-        style={{
-          padding: '2px 4px',
-          margin: '1px 0',
-          backgroundColor: '#e3f2fd',
-          borderRadius: '2px',
-          cursor: 'pointer',
-          fontSize: '12px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}
-      >
-        {schedule.title}
-      </div>
-    ));
-  };
 
   useEffect(() => {
     const startDay = current.clone().startOf('month').format('YYYYMMDD');
@@ -168,33 +132,6 @@ const Calendar = () => {
     setCurrent(current.clone().add(1, 'month'));
   };
 
-  const getFilteredSchedules = (schedules) => {
-    switch (filterType) {
-      case 'normal':
-        return schedules.filter(s => 
-          s.type === 'schedule' && 
-          !s.title?.includes('공고 마감') && 
-          !s.title?.includes('서류 합격 발표') && 
-          !s.title?.includes('면접') && 
-          !s.title?.includes('최종 발표')
-        );
-        
-      case 'announcement':
-        return schedules.filter(s => 
-          s.type === 'announcement' || 
-          (s.type === 'schedule' && (
-            s.title?.includes('공고 마감') ||
-            s.title?.includes('서류 합격 발표') ||
-            s.title?.includes('면접') ||
-            s.title?.includes('최종 발표')
-          ))
-        );
-        
-      default:
-        return schedules;
-    }
-  };
-
   const generate = () => {
     const startWeek = current.clone().startOf('month').week();
     const endWeek = current.clone().endOf('month').week() === 1
@@ -207,6 +144,7 @@ const Calendar = () => {
       calendar.push(
         <Weekend key={w}>
           {Array(7).fill(0).map((n, idx) => {
+
             const noFormatDate = current
               .clone()
               .startOf('year')
@@ -215,17 +153,19 @@ const Calendar = () => {
               .add(idx, 'day');
 
             const day = noFormatDate.format('D');
-            const fullDate = noFormatDate.format('YYYYMMDD');
+            const fullDate = noFormatDate.format('YYYY-MM-DD');
             const isToday = fullDate === moment().format('YYYYMMDD') ? 'today' : '';
             const isGrayed = noFormatDate.format('MM') === current.format('MM') ? '' : 'grayed';
             const dow = idx; // 요일 정보 추가 (0: 일요일, 6: 토요일)
 
-            // thisMonth에서 해당 날짜의 일정 필터링
-            const currentSch = getFilteredSchedules(
-              thisMonth.filter((s) => s.date === fullDate)
+            const currentSch = schedules.filter((s) => (s.date === fullDate || 
+              s.schedule_deadline === fullDate || 
+              s.document_result_date === fullDate ||
+              s.interview_date === fullDate ||
+              s.final_date === fullDate)
             );
 
-            console.log('Date:', fullDate, 'Schedules:', currentSch); // 디버깅용
+            //console.log('Date:', fullDate, 'Schedules:', currentSch); // 디버깅용
 
             return (
               <Day
@@ -240,21 +180,16 @@ const Calendar = () => {
     }
     return calendar;
   };
-
+  
   return (
     <Body>
       <CalendarWrapper>
-        {isOpenEditPopup && <EditSchedule />}
+        {isOpenEditPopup && (<EditSchedule setSchedules={setSchedules}/>)}
         {activePopup === 'schedule' && (
           <AddSchedule onClose={() =>  setActivePopup(null)}
           type="schedule"
+          setSchedules={setSchedules}
         />
-        )}
-        {activePopup === 'announcement' && (
-          <AddSchedule 
-            onClose={() => setActivePopup(null)}
-            type="announcement"
-          />
         )}
         <Header>
           <YearDisplay onClick={() => setShowYearSelect(!showYearSelect)}>
@@ -315,36 +250,6 @@ const Calendar = () => {
         </DateContainer>
       </CalendarWrapper>
       <ButtonWrapper onClick={() => dispatch(openEditPopup({ isOpen: false }))}>
-        <MdDoneAll className="filterBtn subBtn" />
-        <div className="filter-buttons">
-          <div 
-            className="filter-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFilterType('all');
-            }}
-          >
-            모두 보기
-          </div>
-          <div 
-            className="filter-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFilterType('normal');
-            }}
-          >
-            일반 일정
-          </div>
-          <div 
-            className="filter-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFilterType('announcement');
-            }}
-          >
-            취업 일정
-          </div>
-        </div>
         <MdEdit className="writeBtn subBtn" />
         <div className="popup-buttons">
           <div 
@@ -355,15 +260,6 @@ const Calendar = () => {
             }}
           >
             일정 추가
-          </div>
-          <div 
-            className="popup-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActivePopup('announcement');
-            }}
-          >
-            공고 추가
           </div>
         </div>
         <MdDehaze className="menuBtn" />
