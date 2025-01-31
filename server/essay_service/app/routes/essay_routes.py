@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header, Depends, HTTPException, Body, Query
 from fastapi.responses import JSONResponse
-from typing import Dict, Optional
+from typing import List, Dict, Any
 import logging
 from ..schemas.essay_schema import CreateEssaysRequest, UpdateEssayRequest, SortOrder, EssayListResponse, EssayDetailResponse, SearchType
 from ..repositories.essay_repository import EssayRepository
@@ -76,8 +76,42 @@ def get_user_applied_jobs(
     tokens: Dict = Depends(get_user_tokens),
 ):
     try:
-        applied_jobs = essay_repository.get_user_applied_jobs(tokens["user_id"])
+        response = essay_repository.get_user_applied_jobs(tokens["user_id"])
         
+        # 응답 데이터 가공 
+        applied_jobs = []
+        for job in response:
+            post_id = job['SK'].split('#')[1]
+            company_id = job.get('company_id')
+            post_name = job.get('post_name')
+            company_name = job.get('company_name')
+            
+            # 공고 정보가 없는 경우에만 job_postings 테이블에서 조회
+            if not (post_name and company_name):
+                try:
+                    job_posting = essay_repository.job_postings_table.query(
+                        IndexName='JobPostId',  # post_id로 조회하기 위한 GSI
+                        KeyConditionExpression='post_id = :pid',
+                        ExpressionAttributeValues={
+                            ':pid': post_id
+                        }
+                    ).get('Items', [])
+                    
+                    if job_posting and job_posting[0]:
+                        posting = job_posting[0]
+                        company_id = posting.get('company_id', company_id)
+                        post_name = posting.get('post_name', '삭제된 공고')
+                        company_name = posting.get('company_name', '삭제된 회사')
+                except Exception as e:
+                    logging.error(f"Error fetching job posting details: {str(e)}")
+            
+            applied_jobs.append({
+                'SK': job['SK'],
+                'post_id': post_id,
+                'company_id': company_id,
+                'post_name': post_name or '삭제된 공고',
+                'company_name': company_name or '삭제된 회사'
+            })
         return {
             "message": "지원한 채용공고 목록을 성공적으로 조회했습니다",
             "applied_jobs": applied_jobs
