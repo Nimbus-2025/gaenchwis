@@ -66,14 +66,12 @@ class ScheduleDetailResponse(BaseModel):
         }
 
 class GeneralScheduleUpdate(BaseModel):
+    type: Optional[str] = None 
     title: str
-    date: str  # YYYY-MM-DD 형식
-    content: Optional[str] = None
-
-    @validator('date')
-    def validate_date_format(cls, v):
-        try:
-            datetime.strptime(v, '%Y-%m-%d')
-            return v.replace('-', '')  # YYYYMMDD 형식으로 변환
-        except ValueError:
-            raise ValueError('날짜는 YYYY-MM-DD 형식이어야 합니다')
+    date: Optional[str] = None 
+    content: Optional[str] = None 
+    company: Optional[str] = None 
+    deadlineDate: Optional[str] = None 
+    interviewDate: Optional[str] = None 
+    documentResultDate: Optional[str] = None 
+    finalDate: Optional[str] = None 

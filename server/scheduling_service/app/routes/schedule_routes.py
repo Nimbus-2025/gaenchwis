@@ -132,44 +132,30 @@ def get_schedules(
         logging.error(f"Error getting schedules: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# TODO: 일정 상세 조회 API 구현 예정
-@router.get("/schedules/{schedule_id}", response_model=ScheduleDetailResponse)
-def get_schedule_detail(
-    schedule_id: str,
-    tokens: Dict = Depends(get_user_tokens)
-):
-    """
-    특정 일정의 상세 정보를 조회합니다.
-    """
-    try:
-        schedule = schedule_repository.get_schedule_detail(
-            user_id=tokens["user_id"],
-            schedule_id=schedule_id
-        )
-        return schedule
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        logging.error(f"Error getting schedule detail: {str(e)}")
-        raise HTTPException(status_code=500, detail="일정 조회 중 오류가 발생했습니다")
-
-
-@router.put("/schedules/{schedule_id}", response_model=Dict)
+@router.put("/schedules/{schedule_id}")
 def update_schedule(
     schedule_id: str,
     request: GeneralScheduleUpdate,
     tokens: Dict = Depends(get_user_tokens)
 ):
-    """일정을 수정합니다."""
+    request=request.dict()
     try:
-        success = schedule_repository.update_general_schedule(
-            user_id=tokens["user_id"],
-            schedule_id=schedule_id,
-            request=request.dict()
-        )
+        if request['type']=='schedule':
+            success = schedule_repository.update_general_schedule(
+                user_id=tokens["user_id"],
+                schedule_id=schedule_id,
+                request=request
+            )
+        elif request['type']=='post':
+            success = schedule_repository.update_apply_schedule(
+                user_id=tokens["user_id"],
+                schedule_id=schedule_id,
+                request=request
+            )
         
         if success:
-            return {"message": "일정이 성공적으로 수정되었습니다"}
+            schedules = schedule_repository.get_schedules(tokens["user_id"], "all")
+            return schedules
         else:
             raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다")
             

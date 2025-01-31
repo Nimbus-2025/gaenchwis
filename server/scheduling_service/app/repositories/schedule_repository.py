@@ -27,6 +27,7 @@ class ScheduleRepository:
             self.dynamodb = AWSClient.get_client('dynamodb')
             self.table = self.dynamodb.Table('schedules')  # 일반 일정 테이블
             self.apply_table = self.dynamodb.Table('applies')  # 취업 일정 테이블
+            self.job_postings = self.dynamodb.Table('job_postings')
 
         except Exception as e:
             logging.error(f"Error initializing repository: {str(e)}")
@@ -120,8 +121,18 @@ class ScheduleRepository:
                     current_year = datetime.now().year
                     deadline = datetime.strptime(f"{current_year}.{deadline}", "%Y.%m.%d").strftime("%Y%m%d")
 
+
+                job = self.job_postings.query(
+                    IndexName="JobPostId",
+                    KeyConditionExpression="post_id = :post_id",
+                    ExpressionAttributeValues={
+                        ":post_id": apply['SK'].split("#")[1]
+                    }
+                )
+                
                 formatted_schedules.append({
                     'schedule_type': "applies",
+                    'company': f"{job['Items'][0]['company_name']}",
                     'schedule_id': f"{apply['post_id']}",
                     'schedule_deadline': deadline,
                     'document_result_date': apply.get('document_result_date'),
@@ -179,6 +190,42 @@ class ScheduleRepository:
             
             # 전체 항목을 새로운 데이터로 업데이트
             self.table.put_item(Item=updated_item)
+            
+            return True
+            
+        except Exception as e:
+            raise Exception(f"Failed to update schedule: {str(e)}")
+    
+    def update_apply_schedule(self, user_id: str, schedule_id: str, request: Dict) -> bool:
+        """일정을 수정합니다."""
+        try:
+            # 먼저 기존 항목이 있는지 확인
+            response = self.apply_table.get_item(
+                Key={
+                    'PK': f"USER#{user_id}",
+                    'SK': f"APPLY#{schedule_id}"
+                }
+            )
+            
+            if 'Item' not in response:
+                raise Exception("지원 공고을 찾을 수 없습니다")
+
+            existing_item = response['Item']
+            current_time = datetime.now().isoformat()
+            
+            # 기존 항목 업데이트
+            updated_item = existing_item.copy()  # 기존 항목을 복사
+            
+            # 필요한 필드만 업데이트
+            updated_item.update({
+                'document_result_date':request['documentResultDate'],
+                'final_date':request['finalDate'],
+                'interview_date':request['interviewDate'],
+                'memo':request['content'],
+                'updated_at': current_time
+            })
+            
+            self.apply_table.put_item(Item=updated_item)
             
             return True
             

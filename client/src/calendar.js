@@ -37,7 +37,10 @@ const App = () => {
             <Route path="/edit/:id" element={<EditSchedule setSchedules={setSchedules}/>} />
           </Routes>
           {isOpenEditPopup && <EditSchedule setSchedules={setSchedules}/>}
-          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} />}
+          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} 
+            type="schedule"
+            setSchedules={setSchedules}
+          />}
         </ContentWrapper>
       </AppWrapper>
     </ThemeProvider>

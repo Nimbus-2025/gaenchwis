@@ -85,7 +85,7 @@ const Calendar = ({setSchedules, schedules}) => {
       const userId = parsedUserData.user_id;
 
       const response = await api(
-        `http://localhost:8006/api/v1/api/v1/schedules`,
+        `${Proxy.server}:8006/api/v1/schedules`,
         'GET'
       );
 
@@ -95,10 +95,11 @@ const Calendar = ({setSchedules, schedules}) => {
       if (response && Array.isArray(response)) {
         const scheduleList = response.map(schedule => ({
           type: schedule.schedule_type ? schedule.schedule_type : "schedule",
+          company: schedule.company,
           id: schedule.schedule_id,
           title: schedule.schedule_title,
           date: schedule.schedule_date ? schedule.schedule_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
-          schedule_deadline: schedule.schedule_deadline ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
+          schedule_deadline: schedule.schedule_deadline && schedule.schedule_deadline!=="채용시" ? schedule.schedule_deadline.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
           document_result_date: schedule.document_result_date ? schedule.document_result_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
           interview_date: schedule.interview_date ? schedule.interview_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
           final_date: schedule.final_date ? schedule.final_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : null,
@@ -184,13 +185,6 @@ const Calendar = ({setSchedules, schedules}) => {
   return (
     <Body>
       <CalendarWrapper>
-        {isOpenEditPopup && (<EditSchedule setSchedules={setSchedules}/>)}
-        {activePopup === 'schedule' && (
-          <AddSchedule onClose={() =>  setActivePopup(null)}
-          type="schedule"
-          setSchedules={setSchedules}
-        />
-        )}
         <Header>
           <YearDisplay onClick={() => setShowYearSelect(!showYearSelect)}>
             {current.format('YYYY')}
@@ -256,7 +250,7 @@ const Calendar = ({setSchedules, schedules}) => {
             className="popup-button"
             onClick={(e) => {
               e.stopPropagation();
-              setActivePopup('schedule');
+              dispatch(openAddSchedule());
             }}
           >
             일정 추가

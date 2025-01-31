@@ -12,33 +12,6 @@ import AddSchedule from './AddSchedule';
 import api from '../../api/api';  // 수정된 부분
 import Proxy from '../../api/Proxy';  // 수정된 import
 
-
-// 자기소개서 확인 팝업 컴포넌트
-const ResumeViewPopup = ({ onClose, content }) => {
-  return (
-    <PopupOverlay onClick={onClose}>
-      <PopupWrapper onClick={e => e.stopPropagation()}>
-        <PopupHeader>
-          <h2>자기소개서 확인</h2>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </PopupHeader>
-        <PopupContent>
-          <TextArea>
-            <textarea
-              value={content}
-              readOnly
-              rows={10}
-            />
-          </TextArea>
-          <ActionButtonGroup>
-            <Button onClick={onClose}>닫기</Button>
-          </ActionButtonGroup>
-        </PopupContent>
-      </PopupWrapper>
-    </PopupOverlay>
-  );
-};
-
 const EditSchedule = ({ setSchedules }) => {
   const dispatch = useDispatch();
   const { currentSchedule, schedules = [] } = useSelector((state) => state.schedule || {});
@@ -58,7 +31,8 @@ const EditSchedule = ({ setSchedules }) => {
     deadlineDate: '',
     interviewDate: '',
     finalDate: '',
-    content: ''
+    content: '',
+    date: ''
   });
 
   // 일정 상세 정보 조회
@@ -77,7 +51,8 @@ const EditSchedule = ({ setSchedules }) => {
         interviewDate:currentSchedule.interview_date,
         documentResultDate:currentSchedule.document_result_date,
         finalDate:currentSchedule.final_date,
-        content:currentSchedule.schedule_content
+        content:currentSchedule.schedule_content,
+        date:currentSchedule.date
       });
     } catch (error) {
       console.error('일정 조회 중 오류:', error);
@@ -101,6 +76,12 @@ const EditSchedule = ({ setSchedules }) => {
   };
 
   const onSave = async (type) => {
+    const userData = sessionStorage.getItem('user');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
     const requestData = {
       ...formData,
       type:type
@@ -111,7 +92,7 @@ const EditSchedule = ({ setSchedules }) => {
       'PUT',
       requestData
     );
-
+    
     if (response && Array.isArray(response)) {
       const scheduleList = response.map(schedule => ({
         type: schedule.schedule_type ? schedule.schedule_type : "schedule",
@@ -127,16 +108,11 @@ const EditSchedule = ({ setSchedules }) => {
       }));
       console.log('변환된 일정 목록:', scheduleList);
       setSchedules(scheduleList);
-  };
+      dispatch(openEditPopup({ isOpen: false }));
+      setIsEditing(false);
+    };
+  }
 
-
-  const onComplete = () => {
-    dispatch(updateSchedule({
-      ...currentSchedule,
-      completed: true
-    }));
-  };
-  // 일정 타입 확인
   const isGeneralSchedule = currentSchedule?.type === 'schedule';
 
   // 일정 수정 핸들러
@@ -203,7 +179,7 @@ const EditSchedule = ({ setSchedules }) => {
       console.log('요청 URL:', `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`);
       
       const response = await api(
-        `http://localhost:8006/api/v1/api/v1/schedules/${currentSchedule.id}`,
+        `${Proxy.server}:8006/api/v1/schedules/${currentSchedule.id}`,
         'DELETE'
       );
 
@@ -267,7 +243,7 @@ const EditSchedule = ({ setSchedules }) => {
                 name="date"
                 value={isEditing ? 
                   formData.date : 
-                  moment(currentSchedule.date, 'YYYYMMDD').format('YYYY년 MM월 DD일')}
+                  moment(currentSchedule.date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
                 onChange={handleChange}
                 readOnly={!isEditing}
               />
@@ -295,7 +271,7 @@ const EditSchedule = ({ setSchedules }) => {
                   </>
                 ) : (
                   <>
-                    <Button onClick={() => handleUpdate()}>저장</Button>
+                    <Button onClick={() => onSave('schedule')}>저장</Button>
                     <Button onClick={() => setIsEditing(false)}>취소</Button>
                   </>
                 )}
@@ -310,7 +286,7 @@ const EditSchedule = ({ setSchedules }) => {
               <Input
                 type="text"
                 name="title"
-                value={formData.title}
+                value={formData.title ? formData.title : ""}
                 onChange={handleChange}
                 readOnly={true}
               />
@@ -319,8 +295,8 @@ const EditSchedule = ({ setSchedules }) => {
               <Label>기업명</Label>
               <Input
                 type="text"
-                name="title"
-                value={formData.company}
+                name="company"
+                value={formData.company ? formData.company : ""}
                 onChange={handleChange}
                 readOnly={true}
               />
@@ -329,22 +305,22 @@ const EditSchedule = ({ setSchedules }) => {
               <Label>공고 마감</Label>
               <Input
                 type={isEditing ? "date" : "text"}
-                name="date"
-                value={isEditing ? 
-                  formData.deadlineDate : 
-                  moment(currentSchedule.schedule_deadline, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                name="deadlineDate"
+                value={formData.deadlineDate ? formData.deadlineDate : ""}
                 onChange={handleChange}
-                readOnly={!isEditing}
+                readOnly={true}
               />
             </FormGroup>
             <FormGroup>
               <Label>서류 발표 일정</Label>
               <Input
                 type={isEditing ? "date" : "text"}
-                name="date"
+                name="documentResultDate"
                 value={isEditing ? 
                   formData.documentResultDate : 
-                  moment(currentSchedule.document_result_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                  (currentSchedule.document_result_date ?
+                    moment(currentSchedule.document_result_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')
+                  : "")}
                 onChange={handleChange}
                 readOnly={!isEditing}
               />
@@ -353,10 +329,12 @@ const EditSchedule = ({ setSchedules }) => {
               <Label>면접 일정</Label>
               <Input
                 type={isEditing ? "date" : "text"}
-                name="date"
+                name="interviewDate"
                 value={isEditing ? 
                   formData.interviewDate : 
-                  moment(currentSchedule.interview_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                  (currentSchedule.interview_date ?
+                    moment(currentSchedule.interview_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')
+                  : "")}
                 onChange={handleChange}
                 readOnly={!isEditing}
               />
@@ -365,10 +343,12 @@ const EditSchedule = ({ setSchedules }) => {
               <Label>최종 발표 일정</Label>
               <Input
                 type={isEditing ? "date" : "text"}
-                name="date"
+                name="finalDate"
                 value={isEditing ? 
                   formData.finalDate : 
-                  moment(currentSchedule.final_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')}
+                  (currentSchedule.final_date ?
+                    moment(currentSchedule.final_date, 'YYYY-MM-DD').format('YYYY년 MM월 DD일')
+                  : "")}
                 onChange={handleChange}
                 readOnly={!isEditing}
               />
@@ -395,7 +375,7 @@ const EditSchedule = ({ setSchedules }) => {
                   </>
                 ) : (
                   <>
-                    <Button onClick={() => handleUpdate()}>저장</Button>
+                    <Button onClick={() => onSave('post')}>저장</Button>
                     <Button onClick={() => setIsEditing(false)}>취소</Button>
                   </>
                 )}

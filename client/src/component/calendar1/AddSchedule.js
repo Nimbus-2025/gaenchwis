@@ -108,7 +108,7 @@ const AddSchedule = ({
   // 날짜 포맷팅 함수를 컴포넌트 내부에 정의
   const formatDate = (dateString) => {
     if (!dateString || dateString === `${currentYear}-`) return '';
-    const formattedDate = moment(dateString).format('YYYYMMDD');
+    const formattedDate = moment(dateString).format('YYYY-MM-DD');
     return formattedDate;
   };
 
@@ -132,7 +132,7 @@ const AddSchedule = ({
         }
 
         const response = await Api(
-          `http://localhost:8006/api/v1/api/v1/schedules`,
+          `${Proxy.server}:8006/api/v1/schedules`,
           'POST',
           {
             title: scheduleData.title,
