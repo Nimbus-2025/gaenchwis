@@ -32,10 +32,10 @@ def new_job_postings_processing(event, context):
                 )
                 data=json.loads(response['Body'].read().decode("utf-8"))
                 print(data)
-                recommend_vector_a = data[0]
-                recommend_vector_b = data[1]
-                recommend_vector_c = data[2]
-                recommend_vector_d = data[3]
+                recommend_vector_a = float(data[0])
+                recommend_vector_b = float(data[1])
+                recommend_vector_c = float(data[2])
+                recommend_vector_d = float(data[3])
                 
                 update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
                 
