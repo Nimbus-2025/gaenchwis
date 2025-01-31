@@ -309,7 +309,12 @@ const ShowEssay = () => {
         <button className="search-button">검색</button>
         <button
           className="plus-button"
-          onClick={() => setIsPopupOpen(true)}
+          onClick={() => {
+            setSelectedEssay(null);
+            setQuestions([{ question: '', answer: '' }]); // questions 초기화
+            setPostingSelects([{ id: 1 }]); // postingSelects 초기화
+            setIsPopupOpen(true);
+          }}
         ></button>
       </div>
 
@@ -403,6 +408,14 @@ const ShowEssay = () => {
                         essay_content: selectedEssay.essay_content,
                       },
                     ]);
+                    // 연결된 공고 정보도 함께 설정
+                    const relatedPostings =
+                      selectedEssay.related_job_postings.map((posting) => ({
+                        id: crypto.randomUUID(), // 또는 다른 유니크 ID 생성 방법 사용
+                        post_id: posting.post_id,
+                        company_id: posting.company_id,
+                      }));
+                    setPostingSelects(relatedPostings);
                     setIsPopupOpen(true);
                   }}
                 >
