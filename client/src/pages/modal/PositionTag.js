@@ -1,48 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import './PositionTag.css';
 
-// 미리 정의된 직무 카테고리
 const PREDEFINED_CATEGORIES = [
   "개발자",
   "디자이너",
   "기획자",
-  "엔지니어"
+  "엔지니어",
+  "데이터",
+  "보안"
+];
+
+const SKILL_CATEGORIES = [
+  "개발",
+  "디자인",
+  "데이터",
+  "서버/네트워크",
+  "일반"
 ];
 
 const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
   const [allPositionTags, setAllPositionTags] = useState({});
+  const [allSkillTags, setAllSkillTags] = useState({});
   const [tempSelectedCategories, setTempSelectedCategories] = useState([]);
+  const [tempSelectedSkillCategories, setTempSelectedSkillCategories] = useState([]);
   const [matchingTags, setMatchingTags] = useState([]);
+  const [matchingSkillTags, setMatchingSkillTags] = useState([]);
+  const [selectedPositionTags, setSelectedPositionTags] = useState(selectedTags || []);
+  const [selectedSkillTags, setSelectedSkillTags] = useState([]);
 
-  // API에서 태그 데이터 가져오기
   useEffect(() => {
-    const fetchPositionTags = async () => {
+    const fetchTags = async () => {
       try {
-        const response = await fetch('http://localhost:8003/api/tags/skill');
-        const data = await response.json();
-        console.log('받아온 태그 데이터:', data); 
-        setAllPositionTags(data);
+        const [positionResponse, skillResponse] = await Promise.all([
+          fetch('http://localhost:8003/api/tags/position'),
+          fetch('http://localhost:8003/api/tags/skill')
+        ]);
+        
+        const positionData = await positionResponse.json();
+        const skillData = await skillResponse.json();
+        
+        console.log('Position Data:', positionData);
+        console.log('Skill Data:', skillData);
+        
+        setAllPositionTags(positionData);
+        setAllSkillTags(skillData);
       } catch (error) {
         console.error('태그 데이터 가져오기 실패:', error);
       }
     };
 
     if (isOpen) {
-      fetchPositionTags();
+      fetchTags();
+      setSelectedPositionTags(selectedTags || []);
     }
-  }, [isOpen]);
+  }, [isOpen, selectedTags]);
 
-  // 카테고리 선택 시 해당하는 태그들 찾기
   const handleCategoryClick = (category) => {
-    console.log('선택된 카테고리:', category); // 디버깅용
-    console.log('현재 allPositionTags:', allPositionTags); // 디버깅용
-    
     setTempSelectedCategories(prev => {
       const newSelection = prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category];
       
-      // 선택된 카테고리들에 해당하는 태그들 찾기
       const newMatchingTags = newSelection.length > 0
         ? newSelection.flatMap(cat => allPositionTags[cat] || [])
         : [];
@@ -52,10 +70,43 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
     });
   };
 
+  const handleSkillCategoryClick = (category) => {
+    setTempSelectedSkillCategories(prev => {
+      const newSelection = prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category];
+      
+      const newMatchingTags = newSelection.length > 0
+        ? newSelection.flatMap(cat => allSkillTags[cat] || [])
+        : [];
+      
+      setMatchingSkillTags(newMatchingTags);
+      return newSelection;
+    });
+  };
+
+  const handleTagClick = (tag) => {
+    setSelectedPositionTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      }
+      return [...prev, tag];
+    });
+  };
+
+  const handleSkillTagClick = (tag) => {
+    setSelectedSkillTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      }
+      return [...prev, tag];
+    });
+  };
+
   const handleApply = () => {
-    console.log('적용할 태그들:', matchingTags); // 디버깅용
-    if (matchingTags.length > 0) {
-      onApply(matchingTags);
+    const allSelectedTags = [...selectedPositionTags, ...selectedSkillTags];
+    if (allSelectedTags.length > 0) {
+      onApply(allSelectedTags);
       onClose();
     }
   };
@@ -74,17 +125,79 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
               onClick={() => handleCategoryClick(category)}
             >
               {category}
+              {allPositionTags[category] && ` (${allPositionTags[category].length})`}
             </button>
           ))}
         </div>
-        
+
         {matchingTags.length > 0 && (
           <div className="matching-tags-preview">
-            <h4>선택된 직무 태그:</h4>
+            <h4>선택 가능한 직무 태그:</h4>
             <div className="tags-preview">
               {matchingTags.map((tag) => (
-                <span key={tag} className="preview-tag">
-                  {tag}
+                <span
+                  key={tag}
+                  className={`preview-tag ${selectedPositionTags.includes(tag) ? 'selected' : ''}`}
+                  onClick={() => handleTagClick(tag)}
+                >
+                  {tag} {selectedPositionTags.includes(tag) && '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <h3>관심 스킬 선택</h3>
+        <div className="category-selection">
+          {SKILL_CATEGORIES.map((category) => (
+            <button
+              key={category}
+              className={`category-button ${tempSelectedSkillCategories.includes(category) ? 'selected' : ''}`}
+              onClick={() => handleSkillCategoryClick(category)}
+            >
+              {category}
+              {allSkillTags[category] && ` (${allSkillTags[category].length})`}
+            </button>
+          ))}
+        </div>
+
+        {matchingSkillTags.length > 0 && (
+          <div className="matching-tags-preview">
+            <h4>선택 가능한 스킬 태그:</h4>
+            <div className="tags-preview">
+              {matchingSkillTags.map((tag) => (
+                <span
+                  key={tag}
+                  className={`preview-tag ${selectedSkillTags.includes(tag) ? 'selected' : ''}`}
+                  onClick={() => handleSkillTagClick(tag)}
+                >
+                  {tag} {selectedSkillTags.includes(tag) && '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(selectedPositionTags.length > 0 || selectedSkillTags.length > 0) && (
+          <div className="selected-tags-preview">
+            <h4>선택된 태그:</h4>
+            <div className="tags-preview">
+              {selectedPositionTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="preview-tag selected"
+                  onClick={() => handleTagClick(tag)}
+                >
+                  {tag} ✕
+                </span>
+              ))}
+              {selectedSkillTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="preview-tag selected"
+                  onClick={() => handleSkillTagClick(tag)}
+                >
+                  {tag} ✕
                 </span>
               ))}
             </div>
@@ -95,9 +208,9 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
           <button 
             className="apply-button" 
             onClick={handleApply}
-            disabled={matchingTags.length === 0}
+            disabled={selectedPositionTags.length === 0 && selectedSkillTags.length === 0}
           >
-            적용
+            적용 ({selectedPositionTags.length + selectedSkillTags.length})
           </button>
           <button className="cancel-button" onClick={onClose}>
             취소

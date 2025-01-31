@@ -159,7 +159,7 @@ def update_tags(tag_type):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/v1/user/tags/<tag_type>', methods=['GET'])
-def get_user_location_tags(tag_type):
+def get_user_tags(tag_type):
     try:
         user_id = request.headers.get('User-Id')
         print(f"Received user_id: {user_id}")
@@ -181,11 +181,29 @@ def get_user_location_tags(tag_type):
         items = response.get('Items', [])
         print(f"Retrieved tags: {items}")
         
-        return jsonify({"tags": items})
+        # 태그 데이터 변환
+        formatted_tags = []
+        for item in items:
+            formatted_tags.append({
+                'tag_id': item.get('SK', '').split('#')[1],
+                'tag_name': item.get('tag_name', ''),
+                'tag_type': tag_type
+            })
+        
+        return jsonify({
+            "status": "success",
+            "tags": formatted_tags,
+            "message": f"{tag_type} 태그 조회 성공"
+        })
         
     except Exception as e:
-        print(f"Error fetching user location tags: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"태그 조회 중 에러 발생: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "message": f"{tag_type} 태그 조회 실패"
+        }), 500
+
 # 서버 실행
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8005, debug=True)

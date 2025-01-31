@@ -36,6 +36,9 @@
     cursor: pointer;
     transition: all 0.2s;
     font-size: 14px;
+    display: flex; 
+    align-items: center;     /* 수직 중앙 정렬 */
+    justify-content: center; /* 수평 중앙 정렬 */
   }
   
   .category-button.selected {
@@ -104,3 +107,140 @@
     border: 1px solid #90caf9;
     transition: all 0.2s ease;
   }
+  .preview-tag {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .preview-tag.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .preview-tag:hover {
+    transform: scale(1.05);
+  }
+  
+  .selected-tags-preview {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+  }
+  
+  .tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+  .preview-tag {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .preview-tag:hover {
+    transform: scale(1.05);
+    background-color: #e0e0e0;
+  }
+  
+  .preview-tag.selected {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+    font-weight: 500;
+  }
+  
+  .selected-tags-preview .preview-tag.selected {
+    background-color: #1976d2;
+    color: white;
+    border-color: #1976d2;
+  }
+  
+  .matching-tags-preview .preview-tag.selected {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+  }
+  
+  .tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .matching-tags-preview, .selected-tags-preview {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  h4 {
+    margin: 0;
+    padding: 10px;
+    color: #333;
+    font-size: 14px;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: #333;
+  }
+  
+  .skill-search {
+    margin: 10px 0;
+  }
+  
+  .skill-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .skill-tags-preview {
+    margin-top: 10px;
+  }
+  
+  .preview-tag.skill {
+    background-color: #e3f2fd;
+    border-color: #1976d2;
+  }
+  
+  .preview-tag.skill.selected {
+    background-color: #1976d2;
+    color: white;
+  }
+  
+  .modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .preview-tag.selected.position {
+    background-color: #1976d2;
+    color: white;
+  }
+
+.preview-tag.selected.skill {
+    background-color: #7b1fa2;
+    color: white;
+  }
+  
