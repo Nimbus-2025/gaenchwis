@@ -15,17 +15,10 @@ async function Api(url, method, body = {}) {
   try {
     const request = {
       method: method,
-<<<<<<< HEAD
-      headers: header,
-    };
-    if (method === 'POST' || method === 'PATCH') {
-      request['body'] = JSON.stringify(body);
-=======
       headers: header
     }
     if (method!=='GET' && method!=='HEAD'){
       request["body"]=JSON.stringify(body)
->>>>>>> a5e13d0 (fix: 캘린더 일정 수정 ver0.9)
     }
 
     const response = await fetch(url, request);
