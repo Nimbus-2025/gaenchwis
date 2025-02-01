@@ -73,7 +73,13 @@ def Recommendation(user_id):
 
     user_vector = Layer.Vector(tags_group, position_model, location_model, education_model, skill_model).tolist()
 
-    return BestRecommendation(user_vector)[:5]
+    best_recommendations = BestRecommendation(user_vector)[:5]
+    add_tags_best_recommendations=[]
+    for best_recommendation in best_recommendations:
+        best_recommendation[1]["tags"]=Tag.get_job_posting_tag(best_recommendation[1]['SK'])
+        add_tags_best_recommendations.append(best_recommendation)
+        
+    return add_tags_best_recommendations
 
 def BestRecommendation(user_vector):
     print("Find Best Recommendatation")

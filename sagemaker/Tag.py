@@ -2,6 +2,31 @@ import boto3
 import json
 import re
 
+def get_job_posting_tag(job_postings_sk):
+    dynamodb = boto3.resource('dynamodb')
+    job_tags_table = dynamodb.Table("job_tags")
+
+    job_tags = job_tags_table.query(
+        KeyConditionExpression="PK = :pk",
+        ExpressionAttributeValues={
+            ":pk": job_postings_sk
+        }
+    )
+
+    tags_name=[]
+
+    for job_tag in job_tags["Items"]:
+        tags_table = dynamodb.Table("tags")
+        tags = tags_table.query(
+            KeyConditionExpression="PK = :pk",
+            ExpressionAttributeValues={
+                ":pk": job_tag["SK"]
+            }
+        )
+        tags_name.append(tags["Items"][0]["tag_name"])
+    
+    return tags_name
+
 def tags_json_init():
     dynamodb = boto3.resource('dynamodb')
 
