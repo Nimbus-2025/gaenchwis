@@ -375,7 +375,7 @@ def organize_location_tags(tags):
     
     return organized
 
-@app.route('/healthcheck', methods=['GET'])
+@app.route('/api/v1/healthcheck', methods=['GET'])
 def healthcheck():
     return jsonify({"status": "healthy"}), 200
 
