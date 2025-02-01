@@ -128,7 +128,7 @@ class UserTagService:
 
 # API 엔드포인트
 
-@app.route('/healthcheck', methods=['GET'])
+@app.route('/api/v1/healthcheck', methods=['GET'])
 def healthcheck():
     return jsonify({"status": "healthy"}), 200
 
