@@ -28,28 +28,6 @@ const UserPage = () => {
   const [recommendLoading, setRecommendLoading] = useState(true);
   const isLoggedIn = !!userData;  
 
-  const fetchUserData = async () => {
-    try {
-      const response = await Api(`${Config.server}:8005/api/v1/user`, 'GET');
-      // API 응답 구조 확인 및 안전한 데이터 설정
-      setUserData({
-        bookmarks: response.bookmarks || [],
-        appliedJobs: response.appliedJobs || [],
-        favoriteCompanies: response.favoriteCompanies || []
-      });
-    } catch (error) {
-      console.error('사용자 데이터 조회 실패:', error);
-      // 에러 발생시 빈 배열로 초기화
-      setUserData({
-        bookmarks: [],
-        appliedJobs: [],
-        favoriteCompanies: []
-      });
-    }
-  };
-  useEffect(() => {
-    fetchUserData();
-  }, []);
 
     const fetchRecommendedJobs = async () => {
       try {
@@ -189,18 +167,20 @@ const UserPage = () => {
       {/* 로그인 상태일 때만 맞춤공고 섹션 표시 */}
       {isLoggedIn && (
         <>
-          <h1 className="job-header">맞춤공고 입니다.</h1>
+          <h1 className="job-header">
+          {userData?.name || '사용자'} 님의 맞춤공고 입니다.
+        </h1>
           <div className="job-container">
             {recommendLoading ? (
               <div>맞춤 공고 로딩 중...</div>
-            ) : recommendedJobs.length > 0 ? (
-              recommendedJobs.map((idx, job) => (
+            ) : recommendedJobs && recommendedJobs.length > 0 ? (
+              recommendedJobs.map((job) => (
                 <JobCard
-                  key={job.post_id}
-                  job={job}
-                  favoriteCompanies={favoriteCompanies}
-                  bookmarkedJobs={bookmarkedJobs}
-                  appliedJobs={appliedJobs}
+                  key={"Rec"+job[1].post_id}
+                  job={job[1]}
+                  favoriteCompanies={favoriteCompanies || []}
+                  bookmarkedJobs={bookmarkedJobs || []}
+                  appliedJobs={appliedJobs || []}
                   onToggleFavorite={toggleFavorite}
                   onToggleBookmark={toggleBookmark}
                   onToggleApplied={toggleApplied}
@@ -223,7 +203,7 @@ const UserPage = () => {
           <>
             {jobs.map(job => (
               <JobCard
-                key={job.post_id}
+                key={"Post"+job.post_id}
                 job={job}
                 favoriteCompanies={favoriteCompanies}
                 bookmarkedJobs={bookmarkedJobs}

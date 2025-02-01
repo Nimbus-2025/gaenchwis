@@ -75,7 +75,14 @@ const Header = ({ userData, onSearch }) => {
           className="search-input"
         />
         <button type="submit" className="header-search-btn">
+
         </button>
+        <button 
+        className="chrome-button"
+        onClick={() => window.open('https://chrome.google.com/webstore/category/extensions', '_blank')}
+        >
+      크롬
+    </button>
       </form>
 
       <CategoryPopup 
