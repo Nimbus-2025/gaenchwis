@@ -34,6 +34,8 @@ class DynamoDBConfig:
     job_postings: str = os.getenv('DYNAMODB_JOB_POSTINGS', 'job_postings')
     bookmarks: str = os.getenv('DYNAMODB_BOOKMARKS', 'bookmarks')  
     interest_companies: str = os.getenv('DYNAMODB_INTEREST_COMPANIES', 'interest_companies')
+    tags: str = os.getenv('DYNAMODB_TAGS', 'tags')
+    job_tags: str = os.getenv('DYNAMODB_JOB_TAGS', 'job_tags')
     
 @dataclass
 class Config:

@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from typing import Dict
 import logging
 from ..repositories.user_repository import UserRepository
-from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkResponse, InterestCompanyCreate, InterestCompanyResponse
+from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkCreateResponse, BookmarkResponse, InterestCompanyCreate, InterestCompanyResponse
 from ..core.security.token_validator import TokenValidator
 
 logging.basicConfig(
@@ -257,7 +257,7 @@ def create_bookmark(
             bookmark_data
         )
         
-        return BookmarkResponse(**created_bookmark)
+        return BookmarkCreateResponse(**created_bookmark)
     except Exception as e:
         raise HTTPException(
             status_code=400,

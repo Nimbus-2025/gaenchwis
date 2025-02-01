@@ -9,6 +9,8 @@ class TableNames:
     JOB_POSTINGS = config.dynamodb.job_postings
     BOOKMARKS = config.dynamodb.bookmarks 
     INTEREST_COMPANIES = config.dynamodb.interest_companies 
+    TAGS = config.dynamodb.tags
+    JOB_TAGS = config.dynamodb.job_tags
     
 class IndexNames:
     # Crawling related indexes

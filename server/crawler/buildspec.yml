@@ -1,105 +1,38 @@
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - echo Installing git...
-      - yum install -y git
-
   pre_build:
     commands:
-      # 빌드 진행 여부를 결정하는 플래그 파일 생성
-      - touch $CODEBUILD_SRC_DIR/build.env
-      - echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
+      # ECR 로그인
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      # 환경변수 설정
+      - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
-      # 변경된 파일 확인
-      - echo "Event = $CODEBUILD_WEBHOOK_EVENT"
-      - |
-        if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
-          # PR의 경우
-          echo "Processing Pull Request..."
-          git fetch --unshallow || true
-          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
-        elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
-          # Push의 경우
-          echo "Processing Push..."
-          CHANGED_FILES=$(git diff --name-only HEAD~1 || git ls-files)
-        fi
-
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
-
-      # [변경 2] 빌드 스킵 로직 수정 - 기존 이미지 정보 활용
-      - |
-        if [ -z "$CHANGED_FILES" ] || ! echo "$CHANGED_FILES" | grep -q "^server/crawler/"; then
-          echo "No changes in crawler directory, skipping build..."
-          # 기존 이미지를 사용하는 imageDefinitions.json 생성
-          aws ecr describe-images --repository-name gaenchwis/crawler-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
-          if [ $? -eq 0 ]; then
-            # 기존 이미지가 있는 경우
-            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
-            printf '[{"name":"Gaenchwis-Crawler","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          else
-            # 기존 이미지가 없는 경우 null 사용
-            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          fi
-          # task-definition.json 복사
-          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
-          exit 0
-        fi
-
-        # [변경 3] 빌드 진행 시 환경 변수 설정
-        echo "Changes detected in crawler directory, proceeding with build..."
-        echo "SHOULD_BUILD=true" > $CODEBUILD_SRC_DIR/build.env
-
-        # ECR 로그인
-        echo "Logging in to Amazon ECR..."
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-        # 환경변수 설정
-        REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/crawler-service
-        IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-
-        # 환경변수 저장
-        echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
-
-  # [변경 4] build 단계에 조건부 실행 추가
   build:
     commands:
-      - |
-        . $CODEBUILD_SRC_DIR/build.env
-        if [ "$SHOULD_BUILD" = "true" ]; then
-          echo Build started on `date`
-          echo Building the Docker image...
-          cd server/crawler
-          docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
-          docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
-        else
-          echo "Skipping build phase..."
-        fi
+      # Docker 이미지 빌드
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - cd server/crawler
+      # - docker build -t $REPOSITORY_URI:latest .
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
+      # - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
-  # [변경 5] post_build 단계에 조건부 실행 추가
   post_build:
     commands:
-      - |
-        . $CODEBUILD_SRC_DIR/build.env
-        if [ "$SHOULD_BUILD" = "true" ]; then
-          echo Build completed on `date`
-          echo Pushing the Docker images...
-          docker push $REPOSITORY_URI:$IMAGE_TAG
-          docker push $REPOSITORY_URI:latest
-          echo Writing image definitions file...
-          printf '[{"name":"Gaenchwis-Crawler","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
-          aws ecs register-task-definition --cli-input-json file://task-definition.json
-        else
-          echo "Skipping post-build phase..."
-        fi
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      # - printf '{"ImageURI":"%s"}' $REPOSITORY_URI:latest > imageDefinitions.json
+      - printf '[{"name":"Gaenchwis-Crawler","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
+      - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
 
 artifacts:
   files:
     - imageDefinitions.json
     - task-definition.json
-  base-directory: $CODEBUILD_SRC_DIR/
-  discard-paths: yes

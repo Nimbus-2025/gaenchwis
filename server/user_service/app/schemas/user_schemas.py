@@ -63,10 +63,21 @@ class BookmarkCreate(BaseModel):
     post_id: str
     post_name: str
 
+class BookmarkCreateResponse(BaseModel):
+    user_id: str
+    post_id: str
+    post_name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class BookmarkResponse(BaseModel):
     user_id: str
     post_id: str
     post_name: str
+    company_name: str 
+    tags: list[str] 
     created_at: datetime
 
     class Config:
@@ -76,11 +87,21 @@ class InterestCompanyCreate(BaseModel):
     company_id: str
     company_name: str
 
+class InterestCompanyCreateResponse(BaseModel):
+    user_id: str
+    company_id: str
+    company_name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class InterestCompanyResponse(BaseModel):
     user_id: str
     company_id: str
     company_name: str
     created_at: datetime
+    tags: list[str]
 
     class Config:
         from_attributes = True
