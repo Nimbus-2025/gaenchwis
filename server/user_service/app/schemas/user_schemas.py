@@ -102,6 +102,7 @@ class JobPostingInfo(BaseModel):
     title: str
     deadline: str
     tags: list[str]
+    post_url: str
 
 class InterestCompanyResponse(BaseModel):
     user_id: str
@@ -112,7 +113,6 @@ class InterestCompanyResponse(BaseModel):
     has_active_postings: bool
     active_postings_count: int
     tags: list[str]
-    post_url: str
 
     class Config:
         from_attributes = True
