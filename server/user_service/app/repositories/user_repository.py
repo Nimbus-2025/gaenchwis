@@ -271,6 +271,7 @@ class UserRepository:
                 if job_posting_items:
                     job_posting = job_posting_items[0]
                     bookmark['company_name'] = job_posting.get('company_name', '')
+                    bookmark['post_url'] = job_posting.get('post_url', '')
                 else:
                     bookmark['company_name'] = ''
 
@@ -306,7 +307,7 @@ class UserRepository:
                         tags = tag_response.get('Items', [])
                         if tags:
                             bookmark['tags'].append(tags[0].get('tag_name', ''))
-
+ 
             return bookmarks
 
         except ClientError as e:
@@ -367,7 +368,7 @@ class UserRepository:
 
             # 2. 각 관심 기업에 대한 채용공고와 태그 정보를 가져옵니다
             for company in companies:
-                company_id = company['PK']
+                company_id = company['SK']
                 logging.info(f"Looking for job postings for company_id: {company_id}")
 
                 # 2-1. 해당 기업의 채용공고 목록 가져오기
@@ -388,6 +389,7 @@ class UserRepository:
 
                 for posting in postings:
                     job_posting_info = {
+                        'post_url': posting.get('post_url'),
                         'post_id': posting.get('post_id'),
                         'title': posting.get('post_name'),  # post_name을 title로 사용
                         'deadline': posting.get('deadline'),  # deadline은 string으로 유지
