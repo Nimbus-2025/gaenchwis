@@ -7,15 +7,14 @@ dynamodb = boto3.client('dynamodb')
 TABLE_NAME = 'job_postings'
 
 def new_job_postings_processing(event, context):
-    print(event)
     try:
         for record in event['Records']:
             if record['eventName'] == 'MODIFY':
                 new_image = record['dynamodb']['NewImage']
                 pk = new_image['PK']['S']
                 sk = new_image['SK']['S']
-                if new_image.get('recommend_vector_a'):
-                    print("Exists Records")
+                if new_image.get('recommend_vector_a') and new_image.get('recommend_vector_a')!="":
+                    print(f"Exists Records, PK: {pk}, SK: {sk}")
                     break
                 
                 print(f"Processing new item with PK: {pk}, SK: {sk}")
@@ -31,13 +30,15 @@ def new_job_postings_processing(event, context):
                     })
                 )
                 data=json.loads(response['Body'].read().decode("utf-8"))
-                print(data)
-                recommend_vector_a = float(data[0])
-                recommend_vector_b = float(data[1])
-                recommend_vector_c = float(data[2])
-                recommend_vector_d = float(data[3])
-                
-                update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
+                if data.get('error'):
+                    print(data)
+                else:
+                    recommend_vector_a = float(data[0])
+                    recommend_vector_b = float(data[1])
+                    recommend_vector_c = float(data[2])
+                    recommend_vector_d = float(data[3])
+                    
+                    update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
                 
         return {
             'statusCode': 200,
