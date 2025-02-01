@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from typing import Dict
 import logging
 from ..repositories.user_repository import UserRepository
-from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkCreateResponse, BookmarkResponse, InterestCompanyCreate, InterestCompanyResponse
+from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkCreateResponse, BookmarkResponse, InterestCompanyCreate, InterestCompanyCreateResponse,InterestCompanyResponse
 from ..core.security.token_validator import TokenValidator
 
 logging.basicConfig(
@@ -336,7 +336,7 @@ def create_interest_company(
             company_data
         )
         
-        return InterestCompanyResponse(**created_company)
+        return InterestCompanyCreateResponse(**created_company)
     except Exception as e:
         raise HTTPException(
             status_code=400,

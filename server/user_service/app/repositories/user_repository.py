@@ -353,14 +353,85 @@ class UserRepository:
     
     def get_user_interest_companies(self, user_id: str) -> list[dict]:
         try:
-            response = self.interest_companies_table.query(
+            # 1. 먼저 유저의 관심 기업 정보를 가져옵니다
+            companies = self.interest_companies_table.query(
                 KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
                 ExpressionAttributeValues={
                     ':pk': f"USER#{user_id}",
                     ':sk': "COMPANY#"
                 }
-            )
-            return response.get('Items', [])
+            ).get('Items', [])
+
+            logging.info(f"Found interest companies: {companies}")
+
+            # 2. 각 관심 기업에 대한 채용공고와 태그 정보를 가져옵니다
+            for company in companies:
+                company_id = company['company_id']
+                logging.info(f"Looking for job postings for company_id: {company_id}")
+
+                # 2-1. 해당 기업의 채용공고 목록 가져오기
+                job_postings_response = self.job_posting_table.scan(
+                    FilterExpression='company_id = :company_id',
+                    ExpressionAttributeValues={
+                        ':company_id': company_id
+                    }
+                )
+
+                postings = job_postings_response.get('Items', [])
+                logging.info(f"Found {len(postings)} job postings for company {company_id}")
+                
+                # 채용공고 정보 추가
+                company['job_postings'] = []
+                company['has_active_postings'] = len(postings) > 0
+                company['active_postings_count'] = len(postings)
+
+                for posting in postings:
+                    job_posting_info = {
+                        'post_id': posting.get('post_id'),
+                        'title': posting.get('post_name'),  # post_name을 title로 사용
+                        'deadline': posting.get('deadline'),  # deadline은 string으로 유지
+                        'tags': []
+                    }
+                    
+                    logging.info(f"Processing posting: {job_posting_info}")
+
+                    # 2-2. 각 채용공고의 태그 정보 가져오기
+                    job_tags_response = self.job_tags_table.query(
+                        KeyConditionExpression='PK = :pk',
+                        ExpressionAttributeValues={
+                            ':pk': f"JOB#{posting.get('post_id')}"
+                        }
+                    )
+
+                    job_tags = job_tags_response.get('Items', [])
+                    logging.info(f"Found {len(job_tags)} tags for post_id {posting.get('post_id')}")
+
+                    # 태그 정보 처리
+                    for job_tag in job_tags:
+                        tag_id = job_tag.get('tag_id')
+                        if tag_id:
+                            tag_response = self.tags_table.query(
+                                KeyConditionExpression='PK = :pk',
+                                ExpressionAttributeValues={
+                                    ':pk': f"TAG#{tag_id}"
+                                }
+                            )
+                            
+                            tags = tag_response.get('Items', [])
+                            if tags:
+                                job_posting_info['tags'].append(tags[0].get('tag_name', ''))
+
+                    company['job_postings'].append(job_posting_info)
+                    logging.info(f"Successfully added posting: {job_posting_info}")
+
+                # 2-3. 기업 관련 태그들의 집합 생성
+                all_tags = set()
+                for posting in company['job_postings']:
+                    all_tags.update(posting['tags'])
+                company['tags'] = list(all_tags)
+
+            return companies
+
         except ClientError as e:
             logging.error(f"Error getting user interest companies: {str(e)}")
             return []
