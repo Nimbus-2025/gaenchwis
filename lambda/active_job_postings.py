@@ -15,7 +15,19 @@ def active_job_postings(event, context):
             ":gsi1pk": "STATUS#active"
         }
     )
-    items = response.get('Items', [])
+    items = []
+    last_evaluated_key = None
+    while True:
+        scan_kwargs = {}
+        if last_evaluated_key:
+            scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
+        response = table.scan(**scan_kwargs)
+        items.extend(response.get('Items', []))
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            break
 
     for item in items:
         expiration_date = item.get('deadline')

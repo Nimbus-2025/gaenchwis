@@ -397,6 +397,9 @@ Resources:
             - logs:*
             - ecs:*
             - elasticloadbalancing:*
+            - ec2messages:*
+            - ssm:*
+            - cloudwatch:*
             Resource: '*'
   #ECS Instance Profile
   ECSInstanceProfile:

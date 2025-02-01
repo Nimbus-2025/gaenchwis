@@ -2,6 +2,31 @@ import boto3
 import json
 import re
 
+def get_job_posting_tag(job_postings_sk):
+    dynamodb = boto3.resource('dynamodb')
+    job_tags_table = dynamodb.Table("job_tags")
+
+    job_tags = job_tags_table.query(
+        KeyConditionExpression="PK = :pk",
+        ExpressionAttributeValues={
+            ":pk": job_postings_sk
+        }
+    )
+
+    tags_name=[]
+
+    for job_tag in job_tags["Items"]:
+        tags_table = dynamodb.Table("tags")
+        tags = tags_table.query(
+            KeyConditionExpression="PK = :pk",
+            ExpressionAttributeValues={
+                ":pk": job_tag["SK"]
+            }
+        )
+        tags_name.append(tags["Items"][0]["tag_name"])
+    
+    return tags_name
+
 def tags_json_init():
     dynamodb = boto3.resource('dynamodb')
 
@@ -76,7 +101,9 @@ def get_tags_json():
 def tags_json_update(new_tags):
     tags = get_tags_json()
     for category in new_tags:
-        tags[category].extend(new_tags[category])
+        for new_tag in new_tags[category]:
+            if new_tag not in tags[category]:
+                tags[category].append(new_tag)
     
     tags["skill_num"]=len(tags["skill"])
     tags["location_num"]=len(tags["location"])
@@ -117,15 +144,22 @@ def train_tags_group():
 
     tags_groups = []
 
-    job_postings = job_postings_table.query(
-        IndexName="StatusIndex",
-        KeyConditionExpression="GSI1PK = :gsi1pk",
-        ExpressionAttributeValues={
-            ":gsi1pk": "STATUS#active"
-        }
-    )
+    job_postings = []
 
-    for job_postings_item in job_postings["Items"]:
+    last_evaluated_key = None
+    while True:
+        scan_kwargs = {}
+        if last_evaluated_key:
+            scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
+        response = job_postings_table.scan(**scan_kwargs)
+        job_postings.extend(response.get('Items', []))
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            break
+    print(f"Train : {len(job_postings)}")
+    for job_postings_item in job_postings:
         tags_group = MakeTagGroup(job_postings_item)
         tags_groups.append(tags_group)
     
@@ -160,7 +194,6 @@ def MakeTagGroup(job_postings_item):
             }
         )
         tag = tags["Items"][0]
-
         if tag["tag_category"]=="position":
             position_range = [int(num) for num in re.findall(r"\d+", tag["tag_name"])]
             if "↓" in tag["tag_name"]:

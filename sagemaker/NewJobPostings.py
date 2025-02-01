@@ -20,18 +20,25 @@ def InitJobPosting():
     dynamodb = boto3.resource('dynamodb')
     job_postings_table = dynamodb.Table("job_postings")
 
+    job_postings = []
 
-    job_postings = job_postings_table.query(
-        IndexName="StatusIndex",
-        KeyConditionExpression="GSI1PK = :gsi1pk",
-        ExpressionAttributeValues={
-            ":gsi1pk": "STATUS#active"
-        }
-    )
+    last_evaluated_key = None
+    while True:
+        scan_kwargs = {}
+        if last_evaluated_key:
+            scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
 
-    for job_postings_item in job_postings["Items"]:
-        if not job_postings_item.get('recommend_vector_a'):
-            print(job_postings_item.get('recommend_vector_a'))
+        response = job_postings_table.scan(**scan_kwargs)
+        job_postings.extend(response.get('Items', []))
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            break
+
+    print(f"Get Job Postings : {len(job_postings)}")
+
+    for job_postings_item in job_postings:
+        if not job_postings_item.get('recommend_vector_a') or job_postings_item.get('recommend_vector_a')=="":
             a,b,c,d = NewJobPosting(job_postings_item)
             job_postings_table.update_item(
                 Key={

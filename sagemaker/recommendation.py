@@ -7,18 +7,33 @@ import boto3
 def Recommendation(user_id):
     tags_json = Tag.get_tags_json()
     tags_group = Tag.MakeUserTagGroup(user_id)
-
+    
+    print("Make User Tag Group...")
     for i in range(len(tags_group["position"])):
-        tags_group["position"][i]=tags_json["position"].index(tags_group["position"][i])
+        try:
+            tags_group["position"][i]=tags_json["position"].index(tags_group["position"][i])
+        except:
+            tags_group["position"][i]=0
     for i in range(len(tags_group["location"])):
-        tags_group["location"][i]=tags_json["location"].index(tags_group["location"][i])
+        try:
+            tags_group["location"][i]=tags_json["location"].index(tags_group["location"][i])
+        except:
+            tags_group["location"][i]=0
     for i in range(len(tags_group["education"])):
-        tags_group["education"][i]=tags_json["education"].index(tags_group["education"][i])
+        try:
+            tags_group["education"][i]=tags_json["education"].index(tags_group["education"][i])
+        except:
+            tags_group["education"][i]=0
     for i in range(len(tags_group["skill"])):
-        tags_group["skill"][i]=tags_json["skill"].index(tags_group["skill"][i])
+        try:
+            tags_group["skill"][i]=tags_json["skill"].index(tags_group["skill"][i])
+        except:
+            tags_group["skill"][i]=0
 
     s3 = boto3.client('s3')
     bucket_name = "gaenchwis-sagemaker"
+
+    print("Start Recommendation")
 
     position_tags=len(tags_json["position"])
     location_tags=len(tags_json["location"])
@@ -58,9 +73,16 @@ def Recommendation(user_id):
 
     user_vector = Layer.Vector(tags_group, position_model, location_model, education_model, skill_model).tolist()
 
-    return BestRecommendation(user_vector)[:5]
+    best_recommendations = BestRecommendation(user_vector)[:5]
+    add_tags_best_recommendations=[]
+    for best_recommendation in best_recommendations:
+        best_recommendation[1]["tags"]=Tag.get_job_posting_tag(best_recommendation[1]['SK'])
+        add_tags_best_recommendations.append(best_recommendation)
+        
+    return add_tags_best_recommendations
 
 def BestRecommendation(user_vector):
+    print("Find Best Recommendatation")
     dynamodb = boto3.resource('dynamodb')
     job_postings_table = dynamodb.Table("job_postings")
 
