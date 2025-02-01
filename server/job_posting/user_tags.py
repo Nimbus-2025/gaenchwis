@@ -127,6 +127,11 @@ class UserTagService:
             return []
 
 # API 엔드포인트
+
+@app.route('/healthcheck', methods=['GET'])
+def healthcheck():
+    return jsonify({"status": "healthy"}), 200
+
 @app.route("/api/v1/user/tags/<tag_type>", methods=['PUT'])
 def update_tags(tag_type):
     try:
