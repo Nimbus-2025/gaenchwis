@@ -11,7 +11,11 @@ import JobCard from '../component/JobCard';
 
 const UserPage = () => {
 
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({
+    bookmarks: [],        // 초기값을 빈 배열로 설정
+    appliedJobs: [],      // 초기값을 빈 배열로 설정
+    favoriteCompanies: [] // 초기값을 빈 배열로 설정
+  });
   const [jobs, setJobs] = useState([]); 
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
   const navigate = useNavigate();
@@ -24,23 +28,40 @@ const UserPage = () => {
   const [recommendLoading, setRecommendLoading] = useState(true);
   const isLoggedIn = !!userData;  
 
+  const fetchUserData = async () => {
+    try {
+      const response = await Api(`${Config.server}:8005/api/v1/user`, 'GET');
+      // API 응답 구조 확인 및 안전한 데이터 설정
+      setUserData({
+        bookmarks: response.bookmarks || [],
+        appliedJobs: response.appliedJobs || [],
+        favoriteCompanies: response.favoriteCompanies || []
+      });
+    } catch (error) {
+      console.error('사용자 데이터 조회 실패:', error);
+      // 에러 발생시 빈 배열로 초기화
+      setUserData({
+        bookmarks: [],
+        appliedJobs: [],
+        favoriteCompanies: []
+      });
+    }
+  };
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
     const fetchRecommendedJobs = async () => {
       try {
         setRecommendLoading(true);
         const user = JSON.parse(sessionStorage.getItem('user'));
-        const token = sessionStorage.getItem('token');
         
-        if (!user || !token) return;
+        if (!user) return;
   
         const response = await Api('https://alb.gaenchwis.click/recommendation', 'GET');
         console.log(response)
-        if (!response.ok) {
-          throw new Error('추천 공고 조회 실패');
-        }
   
-        const data = await response.json();
-        console.log('추천 공고 데이터:', data); // 받아온 데이터 확인
-        setRecommendedJobs(data);
+        setRecommendedJobs(response['data']);
       } catch (error) {
         console.error('추천 공고 조회 중 에러:', error);
       } finally {
@@ -58,13 +79,6 @@ const UserPage = () => {
         console.error('Error parsing user data from localStorage:', error);
       }
     }, []);
-  
-
-    useEffect(() => {
-      if (isLoggedIn) {
-        fetchRecommendedJobs();
-      }
-    }, [isLoggedIn]);
   
     useEffect(() => {
       const fetchBookmarks = async () => {
@@ -154,6 +168,9 @@ const UserPage = () => {
     
  
   useEffect(() => {
+    if (isLoggedIn) {
+      fetchRecommendedJobs();
+    }
     fetchJobs(currentPage);
   }, [currentPage]);
   const handleToggleBookmark = (postId) => {
@@ -177,7 +194,7 @@ const UserPage = () => {
             {recommendLoading ? (
               <div>맞춤 공고 로딩 중...</div>
             ) : recommendedJobs.length > 0 ? (
-              recommendedJobs.map(job => (
+              recommendedJobs.map((idx, job) => (
                 <JobCard
                   key={job.post_id}
                   job={job}

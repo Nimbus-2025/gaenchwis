@@ -31,10 +31,10 @@
     display: flex;
     flex-direction: column; /* 세로로 정렬 */
     gap: 20px; /* 각 박스 사이의 간격 */
-    margin-top:100px;
-    align-items: center; /* 가로축 중앙 정렬 */
+    margin-top:60px;
+    
     justify-content: space-between; /* 박스 간 동일한 간격 배분 */
-    margin-left:50px;
+    margin-left:70px;
   }
   .info-box-row {
     display: flex;
@@ -341,4 +341,12 @@ edit-form {
   display: flex;
   justify-content: flex-end;
   margin: 20px 0;
+}
+.info-box-container > h4 {
+  text-align: left;
+  font-size: 24px;  /* 크기 조정 */
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-left: 0;  /* 왼쪽 정렬 */
+  padding-left: 0;  /* 왼쪽 패딩 제거 */
 }

@@ -434,9 +434,10 @@ const handleEducationTagApply = async (selectedTags) => {
     </div>
     </div>
       <div>
-      <h4>My tag</h4>
+      
       
         <div className="info-box-container">
+        <h4>My Tag</h4>
         
         <div className="info-box-row">
           <div className="info-box">
