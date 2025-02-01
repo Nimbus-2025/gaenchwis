@@ -9,7 +9,7 @@ TABLE_NAME = 'job_postings'
 def new_job_postings_processing(event, context):
     try:
         for record in event['Records']:
-            if record['eventName'] == 'MODIFY':
+            if record['eventName'] == 'MODIFY' or record['eventName'] == 'INSERT':
                 new_image = record['dynamodb']['NewImage']
                 pk = new_image['PK']['S']
                 sk = new_image['SK']['S']
@@ -29,7 +29,7 @@ def new_job_postings_processing(event, context):
                         "payload": clean_data
                     })
                 )
-                data=json.loads(response['Body'])
+                data=json.loads(response['Body'].read().decode("utf-8"))
                 if isinstance(data, dict):
                     print(data)
                 else:

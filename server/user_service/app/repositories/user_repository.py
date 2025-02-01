@@ -256,7 +256,8 @@ class UserRepository:
 
                 # 2-1. 게시물 정보 조회하여 company_name 가져오기
                 # JobPosting 테이블의 모든 항목을 scan하여 post_id가 일치하는 항목 찾기
-                scan_response = self.job_posting_table.scan(
+                scan_response = self.job_posting_table.query(
+                    IndexName="JobPostId",
                     FilterExpression='post_id = :post_id',
                     ExpressionAttributeValues={
                         ':post_id': post_id
@@ -366,14 +367,14 @@ class UserRepository:
 
             # 2. 각 관심 기업에 대한 채용공고와 태그 정보를 가져옵니다
             for company in companies:
-                company_id = company['company_id']
+                company_id = company['PK']
                 logging.info(f"Looking for job postings for company_id: {company_id}")
 
                 # 2-1. 해당 기업의 채용공고 목록 가져오기
-                job_postings_response = self.job_posting_table.scan(
-                    FilterExpression='company_id = :company_id',
+                job_postings_response = self.job_posting_table.query(
+                    KeyConditionExpression='PK = :pk',
                     ExpressionAttributeValues={
-                        ':company_id': company_id
+                        ':pk': f"{company_id}"
                     }
                 )
 

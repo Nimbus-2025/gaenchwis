@@ -8,13 +8,6 @@ def active_job_postings(event, context):
 
     today = date.today()
 
-    response = table.query(
-        IndexName="StatusIndex",
-        KeyConditionExpression="GSI1PK = :gsi1pk",
-        ExpressionAttributeValues={
-            ":gsi1pk": "STATUS#active"
-        }
-    )
     items = []
     last_evaluated_key = None
     while True:
