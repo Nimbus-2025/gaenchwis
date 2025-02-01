@@ -96,11 +96,20 @@ class InterestCompanyCreateResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class JobPostingInfo(BaseModel):
+    post_id: str
+    title: str
+    deadline: str
+    tags: list[str]
+
 class InterestCompanyResponse(BaseModel):
     user_id: str
     company_id: str
     company_name: str
     created_at: datetime
+    job_postings: list[JobPostingInfo]
+    has_active_postings: bool
+    active_postings_count: int
     tags: list[str]
 
     class Config:
