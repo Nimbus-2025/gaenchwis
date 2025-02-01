@@ -10,7 +10,7 @@ import Api from '../api/api';
 
 const JobCard = ({
   job,
-  favoriteCompanies,
+  favoriteCompanies = [],
   bookmarkedJobs,
   appliedJobs,
   onToggleFavorite,
@@ -19,8 +19,56 @@ const JobCard = ({
 }) => {
   
 
+
+  
+  const handleFavoriteToggle = async (e) => {
+    e.stopPropagation();
+    try {
+      const userData = JSON.parse(sessionStorage.getItem('user'));
+    
+      if (!userData) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
+      }
+
+      // company_id 추출 로직 수정
+      const company_id = job.company_id || (job.PK ? job.PK.replace('COMPANY#', '') : null);
+      
+      if (!company_id) {
+        console.error('회사 정보를 찾을 수 없습니다:', job);
+        alert('회사 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      const requestData = {
+        company_id: company_id,
+        company_name: job.company_name
+      };
+
+      console.log('요청 데이터:', requestData); // 실제 전송되는 데이터 확인
+
+      const response = await Api(
+        `${Config.server}:8005/api/v1/interest-company`,
+        'POST',
+        requestData,
+        {
+          
+          'Content-Type': 'application/json'
+        }
+      );
+
+      console.log('서버 응답:', response);
+
+      if (response) {
+        onToggleFavorite(company_id);
+      }
+    } catch (error) {
+      console.error('관심기업 처리 중 에러:', error);
+      alert('관심기업 처리에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   // 북마크 상태 초기화
- 
   const isBookmarked = bookmarkedJobs.includes(job.post_id);
   const handleBookmarkToggle = async () => {
     try {
@@ -64,20 +112,35 @@ const JobCard = ({
     }
   };
   
+  // company_id 가져오기
+  const getCompanyId = () => {
+    if (job.company_id) return job.company_id;
+    if (job.PK) return job.PK.replace('COMPANY#', '');
+    return null;
+  };
+
+  // 관심기업 여부 확인
+  const isFavorite = () => {
+    const companyId = getCompanyId();
+    return companyId && favoriteCompanies.includes(companyId);
+  };
 
   return (
     <div className="job-card">
       <div className="job-header">
         <p className="job-company">
           {job.company_name}
+          
           <FontAwesomeIcon
-            icon={favoriteCompanies.includes(job.company_name) ? solidHeart : regularHeart}
-            onClick={() => onToggleFavorite(job.company_name)}
+            icon={isFavorite() ? solidHeart : regularHeart}
+            onClick={handleFavoriteToggle}
             style={{
               cursor: 'pointer',
               marginLeft: '10px',
-              color: favoriteCompanies.includes(job.company_name) ? 'red' : 'gray',
+              color: isFavorite() ? 'red' : 'gray',
+              transition: 'color 0.2s ease',
             }}
+            title={isFavorite() ? '관심기업 해제' : '관심기업 등록'}
           />
         </p>
         <div className="divider"></div>

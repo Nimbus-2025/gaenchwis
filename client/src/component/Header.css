@@ -84,3 +84,14 @@
     border: 1px solid #ddd;
     flex-direction: column;
   }
+
+  
+  .chrome-button {
+    background-color: #4285f4;
+    color: white;
+  }
+  
+  .search-button:hover,
+  .chrome-button:hover {
+    opacity: 0.9;
+  }

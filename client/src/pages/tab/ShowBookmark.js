@@ -1,89 +1,227 @@
 import React, { useState, useEffect } from 'react';
-import heartImage from '../../images/heart.png';
-import starImage from '../../images/star.png';
 import JobCard from '../../component/JobCard';
 import Config from '../../api/Config';
 import Api from '../../api/api';
 import './ShowBookmark.css';
 
-
 const ShowBookmark = () => {
   const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [interestedJobs, setInterestedJobs] = useState([]); // 관심기업 공고
+  const [loading, setLoading] = useState({
+    bookmarks: true,
+    interested: true
+  });
+  const [error, setError] = useState({
+    bookmarks: null,
+    interested: null
+  });
+  const [favoriteCompanies, setFavoriteCompanies] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [jobs, setJobs] = useState([]); // jobs 상태 추가
 
-  // 북마크 목록 가져오기
   const fetchBookmarks = async () => {
     try {
+      setLoading(true);
       const data = await Api(`${Config.server}:8005/api/v1/bookmarks`, 'GET');
-      console.log('받아온 북마크 데이터:', data);  // 데이터 확인용 로그
-      setBookmarkedJobs(data.bookmarks || []); // 빈 배열을 기본값으로 설정
+      console.log('받아온 북마크 데이터:', data);
+      setBookmarkedJobs(data.bookmarks || []);
     } catch (error) {
       console.error('북마크 목록 조회 중 에러:', error);
-      setBookmarkedJobs([]); // 에러 시 빈 배열로 설정
+      setError(prev => ({ ...prev, bookmarks: '북마크 목록을 불러오는데 실패했습니다.' }));
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchJobDetails = async (postId) => {
+    try {
+      const response = await Api(`${Config.server}:8003/api/jobs/${postId}`, 'GET');
+      return response;
+    } catch (error) {
+      console.error(`공고 ID ${postId}의 상세 정보 조회 실패:`, error);
+      return null;
     }
   };
 
+
+  const handleBookmarkToggle = async (postId) => {
+    try {
+      await Api(`${Config.server}:8005/api/v1/bookmark/${postId}`, 'DELETE');
+      setBookmarkedJobs(prev => prev.filter(job => job.post_id !== postId));
+    } catch (error) {
+      console.error('북마크 처리 중 에러:', error);
+      alert('북마크 처리에 실패했습니다.');
+    }
+  };
+
+  const handleFavoriteToggle = async (companyName) => {
+    try {
+      // 관심기업 토글 API 호출 (필요한 경우)
+      setFavoriteCompanies(prev => 
+        prev.includes(companyName)
+          ? prev.filter(name => name !== companyName)
+          : [...prev, companyName]
+      );
+      // 관심기업 목록이 변경되면 공고 목록 다시 불러오기
+      
+    } catch (error) {
+      console.error('관심기업 처리 중 에러:', error);
+      alert('관심기업 처리에 실패했습니다.');
+    }
+  };
+
+
+  const handleAppliedToggle = (postId) => {
+    setAppliedJobs(prev => 
+      prev.includes(postId)
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
+  
+
+  // 관심기업 목록 가져오기
+  const fetchFavoriteCompanies = async () => {
+    try {
+      const userData = JSON.parse(sessionStorage.getItem('user'));
+    
+      if (!userData) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
+      }
+  
+      console.log('관심기업 요청 시작');
+      const response = await Api(
+        `${Config.server}:8005/api/v1/interest-companies`,
+        'GET',
+        null,
+        {
+          'Content-Type': 'application/json'
+        }
+      );
+  
+      console.log('관심기업 원본 응답:', response);
+  
+      // 응답 구조 확인을 위한 디버깅
+      if (response) {
+        console.log('응답 타입:', typeof response);
+        console.log('response.companies 존재 여부:', !!response.companies);
+        console.log('response가 배열인지:', Array.isArray(response));
+        
+        // response.companies가 있는 경우
+        if (response.companies && Array.isArray(response.companies)) {
+          const allJobPostings = response.companies.flatMap(company => {
+            console.log('현재 처리중인 기업:', company);
+            return (company.job_postings || []).map(job => {
+              console.log('현재 처리중인 공고:', job);
+              return {
+                ...job,
+                post_name: job.title,
+                company_name: company.company_name,
+                company_id: company.company_id,
+                PK: `COMPANY#${company.company_id}`,
+                SK: `JOB#${job.post_id}`,
+                deadline: job.deadline,
+                tags: job.tags || []
+              };
+            });
+          });
+  
+          console.log('변환된 공고 데이터:', allJobPostings);
+          setJobs(allJobPostings);
+  
+          const companyIds = response.companies.map(company => company.company_id);
+          setFavoriteCompanies(companyIds);
+        }
+  
+      }
+    } catch (error) {
+      console.error('관심기업 목록 가져오기 실패:', error);
+      console.error('에러 상세:', error.response || error);
+      setJobs([]);
+      setFavoriteCompanies([]);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 가져오기
   useEffect(() => {
+    fetchFavoriteCompanies();
     fetchBookmarks();
   }, []);
 
-  // 북마크 상태가 변경될 때마다 목록 새로고침
-  const handleBookmarkToggle = async (job) => {
-    try {
-      if (bookmarkedJobs.some(bookmark => bookmark.post_id === job.post_id)) {
-        // 북마크 삭제
-        await Api(`${Config.server}:8005/api/v1/bookmark/${job.post_id}`, 'DELETE');
-      } else {
-        // 북마크 추가
-        await Api(`${Config.server}:8005/api/v1/bookmark`, 'POST', {
-          post_id: job.post_id,
-          company_id: job.company_id,
-          company_name: job.company_name,
-          post_name: job.post_name,
-          post_url: job.post_url,
-          tags: job.tags || [],
-          is_closed: job.is_closed || null
-        });
-      }
-      // 북마크 목록 새로고침
-      fetchBookmarks();
-    } catch (error) {
-      console.error('북마크 처리 중 에러:', error);
-      alert(error.message || '북마크 처리 중 오류가 발생했습니다.');
-    }
-  };
-  console.log('현재 상태 - loading:', loading);
-  console.log('현재 상태 - bookmarkedJobs:', bookmarkedJobs);
 
   return (
     <div className="bookmark-interest-container">
       <div className="section">
-        <h2 className="title">
-          북마크 공고 <img src={starImage} alt="북마크" className="star-icon" />
-        </h2>
-        <div className="bookmark-box">
-          {loading ? (
-            <div className="loading">로딩 중...</div>
-          ) : error ? (
-            <div className="error-message">{error}</div>
-          ) : bookmarkedJobs.length === 0 ? (
-            <div className="empty-message">북마크한 공고가 없습니다.</div>
+        <div className="section-header">
+          <h2 className="title">북마크 공고</h2>
+          <span className="bookmark-count">총 {bookmarkedJobs.length}개</span>
+        </div>
+        
+        <div className="bookmarked-box">
+          {loading.bookmarks ? (
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>북마크 목록을 불러오는 중...</p>
+            </div>
+          ) : error.bookmarks ? (
+            <div className="error-message">
+              <p>{error.bookmarks}</p>
+              <button onClick={fetchBookmarks}>다시 시도</button>
+            </div>
           ) : (
-            <div className="bookmarked-jobs">
+            <div className="job-cards-container">
               {bookmarkedJobs.map((job) => (
-                <div key={job.post_id} className="job-card">
-                  <h3>{job.post_name}</h3>
-                  <p>작성일: {new Date(job.created_at).toLocaleDateString('ko-KR')}</p>
-                </div>
+                <JobCard
+                  key={job.post_id}
+                  job={job}
+                  favoriteCompanies={favoriteCompanies}
+                  bookmarkedJobs={bookmarkedJobs.map(j => j.post_id)}
+                  appliedJobs={appliedJobs}
+                  onToggleFavorite={handleFavoriteToggle}
+                  onToggleBookmark={handleBookmarkToggle}
+                  onToggleApplied={handleAppliedToggle}
+                />
               ))}
             </div>
           )}
         </div>
       </div>
+      <div className="section">
+        <div className="section-header">
+          <h2 className="title">관심기업 공고</h2>
+          <span className="bookmark-count">총 {interestedJobs.length}개</span>
+        </div>
+        
+        <div className="bookmark-box">
+          {loading.interested ? (
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>관심기업 공고를 불러오는 중...</p>
+            </div>
+          ) : error.interested ? (
+            <div className="error-message">
+              <p>{error.interested}</p>
+            </div>
+          ) : (
+            <div className="job-cards-container">
+              {jobs.map((job) => (
+                <JobCard
+                  key={job.post_id}
+                  job={job}
+                  favoriteCompanies={favoriteCompanies}
+                  bookmarkedJobs={bookmarkedJobs}
+                  appliedJobs={appliedJobs}
+                  onToggleFavorite={handleFavoriteToggle}
+                  onToggleBookmark={handleBookmarkToggle}
+                  onToggleApplied={handleAppliedToggle}
+                />
+              ))}
+            </div>
+      )}
+      </div>
     </div>
+  </div>
   );
 };
-
 
 export default ShowBookmark;

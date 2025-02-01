@@ -77,7 +77,7 @@ def get_all_jobs(page, per_page):
         # Scan with pagination
         response = table.scan(
             Limit=per_page,
-            ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed'
+            ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed, company_id'
         )
         
         items = response.get('Items', [])

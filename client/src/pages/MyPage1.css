@@ -10,7 +10,6 @@
   }
   .button-logout-container {
     display: flex; /* 버튼 컨테이너와 로그아웃 컨테이너를 같은 줄에 배치 */
-    justify-content: space-between; /* 두 컨테이너 간 간격을 최대화 */
     align-items: center; /* 세로 방향으로 중앙 정렬 */
     width: 100%; /* 부모 요소가 가득 차도록 설정 */
     height: 30px;
@@ -22,7 +21,7 @@
     display: flex; /* 로그인 버튼을 수평 중앙 정렬 */
     padding-right: 100px; 
     justify-content: center;/* 수직 중앙 정렬 */
-    margin-left: auto; /* 오른쪽 끝으로 배치 */
+    margin-left: 700px;
   }
   
   .button-container button {
