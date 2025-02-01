@@ -6,93 +6,33 @@ phases:
       - echo Installing prerequisites...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      - yum install -y git
 
   pre_build:
     commands:
-      - |
-        # 빌드 진행 여부를 결정하는 플래그 파일 생성
-        touch $CODEBUILD_SRC_DIR/build.env
-        echo "SHOULD_BUILD=false" >> $CODEBUILD_SRC_DIR/build.env
-
-        # 디버깅을 위한 정보 출력
-        echo "Event type: $CODEBUILD_WEBHOOK_EVENT"
-        echo "Source version: $CODEBUILD_SOURCE_VERSION"
-
-        # PR이나 push에서 변경된 파일 확인
-        if [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_CREATED" ] || [ "$CODEBUILD_WEBHOOK_EVENT" = "PULL_REQUEST_UPDATED" ]; then
-          echo "PR changes check..."
-          # PR의 경우 전체 파일 목록 확인
-          CHANGED_FILES=$(git ls-tree -r HEAD --name-only)
-        elif [ "$CODEBUILD_WEBHOOK_EVENT" = "PUSH" ]; then
-          echo "Push changes check..."
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-        fi
-
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
-
-        # job_posting 디렉토리의 변경 확인
-        if echo "$CHANGED_FILES" | grep -q "^server/job_posting/"; then
-          echo "Changes detected in job_posting directory, proceeding with build..."
-          # 빌드 진행 플래그 설정
-          echo "SHOULD_BUILD=true" > $CODEBUILD_SRC_DIR/build.env
-          
-          # ECR 로그인
-          echo "Logging in to Amazon ECR..."
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          
-          # 환경변수 설정
-          REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/job-posting-service
-          COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-          IMAGE_TAG=${COMMIT_HASH:=latest}
-          
-          # 환경변수 저장
-          echo "REPOSITORY_URI=$REPOSITORY_URI" >> $CODEBUILD_SRC_DIR/build.env
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_SRC_DIR/build.env
-        else
-          echo "No changes in job_posting directory, skipping build..."
-          # 기존 이미지를 사용하는 imageDefinitions.json 생성
-          aws ecr describe-images --repository-name gaenchwis/job-posting-service --image-ids imageTag=latest --region $AWS_REGION 2>/dev/null
-          if [ $? -eq 0 ]; then
-            # 기존 이미지가 있는 경우
-            REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/job-posting-service
-            printf '[{"name":"Gaenchwis-JobPostingBackend","imageUri":"%s"}]' $REPOSITORY_URI:latest > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          else
-            # 기존 이미지가 없는 경우 null 사용
-            echo 'null' > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          fi
-          cp ./task-definition.json $CODEBUILD_SRC_DIR/task-definition.json 2>/dev/null || echo "{}" > $CODEBUILD_SRC_DIR/task-definition.json
-          exit 0
-        fi
+      # ECR 로그인
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      # 환경변수 설정
+      - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/job-posting-service
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
 
   build:
     commands:
-      - |
-        . $CODEBUILD_SRC_DIR/build.env
-        if [ "$SHOULD_BUILD" = "true" ]; then
-          echo Building the Docker image...
-          cd server/job_posting
-          docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
-          docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
-        else
-          echo "Skipping build phase..."
-        fi
+      # Docker 이미지 빌드
+      - echo Building the Docker image...
+      - cd server/job_posting
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - |
-        . $CODEBUILD_SRC_DIR/build.env
-        if [ "$SHOULD_BUILD" = "true" ]; then
-          echo Pushing the Docker images...
-          docker push $REPOSITORY_URI:$IMAGE_TAG
-          docker push $REPOSITORY_URI:latest
-          echo Writing image definitions file...
-          printf '[{"name":"Gaenchwis-JobPostingBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
-          envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
-        else
-          echo "Skipping post-build phase..."
-        fi
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"Gaenchwis-JobPostingBackend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imageDefinitions.json
+      - envsubst < ./task-definition.json > $CODEBUILD_SRC_DIR/task-definition.json
 
 artifacts:
   files:

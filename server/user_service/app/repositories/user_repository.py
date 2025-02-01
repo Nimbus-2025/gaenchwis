@@ -27,6 +27,9 @@ class UserRepository:
             self.interest_companies_table = self.dynamodb.Table(TableNames.INTEREST_COMPANIES)
             self.essay_table = self.dynamodb.Table(TableNames.ESSAYS)
             self.essay_job_table = self.dynamodb.Table(TableNames.ESSAY_JOB_POSTINGS)
+            self.job_posting_table = self.dynamodb.Table(TableNames.JOB_POSTINGS)
+            self.tags_table = self.dynamodb.Table(TableNames.TAGS)
+            self.job_tags_table = self.dynamodb.Table(TableNames.JOB_TAGS)
 
         except Exception as e:
             logging.error(f"Error initializing repository: {str(e)}")
@@ -235,14 +238,76 @@ class UserRepository:
         
     def get_user_bookmarks(self, user_id: str) -> list[dict]:
         try:
-            response = self.bookmarks_table.query(
+            # 1. 먼저 유저의 북마크 정보를 가져옵니다
+            bookmarks = self.bookmarks_table.query(
                 KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
                 ExpressionAttributeValues={
                     ':pk': f"USER#{user_id}",
                     ':sk': "POST#"
                 }
-            )
-            return response.get('Items', [])
+            ).get('Items', [])
+
+            # 디버깅을 위한 로그 추가
+            logging.info(f"Found bookmarks: {bookmarks}")
+
+            # 2. 각 북마크된 게시물에 대한 추가 정보를 가져옵니다
+            for bookmark in bookmarks:
+                post_id = bookmark['post_id']
+
+                # 2-1. 게시물 정보 조회하여 company_name 가져오기
+                # JobPosting 테이블의 모든 항목을 scan하여 post_id가 일치하는 항목 찾기
+                scan_response = self.job_posting_table.scan(
+                    FilterExpression='post_id = :post_id',
+                    ExpressionAttributeValues={
+                        ':post_id': post_id
+                    }
+                )
+
+                # 디버깅을 위한 로그 추가
+                logging.info(f"Found job posting for post_id {post_id}: {scan_response.get('Items')}")
+
+                job_posting_items = scan_response.get('Items', [])
+                if job_posting_items:
+                    job_posting = job_posting_items[0]
+                    bookmark['company_name'] = job_posting.get('company_name', '')
+                else:
+                    bookmark['company_name'] = ''
+
+                # 2-2. 태그 정보 조회
+                bookmark['tags'] = []
+                job_tags_response = self.job_tags_table.query(
+                    KeyConditionExpression='PK = :pk',
+                    ExpressionAttributeValues={
+                        ':pk': f"JOB#{post_id}"
+                    }
+                )
+
+                # 디버깅을 위한 로그 추가
+                logging.info(f"Found job tags for post_id {post_id}: {job_tags_response.get('Items')}")
+
+                job_tags = job_tags_response.get('Items', [])
+
+                # 2-3. 태그 정보 처리
+                for job_tag in job_tags:
+                    tag_id = job_tag.get('tag_id')
+                    if tag_id:
+                        # 태그 정보 조회할 때 SK 부분을 제외하고 PK로만 조회
+                        tag_response = self.tags_table.query(
+                            KeyConditionExpression='PK = :pk',
+                            ExpressionAttributeValues={
+                                ':pk': f"TAG#{tag_id}"
+                            }
+                        )
+                        
+                        # 디버깅을 위한 로그 추가
+                        logging.info(f"Found tag for tag_id {tag_id}: {tag_response.get('Items')}")
+
+                        tags = tag_response.get('Items', [])
+                        if tags:
+                            bookmark['tags'].append(tags[0].get('tag_name', ''))
+
+            return bookmarks
+
         except ClientError as e:
             logging.error(f"Error getting user bookmarks: {str(e)}")
             return []
