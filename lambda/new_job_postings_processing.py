@@ -21,25 +21,27 @@ def new_job_postings_processing(event, context):
                 clean_data = clean_dynamodb_image(new_image)
                 print(clean_data)
                 client = boto3.client("sagemaker-runtime")
-                response = client.invoke_endpoint(
-                    EndpointName="gaenchwis-recommendation",
-                    ContentType="application/json",
-                    Body=json.dumps({
-                        "logic_type": "NewJobPostingTrain",
-                        "payload": clean_data
-                    })
-                )
-                data=json.loads(response['Body'].read().decode("utf-8"))
-                if isinstance(data, dict):
-                    print(data)
-                else:
-                    recommend_vector_a = float(data[0])
-                    recommend_vector_b = float(data[1])
-                    recommend_vector_c = float(data[2])
-                    recommend_vector_d = float(data[3])
-                    if recommend_vector_a and recommend_vector_b and recommend_vector_c and recommend_vector_d:
-                        update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
-                
+                for i in range(3):
+                    response = client.invoke_endpoint(
+                        EndpointName="gaenchwis-recommendation",
+                        ContentType="application/json",
+                        Body=json.dumps({
+                            "logic_type": "NewJobPostingTrain",
+                            "payload": clean_data
+                        })
+                    )
+                    data=json.loads(response['Body'].read().decode("utf-8"))
+                    if isinstance(data, dict):
+                        print(data)
+                    else:
+                        recommend_vector_a = float(data[0])
+                        recommend_vector_b = float(data[1])
+                        recommend_vector_c = float(data[2])
+                        recommend_vector_d = float(data[3])
+                        if recommend_vector_a and recommend_vector_b and recommend_vector_c and recommend_vector_d:
+                            update_dynamodb_item(pk, sk, recommend_vector_a, recommend_vector_b, recommend_vector_c, recommend_vector_d)
+                            break
+
         return {
             'statusCode': 200,
             'body': json.dumps('Stream processed successfully!')

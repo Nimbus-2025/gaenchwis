@@ -33,7 +33,7 @@ Resources:
           Essential: true
           Memory: 512
           Cpu: 512
-          Command: ["sh", "-c", "sleep 7200 && kill -s SIGINT 1"]
+          Command: ["bash", "-c", "sleep 7200 && kill -s SIGINT 1"]
           LogConfiguration:
             LogDriver: awslogs
             Options:
