@@ -21,7 +21,7 @@ phases:
     commands:
       # Docker 이미지 빌드
       - echo Building the Docker image...
-      - cd server/client_service
+      - cd client
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
