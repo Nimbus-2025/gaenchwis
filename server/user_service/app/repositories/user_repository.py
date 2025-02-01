@@ -258,7 +258,7 @@ class UserRepository:
                 # JobPosting 테이블의 모든 항목을 scan하여 post_id가 일치하는 항목 찾기
                 scan_response = self.job_posting_table.query(
                     IndexName="JobPostId",
-                    FilterExpression='post_id = :post_id',
+                    KeyConditionExpression='post_id = :post_id',
                     ExpressionAttributeValues={
                         ':post_id': post_id
                     }
