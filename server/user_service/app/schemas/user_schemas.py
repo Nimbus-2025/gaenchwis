@@ -79,6 +79,7 @@ class BookmarkResponse(BaseModel):
     company_name: str 
     tags: list[str] 
     created_at: datetime
+    post_url: str
 
     class Config:
         from_attributes = True
@@ -111,6 +112,7 @@ class InterestCompanyResponse(BaseModel):
     has_active_postings: bool
     active_postings_count: int
     tags: list[str]
+    post_url: str
 
     class Config:
         from_attributes = True
