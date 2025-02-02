@@ -38,8 +38,7 @@ phases:
       - echo Building the Docker image...
       - pwd
       - ls -la
-      - cd server/user_service
-      - ls -la
+      # - cd server/user_service
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f Dockerfile . --progress=plain
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
