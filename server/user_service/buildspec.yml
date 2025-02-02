@@ -22,10 +22,9 @@ phases:
       # 테스트 실행 단계 추가
       - echo Running tests...
       - cd server/user_service
-      - pip install python-dotenv
+      - pip install -r requirements.txt
       - pip install -r requirements-dev.txt
-      - cd $CODEBUILD_SRC_DIR
-      - pytest -v server/user_service/tests
+      - pytest -v
       # ECR 로그인
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
