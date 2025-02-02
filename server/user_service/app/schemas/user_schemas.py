@@ -138,3 +138,24 @@ class EssayJobPosting(TypedDict):
 class JobPostingLink(TypedDict):
     post_id: str
     company_id: str
+
+class AppliedJobResponse(BaseModel):
+    post_id: str
+    post_name: str
+    company_name: str
+    apply_date: datetime = Field(alias='GSI1SK')
+    deadline_date: Optional[datetime] = None
+    document_result_date: Optional[datetime] = None
+    interview_date: Optional[datetime] = None
+    final_date: Optional[datetime] = None
+    memo: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+class AppliedJobsResponse(BaseModel):
+    applied_jobs: list[AppliedJobResponse]
+
+    class Config:
+        from_attributes = True

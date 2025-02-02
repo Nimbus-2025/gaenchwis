@@ -438,3 +438,44 @@ class UserRepository:
         except ClientError as e:
             logging.error(f"Error getting user interest companies: {str(e)}")
             return []
+        
+    def get_user_applied_jobs(self, user_id: str) -> list[dict]:
+        try:
+            # 1. 유저의 지원 내역 조회
+            response = self.table.query(
+                KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+                ExpressionAttributeValues={
+                    ':pk': f"USER#{user_id}",
+                    ':sk': "APPLY#"
+                }
+            )
+            
+            applies = response.get('Items', [])
+            logging.info(f"Found {len(applies)} applications for user {user_id}")
+
+            # 2. 각 지원 내역에 대한 공고 정보 조회
+            for apply in applies:
+                post_id = apply['post_id']
+                
+                # JobPosting 테이블에서 해당 공고 정보 조회
+                job_posting_response = self.job_posting_table.query(
+                    IndexName="JobPostId",
+                    KeyConditionExpression='post_id = :post_id',
+                    ExpressionAttributeValues={
+                        ':post_id': post_id
+                    }
+                )
+
+                job_postings = job_posting_response.get('Items', [])
+                if job_postings:
+                    job_posting = job_postings[0]
+                    # 회사명 추가
+                    apply['company_name'] = job_posting.get('company_name', '')
+                else:
+                    apply['company_name'] = ''
+
+            return applies
+
+        except ClientError as e:
+            logging.error(f"Error getting user applied jobs: {str(e)}")
+            return []

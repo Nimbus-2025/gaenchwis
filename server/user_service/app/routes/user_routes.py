@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Header, HTTPException, Depends
 from fastapi.responses import JSONResponse
-from typing import Dict
+from typing import Dict, Optional, Union 
 import logging
 from ..repositories.user_repository import UserRepository
-from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkCreateResponse, BookmarkResponse, InterestCompanyCreate, InterestCompanyCreateResponse,InterestCompanyResponse
+from ..schemas.user_schemas import ApplyCreate, ApplyResponse, ApplyUpdate, ApplyDetailResponse, EssayJobPostingResponse, BookmarkCreate, BookmarkCreateResponse, BookmarkResponse, InterestCompanyCreate, InterestCompanyCreateResponse,InterestCompanyResponse, AppliedJobsResponse, AppliedJobResponse
 from ..core.security.token_validator import TokenValidator
 
 logging.basicConfig(
@@ -28,9 +28,9 @@ async def healthcheck():
     return {"status": "healthy"}
 
 def get_user_tokens(
-    access_token: str | None = Header(None, alias="access_token", convert_underscores=False), 
-    id_token: str | None = Header(None, alias="id_token", convert_underscores=False),
-    user_id: str | None = Header(None, alias="user_id", convert_underscores=False)
+    access_token: Union[str, None] = Header(None, alias="access_token", convert_underscores=False),
+    id_token: Union[str, None] = Header(None, alias="id_token", convert_underscores=False),
+    user_id: Union[str, None] = Header(None, alias="user_id", convert_underscores=False)
 ) -> Dict[str, str]:
     logger.info("Validating user tokens...")
     
@@ -392,3 +392,16 @@ def get_user_interest_companies(
             detail=str(e)
         )
 
+@router.get("/applies", response_model=AppliedJobsResponse)
+def get_user_applied_jobs(
+    tokens: Dict = Depends(get_user_tokens)
+):
+    try:
+        applied_jobs = user_repository.get_user_applied_jobs(tokens["user_id"])
+        return AppliedJobsResponse(applied_jobs=[AppliedJobResponse(**job) for job in applied_jobs])
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
