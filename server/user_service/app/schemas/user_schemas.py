@@ -139,12 +139,29 @@ class JobPostingLink(TypedDict):
     post_id: str
     company_id: str
 
+class ApplyResponse(BaseModel):
+    user_id: str
+    post_id: str
+    post_name: str
+    apply_date: datetime = Field(alias='GSI1SK')
+    deadline_date: Optional[str] = None  # datetime 대신 str로 변경
+    document_result_date: Optional[datetime] = None
+    interview_date: Optional[datetime] = None
+    final_date: Optional[datetime] = None
+    memo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
 class AppliedJobResponse(BaseModel):
     post_id: str
     post_name: str
     company_name: str
-    apply_date: datetime = Field(alias='GSI1SK')
-    deadline_date: Optional[datetime] = None
+    formatted_apply_date: str  # 지원일자 추가 
+    deadline_date: Optional[str] = None
     document_result_date: Optional[datetime] = None
     interview_date: Optional[datetime] = None
     final_date: Optional[datetime] = None
