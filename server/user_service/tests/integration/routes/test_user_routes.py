@@ -4,7 +4,7 @@ import datetime
 from app.core.security.token_validator import TokenValidator
 from main import app
 
-client = TestClient(app)
+client = TestClient(app=app)
 
 def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
     # 유효한 테스트 토큰 생성
