@@ -22,7 +22,7 @@ phases:
       # 테스트 실행 단계 추가
       - echo Running tests...
       - cd server/user_service
-      - pip install -r requirements.txt
+      - pip install -r requirements-dev.txt
       - pytest -v
       # ECR 로그인
       - echo Logging in to Amazon ECR...
