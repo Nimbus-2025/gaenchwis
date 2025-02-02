@@ -6,9 +6,16 @@ phases:
       - echo Installing prerequisites...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      # Python 및 pip 설치 추가
+      # Python 및 테스트 의존성 설치
       - python -m pip install --upgrade pip
       - pip install pytest
+      - pip install moto
+      - pip install pytest-env
+      - pip install pytest-asyncio
+      - pip install httpx
+      - pip install fastapi
+      - pip install python-jose[cryptography]
+      - pip install pyjwt
 
   pre_build:
     commands:
