@@ -22,7 +22,7 @@ const LogoutButton = () => {
 
   // 로그아웃 처리
   const handleLogoutConfirm = () => {
-    localStorage.removeItem('user'); // 사용자 정보 제거
+    sessionStorage.removeItem('user'); // 사용자 정보 제거
     navigate('/'); // 홈으로 이동
   };
 

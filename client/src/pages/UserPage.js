@@ -21,13 +21,13 @@ const UserPage = () => {
   const navigate = useNavigate();
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-    const [favoriteCompanies, setFavoriteCompanies] = useState([]);
-    const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
-    const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
-    const [recommendedJobs, setRecommendedJobs] = useState([]); // 추천 공고를 위한 state 추가
+  const [favoriteCompanies, setFavoriteCompanies] = useState([]);
+  const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]); // 지원한 공고 목록 상태 추가
+  const [recommendedJobs, setRecommendedJobs] = useState([]); // 추천 공고를 위한 state 추가
   const [recommendLoading, setRecommendLoading] = useState(true);
-  const isLoggedIn = !!userData;  
-
+  
+  const isLoggedIn = !!sessionStorage.getItem('user');
 
     const fetchRecommendedJobs = async () => {
       try {
@@ -52,39 +52,80 @@ const UserPage = () => {
         const storedUserData = sessionStorage.getItem('user');
         if (storedUserData) {
           setUserData(JSON.parse(storedUserData));
+          fetchUserData();
         }
       } catch (error) {
         console.error('Error parsing user data from localStorage:', error);
       }
     }, []);
   
-    useEffect(() => {
-      const fetchBookmarks = async () => {
+    const fetchUserData = async () => {
         try {
-          const token = sessionStorage.getItem('token');
-          const userData = sessionStorage.getItem('user');
-          
-          if (!token || !userData) return;
-  
-          const response = await Api(
-            `${Config.server}:8005/api/v1/bookmark/user`,
-            'GET',
-            null,
-            {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            }
-          );
-  
-          const bookmarks = await response.json();
-          setBookmarkedJobs(bookmarks.map(bookmark => bookmark.post_id));
-        } catch (error) {
-          console.error('북마크 목록 가져오기 실패:', error);
+          const userData = JSON.parse(sessionStorage.getItem('user'));
+        
+        if (!userData) {
+          console.log('로그인이 필요합니다.');
+          return;
         }
-      };
-  
-      fetchBookmarks();
-    }, []); // 컴포넌트 마운트 시 한 번만 실행
+
+        const bookmarkResponse = await Api(
+          `${Config.server}:8005/api/v1/bookmarks`,
+          'GET',
+          null,
+          {
+            'Content-Type': 'application/json',
+          }
+        );
+
+        const favoriteResponse = await Api(
+          `${Config.server}:8005/api/v1/interest-companies`,
+          'GET',
+          null,
+          {
+            'Content-Type': 'application/json',
+          }
+        );
+
+        console.log('북마크 응답:', bookmarkResponse);
+        console.log('관심기업 응답:', favoriteResponse);
+        
+        // bookmarkResponse.bookmarks 배열에서 post_id만 추출
+        if (bookmarkResponse && bookmarkResponse.bookmarks) {
+          const bookmarkIds = bookmarkResponse.bookmarks.map(bookmark => bookmark.post_id);
+          setBookmarkedJobs(bookmarkIds);
+          console.log('설정된 북마크 ID들:', bookmarkIds); 
+        }
+
+        // 관심기업 데이터 변환
+        if (favoriteResponse && favoriteResponse.companies) {
+          const allJobPostings = favoriteResponse.companies.flatMap(company => {
+            return (company.job_postings || []).map(job => ({
+              ...job,
+              post_name: job.title,
+              company_name: company.company_name,
+              company_id: company.company_id,
+              PK: `COMPANY#${company.company_id}`,
+              SK: `JOB#${job.post_id}`,
+              deadline: job.deadline,
+              tags: job.tags || []
+            }));
+          });
+
+          // company_id로 설정하도록 수정
+          const companyIds = favoriteResponse.companies.map(company => company.company_id);
+          setFavoriteCompanies(companyIds);
+          console.log('설정된 관심기업 ID들:', companyIds);
+        }
+
+      } catch (error) {
+        console.error('사용자 데이터 가져오기 실패:', error);
+      }
+    };
+
+      useEffect(() => {
+        fetchUserData();
+      }, []); // 컴포넌트 마운트 시 한 번만 실행
+    
     
     const toggleFavorite = (company) => {
       setFavoriteCompanies((prev) => 

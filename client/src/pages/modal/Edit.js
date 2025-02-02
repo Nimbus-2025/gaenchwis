@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Modal.css'; // 스타일을 위한 CSS 파일
 
-const Modal = ({ isOpen, onClose, onSave, name, email, phone }) => {
+const Edit = ({ isOpen, onClose, onSave, name, email, phone}) => {
     const [editphone, setEditPhone]=useState(phone);
     const [editemail, setEditEmail]=useState(email);
     const [editname, setEditName]=useState(name);
@@ -9,8 +9,8 @@ const Modal = ({ isOpen, onClose, onSave, name, email, phone }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
+        <div className="edit-modal-overlay">
+            <div className="edit-modal-content">
                 <h2>프로필 수정</h2>
                 <label>
                     이름:
@@ -36,14 +36,16 @@ const Modal = ({ isOpen, onClose, onSave, name, email, phone }) => {
                         onChange={(e) => setEditEmail(e.target.value)}
                     />
                 </label>
-                <button onClick={()=>{
-                    onSave(editname,editemail,editphone);
-                    onClose();
-                }}>저장</button>
-                <button onClick={onClose}>닫기</button>
+                <div className="edit-modal-buttons">
+                    <button onClick={()=>{
+                        onSave(editname,editemail,editphone);
+                        onClose();
+                    }}>저장</button>
+                    <button onClick={onClose}>닫기</button>
+                </div>
             </div>
         </div>
     );
 };
 
-export default Modal;
+export default Edit;
