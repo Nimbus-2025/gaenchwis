@@ -23,6 +23,7 @@ const MyPage1 = ({bookmarkedJobs}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   
+  
   useEffect(() => {
     const storedUserData = sessionStorage.getItem('user');
     if (storedUserData) {

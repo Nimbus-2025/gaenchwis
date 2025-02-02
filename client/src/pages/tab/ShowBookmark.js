@@ -3,7 +3,8 @@ import JobCard from '../../component/JobCard';
 import Config from '../../api/Config';
 import Api from '../../api/api';
 import './ShowBookmark.css';
-
+import starIcon from '../../images/star.png'; // 이미지 import
+import heartIcon from '../../images/heart.png';
 const ShowBookmark = () => {
   const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
   const [interestedJobs, setInterestedJobs] = useState([]); // 관심기업 공고
@@ -153,7 +154,10 @@ const ShowBookmark = () => {
     <div className="bookmark-interest-container">
       <div className="section">
         <div className="section-header">
-          <h2 className="title">북마크 공고</h2>
+        <div className="title-with-icon">
+        <h2 className="bookmark-title">북마크 공고</h2>
+        <img src={starIcon} alt="star" className="star-icon" />
+        </div>
           <span className="bookmark-count">총 {bookmarkedJobs.length}개</span>
         </div>
         
@@ -188,11 +192,14 @@ const ShowBookmark = () => {
       </div>
       <div className="section">
         <div className="section-header">
-          <h2 className="title">관심기업 공고</h2>
-          <span className="bookmark-count">총 {interestedJobs.length}개</span>
+        <div className="title-with-icon">
+          <h2 className="bookmark-title">관심기업 공고</h2>
+          <img src={heartIcon} alt="heart" className="heart-icon" />
+          </div>
+          <span className="bookmark-count">총 {jobs.length}개</span>
         </div>
         
-        <div className="bookmark-box">
+        <div className="company-box">
           {loading.interested ? (
             <div className="loading">
               <div className="loading-spinner"></div>

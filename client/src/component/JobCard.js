@@ -125,6 +125,53 @@ const JobCard = ({
     return companyId && favoriteCompanies.includes(companyId);
   };
 
+
+
+
+  const handleApplyToggle = async () => {
+    try {
+      const userData = JSON.parse(sessionStorage.getItem('user'));
+    
+      if (!userData) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
+      }
+
+      const isApplied = appliedJobs.includes(job.post_id);
+      
+      if (isApplied) {
+        // 지원 취소
+        await Api(
+          `${Config.server}:8005/api/v1/apply/${job.post_id}`,
+          'DELETE'
+        );
+      } else {
+        // 지원 추가
+        await Api(
+          `${Config.server}:8005/api/v1/apply`,
+          'POST',
+          {
+            post_id: job.post_id,
+            company_id: job.company_id,
+            company_name: job.company_name,
+            post_name: job.post_name,
+            post_url: job.post_url,
+            tags: job.tags || [],
+            is_closed: job.is_closed || null,
+          }
+        );
+      }
+
+      // 부모 컴포넌트에 상태 변경 알림
+      if (onToggleApplied) {
+        onToggleApplied(job.post_id);
+      }
+    } catch (error) {
+      console.error('지원 처리 중 에러:', error);
+      alert(error.message || '지원 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="job-card">
       <div className="job-header">
@@ -167,7 +214,7 @@ const JobCard = ({
             />
             <FontAwesomeIcon
               icon={solidCheck}
-              onClick={() => onToggleApplied(job.post_id)}
+              onClick={handleApplyToggle}
               style={{
                 cursor: 'pointer',
                 marginLeft: '10px',

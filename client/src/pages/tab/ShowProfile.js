@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import LocationTag from '../modal/LocationTag';
-import Modal from '../modal/Edit';
+import Edit from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
 import Api from '../../api/api';
 import { format } from 'date-fns';
 import EducationTag from '../modal/EducationTag';
 import PositionTag from '../modal/PositionTag';
+import calendarIcon from '../../images/calendar.png';
+import motivationIcon from '../../images/motivation.png';
 
 
 
@@ -29,6 +31,8 @@ const ShowProfile = ({ userData }) => {
   const [allEducationTags, setAllEducationTags] = useState([]);
   const [educationTags, setEducationTags] = useState([]);
   const [isPositionTagModalOpen, setIsPositionTagModalOpen] = useState(false);
+  const [dailyQuote, setDailyQuote] = useState(null);
+  
 
   const tagOrder = {
     '대학교(4년)': 1,
@@ -59,7 +63,48 @@ const ShowProfile = ({ userData }) => {
     fetchEducationTags();
   }, []);
 
-  
+  const motivationalQuotes = [
+    {
+      quote: "성공은 매일 반복한 작은 노력들의 합이다.",
+      author: "로버트 콜리어"
+    },
+    {
+      quote: "당신의 직업을 사랑하라. 그러면 평생 일하지 않아도 된다.",
+      author: "공자"
+    },
+    {
+      quote: "기회는 준비된 자의 것이다.",
+      author: "파스퇴르"
+    },
+    {
+      quote: "오늘 할 수 있는 일을 내일로 미루지 마라.",
+      author: "벤자민 프랭클린"
+    },
+    {
+      quote: "꿈을 이루고자 하는 용기만 있다면 모든 꿈을 이룰 수 있다.",
+      author: "월트 디즈니"
+    },
+    {
+      quote: "나는 실패한 적이 없다. 그저 작동하지 않는 10,000가지 방법을 발견했을 뿐이다.",
+      author: "토마스 에디슨"
+    },
+    {
+      quote: "당신이 포기할 때, 그때가 바로 게임이 끝나는 때다.",
+      author: "스튜어트 피어스"
+    },
+    {
+      quote: "성공의 비결은 단 한 가지, 잘할 수 있는 일에 광적으로 집중하는 것이다.",
+      author: "톰 모나건"
+    },
+    {
+      quote: "열정을 잃지 않고 실패에서 실패로 걸어가는 것이 성공이다.",
+      author: "윈스턴 처칠"
+    },
+    {
+      quote: "당신의 미래는 당신이 지금 무엇을 하고 있느냐에 달려 있다.",
+      author: "마하트마 간디"
+    }
+  ];
 
   useEffect(() => {
     fetchUserLocationTags();
@@ -130,14 +175,13 @@ const ShowProfile = ({ userData }) => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
-        console.log('교육 태그 원본 데이터:', data);
+      
         
         if (data.tags && Array.isArray(data.tags)) {
           const tagNames = data.tags.map(tag => tag.tag_name);
-          console.log('변환된 교육 태그:', tagNames);
+      
           setEducationTags(prev => {
-            console.log('이전 교육 태그:', prev);
-            console.log('새로운 교육 태그:', tagNames);
+    
             return tagNames;
           });
         }
@@ -196,7 +240,7 @@ const ShowProfile = ({ userData }) => {
         }
 
         const data = await response.json();
-        console.log('불러온 직무 태그:', data);
+     
         
         if (data.tags && Array.isArray(data.tags)) {
           const tagNames = data.tags.map(tag => tag.tag_name);
@@ -305,7 +349,7 @@ const ShowProfile = ({ userData }) => {
       }));
   
       // fetch를 사용한 API 호출
-      const response = await fetch(`http://localhost:8005/api/v1/user/tags/location`, {
+      const response = await fetch(`http://localhost:8003/api/v1/user/tags/location`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -324,13 +368,12 @@ const ShowProfile = ({ userData }) => {
       }
   
       const data = await response.json();
-      console.log('태그 저장 응답:', data);
-  
+    
       // 상태 업데이트
       setSelectedLocations(selectedTags);
       setIsModalOpen(false);
     } catch (error) {
-      console.error('태그 저장 중 에러:', error);
+
       alert('태그 저장에 실패했습니다.');
     }
   };
@@ -349,7 +392,7 @@ const handleEducationTagApply = async (selectedTags) => {
     }));
 
     // fetch를 사용한 API 호출
-    const response = await fetch(`http://localhost:8005/api/v1/user/tags/education`, {
+    const response = await fetch(`http://localhost:8003/api/v1/user/tags/education`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -379,6 +422,11 @@ const handleEducationTagApply = async (selectedTags) => {
   }
 };
   
+useEffect(() => {
+  // 랜덤 명언 선택
+  const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+  setDailyQuote(motivationalQuotes[randomIndex]);
+}, []); // 컴포넌트 마운트 시 한 번만 실행
 
   return (
     <div>
@@ -421,22 +469,35 @@ const handleEducationTagApply = async (selectedTags) => {
       </div>
 
       <div className="profile-info">
+      <div className="schedule-container">
+      {/* 명언 표시 섹션 추가 */}
+      {dailyQuote && (
+        <div className="daily-motivation">
+          <div className="motivation-header">
+          <h4>오늘의 동기부여 메시지</h4>
+          <img src={motivationIcon} alt="motivation" className="motivation-icon" />
+          </div>
+          <p className="quote">"{dailyQuote.quote}"</p>
+          <p className="author">- {dailyQuote.author}</p>
+        </div>
+      )}
+  
       <div className="today-schedule">
-    <h4>오늘의 일정입니다</h4>
-    <p className="today-date">{format(new Date(), 'yyyy년 MM월 dd일')}</p>
-    </div>
-    <div className="today-schedule">
-   
-    <h4>다가오는 일정</h4>
-    
-    </div>
-     
+      <div className="schedule-header">
+      <p className="today-date">
+      {format(new Date(), 'yyyy년 MM월 dd일')}  오늘의 일정입니다.
+    </p>
+    <img src={calendarIcon} alt="calendar" className="calendar-icon" />
     </div>
     </div>
+    </div>
+    </div>
+    </div>
+  
       <div>
-      <h4>My tag</h4>
       
         <div className="info-box-container">
+        <h4>My tag</h4>
         
         <div className="info-box-row">
           <div className="info-box">
@@ -517,7 +578,7 @@ const handleEducationTagApply = async (selectedTags) => {
         selectedTags={selectedLocations}
         onApply={handleApplyLocations}  // 수정된 핸들러 사용
       />
-       <Modal 
+       <Edit
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
                 onSave={handleSave}

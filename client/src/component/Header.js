@@ -79,9 +79,9 @@ const Header = ({ userData, onSearch }) => {
         </button>
         <button 
         className="chrome-button"
-        onClick={() => window.open('https://chrome.google.com/webstore/category/extensions', '_blank')}
+        onClick={() => window.open('https://chromewebstore.google.com/detail/gaenchwis/lomllodaddlcklkmdhoidmldhbmoickc', '_blank')}
+          data-tooltip="크롬 익스텐션"
         >
-      크롬
     </button>
       </form>
 
