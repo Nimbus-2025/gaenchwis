@@ -7,6 +7,14 @@ from main import app
 client = TestClient(app=app)
 
 def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
+    # 테스트 데이터 추가
+    table = mock_dynamodb.Table('job_postings')
+    table.put_item(Item={
+    'PK': 'JOB#test_post',
+    'SK': 'JOB#test_post',
+    'post_id': 'test_post',
+    'name': 'Test Position'
+    })
     # 유효한 테스트 토큰 생성
     token_headers = {
         "kid": "test_key_id",

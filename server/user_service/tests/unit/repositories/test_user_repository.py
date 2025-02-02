@@ -3,6 +3,14 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.user_schemas import ApplyCreate
 
 def test_create_apply(mock_dynamodb):
+    # 테스트 데이터 추가 
+    table = mock_dynamodb.Table('job_postings')
+    table.put_item(Item={
+    'PK': 'JOB#test_post',
+    'SK': 'JOB#test_post',
+    'post_id': 'test_post',
+    'name': 'Test Position'
+    })
     repository = UserRepository()
     apply_data = ApplyCreate(
         post_id="test_post",
