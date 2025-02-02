@@ -14,8 +14,14 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 테스트 의존성 추가
+RUN pip install pytest
+
 # 애플리케이션 코드 복사
 COPY . .
+
+# 테스트 실행 (선택사항)
+# RUN pytest -v
 
 # 8000번 포트 노출
 EXPOSE 8005

@@ -6,13 +6,20 @@ phases:
       - echo Installing prerequisites...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      # Python 및 pip 설치 추가
+      - python -m pip install --upgrade pip
+      - pip install pytest
 
   pre_build:
     commands:
+      # 테스트 실행 단계 추가
+      - echo Running tests...
+      - cd server/user_service
+      - pip install -r requirements.txt
+      - pytest -v
       # ECR 로그인
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      # 환경변수 설정
       - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/gaenchwis/user-service
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
