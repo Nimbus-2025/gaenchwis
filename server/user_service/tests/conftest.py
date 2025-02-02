@@ -174,7 +174,21 @@ def mock_dynamodb():
             ],
             AttributeDefinitions=[
                 {'AttributeName': 'PK', 'AttributeType': 'S'},
-                {'AttributeName': 'SK', 'AttributeType': 'S'}
+                {'AttributeName': 'SK', 'AttributeType': 'S'},
+                {'AttributeName': 'post_id', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'JobPostId',
+                    'KeySchema': [
+                        {'AttributeName': 'post_id', 'KeyType': 'HASH'},
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 1,
+                        'WriteCapacityUnits': 1
+                    }
+                }
             ],
             ProvisionedThroughput={
                 'ReadCapacityUnits': 1,
