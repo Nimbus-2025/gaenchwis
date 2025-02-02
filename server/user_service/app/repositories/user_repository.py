@@ -36,27 +36,47 @@ class UserRepository:
             raise
 
     def create_apply(self, user_id: str, apply_data: ApplyCreate) -> dict:
-        now = datetime.utcnow().isoformat()
+        try:
+            now = datetime.utcnow().isoformat()
             
-        item = {
-            'PK': f"USER#{user_id}",
-            'SK': f"APPLY#{apply_data.post_id}",
-            'GSI1PK': f"POST#{apply_data.post_id}",
-            'GSI1SK': now,                          
-            'user_id': user_id,
-            'post_id': apply_data.post_id,
-            'post_name': apply_data.post_name,
-            'deadline_date': None,
-            'document_result_date': None,
-            'interview_date': None,
-            'final_date': None,
-            'memo': None,
-            'created_at': now,
-            'updated_at': now
-        }
+            # 1. job posting 정보 조회하여 deadline 가져오기
+            job_posting_response = self.job_posting_table.query(
+                IndexName="JobPostId",
+                KeyConditionExpression='post_id = :post_id',
+                ExpressionAttributeValues={
+                    ':post_id': apply_data.post_id
+                }
+            )
             
-        self.table.put_item(Item=item)
-        return item
+            deadline_date = None
+            if job_posting_response.get('Items'):
+                job_posting = job_posting_response['Items'][0]
+                deadline_date = job_posting.get('deadline')  # 원본 문자열 그대로 저장
+                
+            # 2. Apply 아이템 생성
+            item = {
+                'PK': f"USER#{user_id}",
+                'SK': f"APPLY#{apply_data.post_id}",
+                'GSI1PK': f"POST#{apply_data.post_id}",
+                'GSI1SK': now,
+                'user_id': user_id,
+                'post_id': apply_data.post_id,
+                'post_name': apply_data.post_name,
+                'deadline_date': deadline_date,  # 문자열 그대로 저장
+                'document_result_date': None,
+                'interview_date': None,
+                'final_date': None,
+                'memo': None,
+                'created_at': now,
+                'updated_at': now
+            }
+            
+            self.table.put_item(Item=item)
+            return item
+            
+        except Exception as e:
+            logging.error(f"Error creating apply: {str(e)}")
+            raise
         
     def get_apply(self, user_id: str, post_id: str) -> Optional[dict]:
         response = self.table.get_item(
@@ -437,4 +457,54 @@ class UserRepository:
 
         except ClientError as e:
             logging.error(f"Error getting user interest companies: {str(e)}")
+            return []
+        
+    def get_user_applied_jobs(self, user_id: str) -> list[dict]:
+        try:
+            # 1. 유저의 지원 내역 조회 - 지원일자 순으로 정렬
+            response = self.table.query(
+                KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+                ExpressionAttributeValues={
+                    ':pk': f"USER#{user_id}",
+                    ':sk': "APPLY#"
+                },
+                ScanIndexForward=False  # 최신 지원 순으로 정렬
+            )
+            
+            applies = response.get('Items', [])
+            logging.info(f"Found {len(applies)} applications for user {user_id}")
+
+            # 2. 각 지원 내역에 대한 공고 정보 조회
+            for apply in applies:
+                post_id = apply['post_id']
+                
+                # JobPosting 테이블에서 해당 공고 정보 조회
+                job_posting_response = self.job_posting_table.query(
+                    IndexName="JobPostId",
+                    KeyConditionExpression='post_id = :post_id',
+                    ExpressionAttributeValues={
+                        ':post_id': post_id
+                    }
+                )
+
+                job_postings = job_posting_response.get('Items', [])
+                if job_postings:
+                    job_posting = job_postings[0]
+                    # 회사명 추가
+                    apply['company_name'] = job_posting.get('company_name', '')
+                else:
+                    apply['company_name'] = ''
+
+                # 3. 지원일자 가공
+                apply_date = apply.get('GSI1SK')
+                if apply_date:
+                    # ISO 형식의 날짜를 datetime으로 파싱
+                    apply_datetime = datetime.fromisoformat(apply_date)
+                    # YYYY-MM-DD 형식으로 변환
+                    apply['formatted_apply_date'] = apply_datetime.strftime('%Y-%m-%d')
+
+            return applies
+
+        except ClientError as e:
+            logging.error(f"Error getting user applied jobs: {str(e)}")
             return []
