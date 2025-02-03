@@ -7,7 +7,7 @@ dynamodb = boto3.resource('dynamodb')
 TABLE_NAME = "users"
 table = dynamodb.Table(TABLE_NAME)
 
-def user_load(event, context):
+def user_save(event, context):
     print(f"Event received: {event}")
 
     header = {
@@ -25,9 +25,9 @@ def user_load(event, context):
         body = json.loads(event['body'])
 
         userid = head.get('user_id')
-        user_name = body.get('user_name')
-        user_email = body.get('user_email')
-        user_phone = body.get('user_phone')
+        user_name = body.get('name')
+        user_email = body.get('email')
+        user_phone = body.get('phone')
 
         if not userid or not (user_name or user_email or user_phone):
             return {
@@ -66,7 +66,7 @@ def user_load(event, context):
 
     try:
         table.update_item(
-            Key={"PK": userid},
+            Key={"PK": "USER#"+userid},
             UpdateExpression=update_expression,
             ExpressionAttributeNames=expression_attribute_names,
             ExpressionAttributeValues=expression_attribute_values,

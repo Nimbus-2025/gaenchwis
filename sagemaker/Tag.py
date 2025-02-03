@@ -92,8 +92,11 @@ def get_tags_json():
     
     if s3_file_exists(bucket_name, "tags.json"):
         s3.download_file(bucket_name, "tags.json", "tags.json")
-        with open("tags.json", 'r', encoding="utf-8") as json_file:
-            return json.load(json_file)
+        try:
+            with open("tags.json", 'r', encoding="utf-8") as json_file:
+                return json.load(json_file)
+        except:
+            return tags_json_init()
     else:
         print("Tag Json does not exist.")
         return tags_json_init()

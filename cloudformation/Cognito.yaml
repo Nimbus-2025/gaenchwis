@@ -38,7 +38,7 @@ Resources:
       - ALLOW_REFRESH_TOKEN_AUTH
       AllowedOAuthFlowsUserPoolClient: true
       CallbackURLs:
-      - https://llpcplgopabccjbnnnmjgdmbbhikdofk.chromiumapp.org
+      - https://lomllodaddlcklkmdhoidmldhbmoickc.chromiumapp.org
       - https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/idpresponse
       - https://gaenchwis.click/callback
       - http://localhost:3000/callback

@@ -49,22 +49,34 @@ def Recommendation(user_id):
     s3.download_file(bucket_name, "location_model.pth", "location_model.pth")
     s3.download_file(bucket_name, "education_model.pth", "education_model.pth")
     s3.download_file(bucket_name, "skill_model.pth", "skill_model.pth")
+    
+    try:
+        checkpoint = torch.load("position_model.pth")
+        model_state = position_model.state_dict()
+        position_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    except:
+        pass
 
-    checkpoint = torch.load("position_model.pth")
-    model_state = position_model.state_dict()
-    position_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    try:
+        checkpoint = torch.load("location_model.pth")
+        model_state = location_model.state_dict()
+        location_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    except:
+        pass
 
-    checkpoint = torch.load("location_model.pth")
-    model_state = location_model.state_dict()
-    location_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    try:
+        checkpoint = torch.load("education_model.pth")
+        model_state = education_model.state_dict()
+        education_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    except:
+        pass
 
-    checkpoint = torch.load("education_model.pth")
-    model_state = education_model.state_dict()
-    education_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
-
-    checkpoint = torch.load("skill_model.pth")
-    model_state = skill_model.state_dict()
-    skill_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    try:
+        checkpoint = torch.load("skill_model.pth")
+        model_state = skill_model.state_dict()
+        skill_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+    except:
+        pass
 
     position_model.eval()
     location_model.eval()
