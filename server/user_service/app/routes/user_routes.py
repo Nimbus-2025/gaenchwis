@@ -392,7 +392,7 @@ def get_user_interest_companies(
             detail=str(e)
         )
 
-@router.get("/applies", response_model=AppliedJobsResponse)
+@router.get("/applies")
 def get_user_applied_jobs(
     tokens: Dict = Depends(get_user_tokens)
 ):

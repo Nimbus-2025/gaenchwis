@@ -290,6 +290,7 @@ class UserRepository:
                 job_posting_items = scan_response.get('Items', [])
                 if job_posting_items:
                     job_posting = job_posting_items[0]
+                    bookmark['company_id'] = job_posting.get('PK').split("#")[1]
                     bookmark['company_name'] = job_posting.get('company_name', '')
                     bookmark['post_url'] = job_posting.get('post_url', '')
                 else:
@@ -491,12 +492,43 @@ class UserRepository:
                 if job_postings:
                     job_posting = job_postings[0]
                     # 회사명 추가
+                    apply['company_id'] = job_posting.get('PK').split("#")[1]
+                    apply['post_url'] = job_posting.get('post_url', '')
                     apply['company_name'] = job_posting.get('company_name', '')
                 else:
                     apply['company_name'] = ''
 
                 # 3. 지원일자 가공
                 apply_date = apply.get('GSI1SK')
+                apply['tags']=[]
+                job_tags_response = self.job_tags_table.query(
+                    KeyConditionExpression='PK = :pk',
+                    ExpressionAttributeValues={
+                        ':pk': f"JOB#{post_id}"
+                    }
+                )
+
+                job_tags = job_tags_response.get('Items', [])
+
+                # 2-3. 태그 정보 처리
+                for job_tag in job_tags:
+                    tag_id = job_tag.get('tag_id')
+                    if tag_id:
+                        # 태그 정보 조회할 때 SK 부분을 제외하고 PK로만 조회
+                        tag_response = self.tags_table.query(
+                            KeyConditionExpression='PK = :pk',
+                            ExpressionAttributeValues={
+                                ':pk': f"TAG#{tag_id}"
+                            }
+                        )
+                        
+                        # 디버깅을 위한 로그 추가
+                        logging.info(f"Found tag for tag_id {tag_id}: {tag_response.get('Items')}")
+
+                        tags = tag_response.get('Items', [])
+                        if tags:
+                            apply['tags'].append(tags[0].get('tag_name', ''))
+
                 if apply_date:
                     # ISO 형식의 날짜를 datetime으로 파싱
                     apply_datetime = datetime.fromisoformat(apply_date)
