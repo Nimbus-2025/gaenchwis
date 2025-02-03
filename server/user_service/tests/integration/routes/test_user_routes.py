@@ -16,7 +16,7 @@ def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
         'post_name': 'Test Position',
         'company_id': 'test_company',  # 추가
         'post_url': 'http://test.com',  # 추가
-        'tags': []  # 추가
+        'tags': [ 'abc' ]  # 추가
     })
     # 유효한 테스트 토큰 생성
     token_headers = {
