@@ -96,7 +96,7 @@ const UserPage = () => {
         );
         console.log('지원한 공고 데이터:', appliedResponse); // 데이터 확인용 로그
 
-        if (appliedResponse && appliedResponse.applied_jobs) {
+        if (appliedResponse && Array.isArray(appliedResponse)) {
           const appliedIds = appliedResponse.map(apply => apply.post_id);
           setAppliedJobs(appliedIds);
           console.log('설정된 지원 공고 ID들:', appliedIds);
