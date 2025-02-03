@@ -128,62 +128,12 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
         job_tags_table = dynamodb.Table('job_tags')
         tags_table = dynamodb.Table('tags')
 
-        # Step 1: 텍스트 검색 (공고 제목 및 기업명)
-        filter_expressions = []
-        expression_attribute_values = {}
-
-        if query:
-            filter_expressions.append('(contains(#company, :query) or contains(#post, :query))')
-            expression_attribute_values[':query'] = query.lower()
-
-            filter_expression = ' and '.join(filter_expressions) if filter_expressions else None
-
-            response = job_postings_table.scan(
-                FilterExpression=filter_expression,
-                ExpressionAttributeNames={
-                    '#company': 'company_name',
-                    '#post': 'post_name'
-                },
-                ExpressionAttributeValues=expression_attribute_values if filter_expressions else None
-            )
-
-            items = response.get('Items', [])
-            matching_job_ids = set(item['SK'] for item in items)
-
-            # 태그명 검색 추가
-            tag_response = tags_table.scan(
-                FilterExpression='contains(tag_name, :query)',
-                ExpressionAttributeValues={
-                    ':query': query.lower()
-                }
-            )
-            
-            print(f"Tag response for query '{query}': {tag_response['Items']}")
-
-            for tag_item in tag_response['Items']:
-                tag_pk = tag_item['PK']
-                # print(f"Found tag PK: {tag_pk} for query: {query}")
-
-                # 해당 태그에 연결된 job_id를 찾기
-                job_tags_response = job_tags_table.query(
-                    IndexName="JobTagInverseIndex",
-                    KeyConditionExpression='GSI1PK = :gsi1pk',
-                    ExpressionAttributeValues={
-                        ':gsi1pk': tag_pk
-                    }
-                )
-                print(f"Job tags response for tag PK '{tag_pk}': {job_tags_response['Items']}")
-
-                # 태그로 찾은 job_id 출력
-                for job_tag_item in job_tags_response['Items']:
-                    job_id = job_tag_item['PK']
-                    print(f"Found job_id: {job_id} for tag PK: {tag_pk}")
-                    matching_job_ids.add(job_id)
-
-        # Step 2: 선택한 카테고리 필터링 적용
+        matching_job_ids = set()
+        
+        # Step 1: 먼저 카테고리 필터링 수행
         if selected_categories:
-            filtered_job_ids = set(matching_job_ids)
-
+            category_job_ids = None
+            
             for category, values in selected_categories.items():
                 category_sk = {
                     '직무': 'TAG#position',
@@ -195,12 +145,13 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
                 if not category_sk:
                     continue
 
-                category_filtered_job_ids = set()
+                current_category_ids = set()
 
-                if '신입' in values:
+                if category == '경력' and '신입' in values:
                     values.append('경력무관')
 
                 for value in values:
+                    # 해당 카테고리의 태그 찾기
                     tag_response = tags_table.scan(
                         FilterExpression='SK = :sk AND contains(tag_name, :value)',
                         ExpressionAttributeValues={
@@ -211,9 +162,6 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
 
                     for tag_item in tag_response['Items']:
                         tag_pk = tag_item['PK']
-                        
-
-                        # 해당 태그에 연결된 job_id를 찾기
                         job_tags_response = job_tags_table.query(
                             IndexName="JobTagInverseIndex",
                             KeyConditionExpression='GSI1PK = :gsi1pk',
@@ -221,32 +169,81 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
                                 ':gsi1pk': tag_pk
                             }
                         )
-
-                        category_filtered_job_ids.update(
+                        current_category_ids.update(
                             job_tag_item['PK'] for job_tag_item in job_tags_response['Items']
                         )
 
-                # 각 카테고리의 필터링 결과를 교차
-                filtered_job_ids.intersection_update(category_filtered_job_ids)
-        else:
-            # 선택된 카테고리가 없을 때 모든 job_id를 포함
-            filtered_job_ids = matching_job_ids
-            print(f"Filtered job IDs (no category selected): {filtered_job_ids}")
-            print(f"Total items: {len(items)}")
-        
-        # Step 3: 최종 결과 페이징 처리 
-        items = job_postings_table.scan().get('Items', [])
-        final_items = [item for item in items if item['SK'] in filtered_job_ids]
+                if category_job_ids is None:
+                    category_job_ids = current_category_ids
+                else:
+                    category_job_ids.intersection_update(current_category_ids)
 
-        print("Final items after filtering:")
-        for item in final_items:    
-            print(item)  # 각 item의 전체 내용을 출력
+            matching_job_ids = category_job_ids or set()
 
-        total_items = len(final_items)
+        # Step 2: 텍스트 검색 수행
+        if query:
+            text_search_ids = set()
+            
+            # 공고 제목 및 기업명 검색
+            response = job_postings_table.scan(
+                FilterExpression='contains(#company, :query) or contains(#post, :query)',
+                ExpressionAttributeNames={
+                    '#company': 'company_name',
+                    '#post': 'post_name'
+                },
+                ExpressionAttributeValues={
+                    ':query': query.lower()
+                }
+            )
+            text_search_ids.update(item['SK'] for item in response.get('Items', []))
+
+            # 태그명 검색
+            tag_response = tags_table.scan(
+                FilterExpression='contains(tag_name, :query)',
+                ExpressionAttributeValues={
+                    ':query': query.lower()
+                }
+            )
+
+            for tag_item in tag_response['Items']:
+                job_tags_response = job_tags_table.query(
+                    IndexName="JobTagInverseIndex",
+                    KeyConditionExpression='GSI1PK = :gsi1pk',
+                    ExpressionAttributeValues={
+                        ':gsi1pk': tag_item['PK']
+                    }
+                )
+                text_search_ids.update(
+                    job_tag_item['PK'] for job_tag_item in job_tags_response['Items']
+                )
+
+            # 카테고리 필터링 결과가 있으면 교차, 없으면 텍스트 검색 결과 사용
+            if matching_job_ids:
+                matching_job_ids.intersection_update(text_search_ids)
+            else:
+                matching_job_ids = text_search_ids
+
+        # 최종 결과 가져오기
+        items = []
+        if matching_job_ids:
+            # 모든 job posting을 가져와서 필터링
+            scan_response = job_postings_table.scan()
+            all_items = scan_response['Items']
+            
+            # matching_job_ids에 있는 SK를 가진 항목만 필터링
+            items = [item for item in all_items if item['SK'] in matching_job_ids]
+
+        # 디버깅을 위한 로깅
+        print(f"Matching job IDs: {matching_job_ids}")
+        print(f"Number of items found: {len(items)}")
+
+        # 페이징 처리
+        total_items = len(items)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
-        paginated_items = final_items[start_idx:end_idx]
+        paginated_items = items[start_idx:end_idx]
 
+        # 태그 정보 추가
         for item in paginated_items:
             job_tags_response = job_tags_table.query(
                 KeyConditionExpression='PK = :job_id',
@@ -256,7 +253,6 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
             )
             job_tags = job_tags_response.get('Items', [])
             item['tags'] = get_tag_names(job_tags, dynamodb)
-            print(f"Tags for job ID {item['SK']}: {item['tags']}")
 
         return {
             'items': paginated_items,
@@ -267,7 +263,6 @@ def get_filtered_jobs(query, page, per_page, selected_categories=None):
     except ClientError as e:
         print(f"Error in get_filtered_jobs: {str(e)}")
         return {'items': [], 'total_items': 0, 'total_pages': 0}
-
 
 
 
@@ -386,21 +381,22 @@ def get_jobs():
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
         
-        # 카테고리 선택값들을 딕셔너리로 받기
-        selected_categories = {
-            '직무': request.args.getlist('직무'),
-            '학력': request.args.getlist('학력'),
-            '지역': request.args.getlist('지역'),
-            '경력': request.args.getlist('경력')
-        }
+        # 카테고리 파라미터 파싱
+        categories = {}
+        for key in ['경력', '직무', '학력', '지역']:
+            value = request.args.get(f'categories[{key}]')
+            if value:
+                categories[key] = [value]
         
-        # 선택된 값이 있는 카테고리만 필터링에 사용
-        selected_categories = {k: v for k, v in selected_categories.items() if v}
+        print(f"Query: {query}")
+        print(f"Categories: {categories}")
         
-        if query or selected_categories:
-            result = get_filtered_jobs(query, page, per_page, selected_categories)
+        if query or categories:
+            result = get_filtered_jobs(query, page, per_page, categories)
         else:
             result = get_all_jobs(page, per_page)
+            
+        print(f"Result: {result}")
         
         return jsonify({
             'items': result['items'],
@@ -410,7 +406,7 @@ def get_jobs():
         })
     except Exception as e:
         print(f"Error in get_jobs: {str(e)}")
-        return jsonify({"error": str(e)}), 50
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/tags/<tag_type>', methods=['GET'])
 def get_tags(tag_type):
