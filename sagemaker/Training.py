@@ -87,25 +87,37 @@ def StartTrain(tags_groups=None):
     skill_model_exists = s3_file_exists(bucket_name, "skill_model.pth")
 
     if position_model_exists:
-        s3.download_file(bucket_name, "position_model.pth", "position_model.pth")
-        checkpoint = torch.load("position_model.pth")
-        model_state = position_model.state_dict()
-        position_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        try:
+            s3.download_file(bucket_name, "position_model.pth", "position_model.pth")
+            checkpoint = torch.load("position_model.pth")
+            model_state = position_model.state_dict()
+            position_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        except:
+            pass
     if location_model_exists:
-        s3.download_file(bucket_name, "location_model.pth", "location_model.pth")
-        checkpoint = torch.load("location_model.pth")
-        model_state = location_model.state_dict()
-        location_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        try:
+            s3.download_file(bucket_name, "location_model.pth", "location_model.pth")
+            checkpoint = torch.load("location_model.pth")
+            model_state = location_model.state_dict()
+            location_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        except:
+            pass
     if education_model_exists:
-        s3.download_file(bucket_name, "education_model.pth", "education_model.pth")
-        checkpoint = torch.load("education_model.pth")
-        model_state = education_model.state_dict()
-        education_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        try:
+            s3.download_file(bucket_name, "education_model.pth", "education_model.pth")
+            checkpoint = torch.load("education_model.pth")
+            model_state = education_model.state_dict()
+            education_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        except:
+            pass
     if skill_model_exists:
-        s3.download_file(bucket_name, "skill_model.pth", "skill_model.pth")
-        checkpoint = torch.load("skill_model.pth")
-        model_state = skill_model.state_dict()
-        skill_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        try:
+            s3.download_file(bucket_name, "skill_model.pth", "skill_model.pth")
+            checkpoint = torch.load("skill_model.pth")
+            model_state = skill_model.state_dict()
+            skill_model.load_state_dict(Layer.ModifyLayer(checkpoint, model_state), strict=False)
+        except:
+            pass
     
     position_model=Train("position", position_train, position_model, lr=0.01)
     location_model=Train("location", location_train, location_model, lr=0.01)
