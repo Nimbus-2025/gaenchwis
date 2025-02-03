@@ -31,8 +31,8 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
     const fetchTags = async () => {
       try {
         const [positionResponse, skillResponse] = await Promise.all([
-          Api(`${Proxy.server}:8003/api/tags/position`, 'GET'),
-          Api(`${Proxy.server}:8003/api/tags/skill`, 'GET'),
+          fetch('http://localhost:8003/api/tags/position'),
+          fetch('http://localhost:8003/api/tags/skill'),
         ]);
 
         const positionData = await positionResponse.json();
