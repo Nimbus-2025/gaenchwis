@@ -209,6 +209,9 @@ def get_user_tags(tag_type):
             "message": f"{tag_type} 태그 조회 실패"
         }), 500
 
+@app.route('/*', methods=['OPTIONS'])
+def preflight():
+    return jsonify({"status": "healthy"}), 200
 # 서버 실행
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8005, debug=True)
+    app.run(host="0.0.0.0", port=8003, debug=True)

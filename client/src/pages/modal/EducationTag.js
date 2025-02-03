@@ -33,14 +33,15 @@ const EducationTag = ({ isOpen, onClose, allEducationTags, selectedTags, onApply
       console.log('tempSelectedTags:', tempSelectedTags);
       console.log('tagsData:', tagsData);
   
-      const response = await Api(
-        `${Config.server}:8005/api/v1/user/tags/education`,
-        'PUT',
-        {
+      const response = await fetch('http://localhost:8005/api/v1/user/tags/education', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           tags: tagsData
-        }
-      );
-  
+        })
+      });
       console.log('태그 업데이트 응답:', response);
       onApply(tempSelectedTags);
       onClose();

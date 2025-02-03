@@ -59,7 +59,7 @@ const Header = ({ userData, onSearch }) => {
           className="search-input"
         />
         <button type="submit" className="header-search-btn">
-          검색
+        
         </button>
         <button
           className="chrome-button"

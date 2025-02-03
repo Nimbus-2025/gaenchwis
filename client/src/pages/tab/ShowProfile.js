@@ -3,6 +3,7 @@ import LocationTag from '../modal/LocationTag';
 import Edit from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
+import Proxy from '../../api/Proxy';
 import Api from '../../api/api';
 import { format } from 'date-fns';
 import EducationTag from '../modal/EducationTag';
@@ -54,8 +55,14 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchEducationTags = async () => {
       try {
-        const data = await Api(`${Config.server}:8003/api/tags/education`, 'GET')
+        const response = await Api(`http://localhost:8003/api/tags/education`, 'GET');
+      
+      if (!response.ok) {
+        throw new Error('교육 태그를 가져오는데 실패했습니다');
+      }
 
+      const data = await response.json();
+      console.log('교육 태그 데이터:', data);
         // 태그 정렬
         const sortedTags = data.sort(
           (a, b) => (tagOrder[a] || 999) - (tagOrder[b] || 999),
