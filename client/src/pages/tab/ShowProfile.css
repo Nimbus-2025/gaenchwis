@@ -84,11 +84,14 @@
 }
 
 .profile-picture {
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    background-color: #ccc; /* 기본 프로필 사진 색상 */
-    margin-right: 20px;
+    background-image: url('../../images/user.png');  /* 이미지 경로 설정 */
+    background-size: cover; 
+    background-repeat: no-repeat;  /* 이미지 반복 없음 */
+    margin-right: 30px;
+    margin-left:20px;
 }
 
 .profile-details p {

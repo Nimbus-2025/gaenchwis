@@ -33,31 +33,48 @@ const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }
       setTempSelectedTags(newTags);
     }
   };
+
+
+
+
   const handleApply = async () => {
     setIsLoading(true);
     try {
-      // 선택된 태그들을 API 요청 형식에 맞게 변환
-      const tagsData = tempSelectedTags.map((tagName, tag, index) => ({
-        tag_id: tag.tag_id,
-        tag_name: tag.tag_name || tag, 
-        tag_type: 'location'
-      }));
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const userId = user?.user_id;
+  
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다');
+      }
+  
+      const tagsData = {
+        tags: tempSelectedTags.map(tag => ({
+          tag_name: tag
+        }))
+      };
       
-      console.log('전송할 태그 데이터:', tagsData);  // 디버깅용
-      // API 호출하여 태그 업데이트
-      const response = await Api(
-        `${Config.server}:8005/api/v1/user/tags/location`,
-        'PUT',
-        {
-          tags: tagsData
-        }
-      );
-
-      console.log('\n=== API 응답 데이터 ===');
-      console.log('응답 전체:', response);
-      console.log('업데이트된 태그들:', response.tags);
-
-      // 성공적으로 저장되면 부모 컴포넌트에 알림
+      console.log('전송할 태그 데이터:', tagsData);
+      console.log('사용자 ID:', userId);
+  
+      // 백엔드 API 엔드포인트에 맞춰서 요청
+      const response = await fetch('http://localhost:8003/api/v1/user/tags/location', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Id': userId
+        },
+        body: JSON.stringify(tagsData),
+        credentials: 'include'
+      });
+      console.log('API 응답:', response);
+  
+      if (!response.ok) {
+        throw new Error('태그 저장에 실패했습니다');
+      }
+  
+      const responseData = await response.json();
+      console.log('서버 응답:', responseData);
+  
       onApply(tempSelectedTags);
       onClose();
     } catch (error) {

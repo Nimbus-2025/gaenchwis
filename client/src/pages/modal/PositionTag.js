@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './PositionTag.css';
-import Proxy from '../../api/Proxy';
 import Api from '../../api/api';
+import Config from '../../api/Config';
 
 const PREDEFINED_CATEGORIES = [
   '개발자',
@@ -31,18 +31,20 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
     const fetchTags = async () => {
       try {
         const [positionResponse, skillResponse] = await Promise.all([
-          fetch('http://localhost:8003/api/tags/position'),
-          fetch('http://localhost:8003/api/tags/skill'),
+          Api(`${Config.server}:8003/api/tags/position`, 'GET'),
+          Api(`${Config.server}:8003/api/tags/skill`, 'GET')
         ]);
+        console.log('Position Response:', positionResponse)
+        console.log('Skill Response:', skillResponse)
 
-        const positionData = await positionResponse.json();
-        const skillData = await skillResponse.json();
+        // const positionData = await positionResponse.json();
+        // const skillData = await skillResponse.json();
 
-        console.log('Position Data:', positionData);
-        console.log('Skill Data:', skillData);
+        // console.log('Position Data:', positionData);
+        // console.log('Skill Data:', skillData);
 
-        setAllPositionTags(positionData);
-        setAllSkillTags(skillData);
+        setAllPositionTags(positionResponse);
+        setAllSkillTags(skillResponse);
       } catch (error) {
         console.error('태그 데이터 가져오기 실패:', error);
       }
