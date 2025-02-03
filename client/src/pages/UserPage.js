@@ -47,6 +47,7 @@ const UserPage = () => {
       }
     }; 
 
+
     useEffect(() => {
       try {
         const storedUserData = sessionStorage.getItem('user');
@@ -85,15 +86,28 @@ const UserPage = () => {
             'Content-Type': 'application/json',
           }
         );
+        const appliedResponse = await Api(
+          `${Config.server}:8005/api/v1/applies`,
+          'GET',
+          null,
+          {
+            'Content-Type': 'application/json',
+          }
+        );
+        console.log('지원한 공고 데이터:', appliedResponse); // 데이터 확인용 로그
 
-        console.log('북마크 응답:', bookmarkResponse);
-        console.log('관심기업 응답:', favoriteResponse);
+        if (appliedResponse && Array.isArray(appliedResponse)) {
+          const appliedIds = appliedResponse.map(apply => apply.post_id);
+          setAppliedJobs(appliedIds);
+          console.log('설정된 지원 공고 ID들:', appliedIds);
+        }
+  
         
         // bookmarkResponse.bookmarks 배열에서 post_id만 추출
         if (bookmarkResponse && bookmarkResponse.bookmarks) {
           const bookmarkIds = bookmarkResponse.bookmarks.map(bookmark => bookmark.post_id);
           setBookmarkedJobs(bookmarkIds);
-          console.log('설정된 북마크 ID들:', bookmarkIds); 
+    
         }
 
         // 관심기업 데이터 변환
@@ -145,17 +159,6 @@ const UserPage = () => {
   };
   
 
-  const handleLoginClick = () => {
-    navigate('/'); // 로그인 페이지로 이동
-  };
-
-  const handleLogoutClick = () => {
-    // 로그아웃 처리
-    sessionStorage.removeItem('user'); // 로컬 스토리지에서 사용자 정보 삭제
-    navigate('/'); // 메인 페이지로 이동
-  };
-
-  
 
   useEffect(() => {
     try {

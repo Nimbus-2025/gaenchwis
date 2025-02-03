@@ -20,6 +20,28 @@ const ShowBookmark = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [jobs, setJobs] = useState([]); // jobs 상태 추가
 
+
+  const fetchAppliedJobs = async () => {
+    try {
+      const response = await Api(
+        `${Config.server}:8005/api/v1/applies`,
+        'GET',
+        null,
+        {
+          'Content-Type': 'application/json',
+        }
+      );
+      
+      if (response && response.applied_jobs) {
+        const appliedIds = response.applied_jobs.map(apply => apply.post_id);
+        setAppliedJobs(appliedIds);
+        console.log('설정된 지원 공고 ID들:', appliedIds);
+      }
+    } catch (error) {
+      console.error('지원한 공고 목록 가져오기 실패:', error);
+      setAppliedJobs([]);
+    }
+  };
   const fetchBookmarks = async () => {
     try {
       setLoading(true);
@@ -31,15 +53,6 @@ const ShowBookmark = () => {
       setError(prev => ({ ...prev, bookmarks: '북마크 목록을 불러오는데 실패했습니다.' }));
     } finally {
       setLoading(false);
-    }
-  };
-  const fetchJobDetails = async (postId) => {
-    try {
-      const response = await Api(`${Config.server}:8003/api/jobs/${postId}`, 'GET');
-      return response;
-    } catch (error) {
-      console.error(`공고 ID ${postId}의 상세 정보 조회 실패:`, error);
-      return null;
     }
   };
 
@@ -147,6 +160,7 @@ const ShowBookmark = () => {
   useEffect(() => {
     fetchFavoriteCompanies();
     fetchBookmarks();
+    fetchAppliedJobs();
   }, []);
 
 
@@ -216,7 +230,7 @@ const ShowBookmark = () => {
                   key={job.post_id}
                   job={job}
                   favoriteCompanies={favoriteCompanies}
-                  bookmarkedJobs={bookmarkedJobs}
+                  bookmarkedJobs={bookmarkedJobs.map(j => j.post_id)}
                   appliedJobs={appliedJobs}
                   onToggleFavorite={handleFavoriteToggle}
                   onToggleBookmark={handleBookmarkToggle}

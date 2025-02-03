@@ -98,6 +98,7 @@ const JobCard = ({
             post_url: job.post_url,
             tags: job.tags || [],
             is_closed: job.is_closed || null,
+            deadline: job.jeadline
           }
         );
       }
@@ -224,9 +225,9 @@ const JobCard = ({
               title={appliedJobs.includes(job.post_id) ? '지원완료' : '지원체크'}
             />
             <div className="job-location-experience">
-              {job.is_closed && (
+              {job.deadline && (
                 <span style={{ marginLeft: '100px', fontWeight: 'lighter' }}>
-                  마감: {job.is_closed}
+                  마감: {job.deadline}
                 </span>
               )}
             </div>
