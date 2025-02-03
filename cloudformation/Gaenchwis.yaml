@@ -1450,7 +1450,7 @@ Resources:
       TargetTrackingConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
-        TargetValue: 70
+        TargetValue: 75
   #ECS ASG LaunchConfiguation
   ECSAutoScalingGroupLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate

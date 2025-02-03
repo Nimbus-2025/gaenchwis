@@ -94,10 +94,11 @@ const UserPage = () => {
             'Content-Type': 'application/json',
           }
         );
-        console.log('지원한 공고 데이터:', appliedResponse); // 데이터 확인용 로그
+        console.log('지원한 공고 데이터:', appliedResponse['applied_jobs']); // 데이터 확인용 로그
 
-        if (appliedResponse && Array.isArray(appliedResponse)) {
-          const appliedIds = appliedResponse.map(apply => apply.post_id);
+        if (appliedResponse && Array.isArray(appliedResponse['applied_jobs'])) {
+          const appliedIds = appliedResponse['applied_jobs'].map(apply => apply.post_id);
+          console.log(appliedIds)
           setAppliedJobs(appliedIds);
           console.log('설정된 지원 공고 ID들:', appliedIds);
         }
@@ -176,8 +177,8 @@ const UserPage = () => {
     const fetchJobs = async (page) => {
       try {
         setLoading(true);
-        const data = await Api(`${Config.server}:8003/api/jobs?page=${page}&per_page=10`, 'GET');
-
+        const data = await Api(`http://localhost:8003/api/jobs?page=${page}&per_page=10`, 'GET');
+        console.log("공고데이터 불러오기"+JSON.stringify(data))
         setJobs(data.items);
         setTotalPages(data.total_pages);
       } catch (error) {
