@@ -13,7 +13,10 @@ def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
     'PK': 'JOB#test_post',
     'SK': 'JOB#test_post',
     'post_id': 'test_post',
-    'name': 'Test Position'
+    'name': 'Test Position',
+    'tags':[],
+    'post_url':'abcde',
+    'company_id':"abcde"
     })
     # 유효한 테스트 토큰 생성
     token_headers = {
