@@ -5,25 +5,26 @@ import SearchResult from './tab/SearchResult';
 import Modal from './modal/Edit';
 import ShowProfile from './tab/ShowProfile';
 import ShowEssay from './tab/ShowEssay';
-import ShowBookmark from './tab/ShowBookmark'; 
+import ShowBookmark from './tab/ShowBookmark';
 import Calendar from '../calendar';
 import './MyPage1.css';
 import LogoutButton from '../component/Logout';
-import Jobposting from './UserPage'
+import Jobposting from './UserPage';
 
-const MyPage1 = ({bookmarkedJobs}) => {
-  const [userData, setUserData] = useState(JSON.parse(sessionStorage.getItem('user')) || {});
+const MyPage1 = ({ bookmarkedJobs }) => {
+  const [userData, setUserData] = useState(
+    JSON.parse(sessionStorage.getItem('user')) || {},
+  );
   const [selectedButton, setSelectedButton] = useState('profile');
   const [content, setContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const [coverLetter, setCoverLetter] = useState('');
-  const [isPopupOpen, setIsPopupOpen] = useState(false); 
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
-  
-  
+
   useEffect(() => {
     const storedUserData = sessionStorage.getItem('user');
     if (storedUserData) {
@@ -34,24 +35,29 @@ const MyPage1 = ({bookmarkedJobs}) => {
         console.error('Error parsing user data from localStorage:', error);
       }
     }
-    
 
     if (!showSearchResults) {
       jobposting();
     }
-  }, []);// content 의존성 제거
+  }, []); // content 의존성 제거
 
-  const onSearch = (searchQuery) => {
+  const onSearch = (searchQuery, selectedCategories) => {
+    // selectedCategories 매개변수 추가
     setSearchText(searchQuery);
-    setSelectedButton('search'); // 검색 시 선택된 버튼 상태 변경
+    setSelectedButton('search');
     setShowSearchResults(true);
-    setContent(<SearchResult searchQuery={searchQuery} />);
+    setContent(
+      <SearchResult
+        searchQuery={searchQuery}
+        selectedCategories={selectedCategories} // SearchResult에 카테고리 전달
+      />,
+    );
   };
 
-const handleSearch = (query) => {
-  setSearchQuery(query);
-  setShowSearchResults(true);
-};
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setShowSearchResults(true);
+  };
 
   const jobposting = () => {
     setSelectedButton('job');
@@ -77,13 +83,13 @@ const handleSearch = (query) => {
       setContent(<ShowProfile userData={userData} onSave={handleSaveClick} />);
     }
 
-  const handleShowBookmarks = () => {
-    if (!userData?.user_id) {
-      setIsPopupOpen(true); // 팝업 표시
-    } else {
-      setContent(<ShowBookmark bookmarkedJobs={bookmarkedJobs} />); // 북마크된 공고 표시
-    }
-  };
+    const handleShowBookmarks = () => {
+      if (!userData?.user_id) {
+        setIsPopupOpen(true); // 팝업 표시
+      } else {
+        setContent(<ShowBookmark bookmarkedJobs={bookmarkedJobs} />); // 북마크된 공고 표시
+      }
+    };
   };
   const showEssay = () => {
     setSelectedButton('essay');
@@ -97,15 +103,14 @@ const handleSearch = (query) => {
     }
   };
   const showBookmark = () => {
-     if (!userData?.email) {
+    if (!userData?.email) {
       setIsPopupOpen(true); // 팝업 표시
     } else {
-    setSelectedButton('bookmark');
-    setContent(<ShowBookmark userData={userData} onSave={handleSaveClick} />);
+      setSelectedButton('bookmark');
+      setContent(<ShowBookmark userData={userData} onSave={handleSaveClick} />);
     }
   };
 
- 
   const showCalendar = () => {
     setSelectedButton('calendar');
     setContent(<Calendar />);
@@ -117,15 +122,13 @@ const handleSearch = (query) => {
 
   return (
     <div>
-      <Header userData={userData}
-        onSearch={onSearch}
-      />
-  
+      <Header userData={userData} onSearch={onSearch} />
+
       <div className="button-logout-container">
         <div className="button-container">
           <button
             className={selectedButton === 'job' ? 'active' : ''}
-            onClick={jobposting} 
+            onClick={jobposting}
           >
             채용공고
           </button>
@@ -140,31 +143,29 @@ const handleSearch = (query) => {
             onClick={showBookmark}
           >
             북마크 / 관심기업
-            </button>
+          </button>
           <button
             className={selectedButton === 'calendar' ? 'active' : ''}
             onClick={showCalendar}
           >
             캘린더
           </button>
-        
-        <button
+
+          <button
             className={selectedButton === 'essay' ? 'active' : ''}
             onClick={showEssay}
           >
             자기소개서
           </button>
-          </div>
-  
+        </div>
+
         <div className="logout-container">
           <LogoutButton />
         </div>
       </div>
 
       <div className="rectangle-container">
-        <div className="rectangle">
-          {content}
-        </div>
+        <div className="rectangle">{content}</div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
@@ -178,7 +179,7 @@ const handleSearch = (query) => {
         </div>
       )}
     </div>
-);
+  );
 };
 
 export default MyPage1;
