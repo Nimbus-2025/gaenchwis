@@ -14,9 +14,6 @@ def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
     'SK': 'JOB#test_post',
     'post_id': 'test_post',
     'name': 'Test Position',
-    'tags':[],
-    'post_url':'abcde',
-    'company_id':"abcde"
     })
     # 유효한 테스트 토큰 생성
     token_headers = {
@@ -52,3 +49,6 @@ def test_create_apply_endpoint(mock_dynamodb, mock_token_validator):
     data = response.json()
     assert data["user_id"] == "test_user"
     assert data["post_id"] == "test_post"
+    assert data["tags"] == []
+    assert data["company_id"] == "abcde"
+    assert data["post_url"] == "abcde"
