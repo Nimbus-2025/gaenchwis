@@ -144,8 +144,6 @@ class ApplyResponse(BaseModel):
     user_id: str
     post_id: str
     post_name: str
-    company_id: str
-    post_url: str
     apply_date: datetime = Field(alias='GSI1SK')
     deadline_date: Optional[str] = None  # datetime 대신 str로 변경
     document_result_date: Optional[datetime] = None
@@ -154,7 +152,6 @@ class ApplyResponse(BaseModel):
     memo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    tags: list[str]
 
     class Config:
         from_attributes = True
@@ -170,6 +167,10 @@ class AppliedJobResponse(BaseModel):
     interview_date: Optional[datetime] = None
     final_date: Optional[datetime] = None
     memo: Optional[str] = None
+    
+    tags: Optional[list[str]]
+    company_id: Optional[str]
+    post_url: Optional[str]
 
     class Config:
         from_attributes = True
