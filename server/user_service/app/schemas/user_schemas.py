@@ -80,6 +80,7 @@ class BookmarkResponse(BaseModel):
     tags: list[str] 
     created_at: datetime
     post_url: str
+    company_id: str
 
     class Config:
         from_attributes = True
@@ -166,6 +167,10 @@ class AppliedJobResponse(BaseModel):
     interview_date: Optional[datetime] = None
     final_date: Optional[datetime] = None
     memo: Optional[str] = None
+    
+    tags: Optional[list[str]]
+    company_id: Optional[str]
+    post_url: Optional[str]
 
     class Config:
         from_attributes = True

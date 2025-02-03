@@ -290,7 +290,7 @@ class UserRepository:
                 job_posting_items = scan_response.get('Items', [])
                 if job_posting_items:
                     job_posting = job_posting_items[0]
-                    bookmark['company_id'] = job_posting.get('PK').split("#")[1]
+                    bookmark['company_id'] = job_posting.get('company_id')
                     bookmark['company_name'] = job_posting.get('company_name', '')
                     bookmark['post_url'] = job_posting.get('post_url', '')
                 else:
