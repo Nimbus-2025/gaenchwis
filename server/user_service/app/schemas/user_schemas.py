@@ -80,6 +80,7 @@ class BookmarkResponse(BaseModel):
     tags: list[str] 
     created_at: datetime
     post_url: str
+    company_id: str
 
     class Config:
         from_attributes = True
@@ -143,6 +144,8 @@ class ApplyResponse(BaseModel):
     user_id: str
     post_id: str
     post_name: str
+    company_id: str
+    post_url: str
     apply_date: datetime = Field(alias='GSI1SK')
     deadline_date: Optional[str] = None  # datetime 대신 str로 변경
     document_result_date: Optional[datetime] = None
@@ -151,6 +154,7 @@ class ApplyResponse(BaseModel):
     memo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    tags: list[str]
 
     class Config:
         from_attributes = True
