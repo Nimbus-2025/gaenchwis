@@ -1,47 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import './PositionTag.css';
+import Proxy from '../../api/Proxy';
+import Api from '../../api/api';
 
 const PREDEFINED_CATEGORIES = [
-  "개발자",
-  "디자이너",
-  "기획자",
-  "엔지니어",
-  "데이터",
-  "보안"
+  '개발자',
+  '디자이너',
+  '기획자',
+  '엔지니어',
+  '데이터',
+  '보안',
 ];
 
-const SKILL_CATEGORIES = [
-  "개발",
-  "디자인",
-  "데이터",
-  "서버/네트워크",
-  "일반"
-];
+const SKILL_CATEGORIES = ['개발', '디자인', '데이터', '서버/네트워크', '일반'];
 
 const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
   const [allPositionTags, setAllPositionTags] = useState({});
   const [allSkillTags, setAllSkillTags] = useState({});
   const [tempSelectedCategories, setTempSelectedCategories] = useState([]);
-  const [tempSelectedSkillCategories, setTempSelectedSkillCategories] = useState([]);
+  const [tempSelectedSkillCategories, setTempSelectedSkillCategories] =
+    useState([]);
   const [matchingTags, setMatchingTags] = useState([]);
   const [matchingSkillTags, setMatchingSkillTags] = useState([]);
-  const [selectedPositionTags, setSelectedPositionTags] = useState(selectedTags || []);
+  const [selectedPositionTags, setSelectedPositionTags] = useState(
+    selectedTags || [],
+  );
   const [selectedSkillTags, setSelectedSkillTags] = useState([]);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
         const [positionResponse, skillResponse] = await Promise.all([
-          fetch('http://localhost:8003/api/tags/position'),
-          fetch('http://localhost:8003/api/tags/skill')
+          Api(`${Proxy.server}:8003/api/tags/position`, 'GET'),
+          Api(`${Proxy.server}:8003/api/tags/skill`, 'GET'),
         ]);
-        
+
         const positionData = await positionResponse.json();
         const skillData = await skillResponse.json();
-        
+
         console.log('Position Data:', positionData);
         console.log('Skill Data:', skillData);
-        
+
         setAllPositionTags(positionData);
         setAllSkillTags(skillData);
       } catch (error) {
@@ -56,48 +55,50 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
   }, [isOpen, selectedTags]);
 
   const handleCategoryClick = (category) => {
-    setTempSelectedCategories(prev => {
+    setTempSelectedCategories((prev) => {
       const newSelection = prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category];
-      
-      const newMatchingTags = newSelection.length > 0
-        ? newSelection.flatMap(cat => allPositionTags[cat] || [])
-        : [];
-      
+
+      const newMatchingTags =
+        newSelection.length > 0
+          ? newSelection.flatMap((cat) => allPositionTags[cat] || [])
+          : [];
+
       setMatchingTags(newMatchingTags);
       return newSelection;
     });
   };
 
   const handleSkillCategoryClick = (category) => {
-    setTempSelectedSkillCategories(prev => {
+    setTempSelectedSkillCategories((prev) => {
       const newSelection = prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category];
-      
-      const newMatchingTags = newSelection.length > 0
-        ? newSelection.flatMap(cat => allSkillTags[cat] || [])
-        : [];
-      
+
+      const newMatchingTags =
+        newSelection.length > 0
+          ? newSelection.flatMap((cat) => allSkillTags[cat] || [])
+          : [];
+
       setMatchingSkillTags(newMatchingTags);
       return newSelection;
     });
   };
 
   const handleTagClick = (tag) => {
-    setSelectedPositionTags(prev => {
+    setSelectedPositionTags((prev) => {
       if (prev.includes(tag)) {
-        return prev.filter(t => t !== tag);
+        return prev.filter((t) => t !== tag);
       }
       return [...prev, tag];
     });
   };
 
   const handleSkillTagClick = (tag) => {
-    setSelectedSkillTags(prev => {
+    setSelectedSkillTags((prev) => {
       if (prev.includes(tag)) {
-        return prev.filter(t => t !== tag);
+        return prev.filter((t) => t !== tag);
       }
       return [...prev, tag];
     });
@@ -121,11 +122,14 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
           {PREDEFINED_CATEGORIES.map((category) => (
             <button
               key={category}
-              className={`category-button ${tempSelectedCategories.includes(category) ? 'selected' : ''}`}
+              className={`category-button ${
+                tempSelectedCategories.includes(category) ? 'selected' : ''
+              }`}
               onClick={() => handleCategoryClick(category)}
             >
               {category}
-              {allPositionTags[category] && ` (${allPositionTags[category].length})`}
+              {allPositionTags[category] &&
+                ` (${allPositionTags[category].length})`}
             </button>
           ))}
         </div>
@@ -137,7 +141,9 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
               {matchingTags.map((tag) => (
                 <span
                   key={tag}
-                  className={`preview-tag ${selectedPositionTags.includes(tag) ? 'selected' : ''}`}
+                  className={`preview-tag ${
+                    selectedPositionTags.includes(tag) ? 'selected' : ''
+                  }`}
                   onClick={() => handleTagClick(tag)}
                 >
                   {tag} {selectedPositionTags.includes(tag) && '✓'}
@@ -152,7 +158,9 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
           {SKILL_CATEGORIES.map((category) => (
             <button
               key={category}
-              className={`category-button ${tempSelectedSkillCategories.includes(category) ? 'selected' : ''}`}
+              className={`category-button ${
+                tempSelectedSkillCategories.includes(category) ? 'selected' : ''
+              }`}
               onClick={() => handleSkillCategoryClick(category)}
             >
               {category}
@@ -168,7 +176,9 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
               {matchingSkillTags.map((tag) => (
                 <span
                   key={tag}
-                  className={`preview-tag ${selectedSkillTags.includes(tag) ? 'selected' : ''}`}
+                  className={`preview-tag ${
+                    selectedSkillTags.includes(tag) ? 'selected' : ''
+                  }`}
                   onClick={() => handleSkillTagClick(tag)}
                 >
                   {tag} {selectedSkillTags.includes(tag) && '✓'}
@@ -205,10 +215,13 @@ const PositionTag = ({ isOpen, onClose, selectedTags, onApply }) => {
         )}
 
         <div className="modal-buttons">
-          <button 
-            className="apply-button" 
+          <button
+            className="apply-button"
             onClick={handleApply}
-            disabled={selectedPositionTags.length === 0 && selectedSkillTags.length === 0}
+            disabled={
+              selectedPositionTags.length === 0 &&
+              selectedSkillTags.length === 0
+            }
           >
             적용 ({selectedPositionTags.length + selectedSkillTags.length})
           </button>
