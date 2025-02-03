@@ -398,7 +398,7 @@ def get_user_applied_jobs(
 ):
     try:
         applied_jobs = user_repository.get_user_applied_jobs(tokens["user_id"])
-        return AppliedJobsResponse(applied_jobs=[AppliedJobResponse(**job) for job in applied_jobs])
+        return applied_jobs
         
     except Exception as e:
         raise HTTPException(
