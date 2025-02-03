@@ -3,7 +3,6 @@ import LocationTag from '../modal/LocationTag';
 import Edit from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
-import Api from '../../api/api';
 import { format } from 'date-fns';
 import EducationTag from '../modal/EducationTag';
 import PositionTag from '../modal/PositionTag';
