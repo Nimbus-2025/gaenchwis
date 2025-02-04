@@ -81,6 +81,7 @@ class BookmarkResponse(BaseModel):
     created_at: datetime
     post_url: str
     company_id: str
+    deadline: str
 
     class Config:
         from_attributes = True
