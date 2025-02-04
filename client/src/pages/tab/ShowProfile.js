@@ -56,12 +56,7 @@ const ShowProfile = ({ userData }) => {
       try {
         const data = await Api(`${Config.server}:8003/api/tags/education`, 'GET')
 
-        // 태그 정렬
-        const sortedTags = data.sort(
-          (a, b) => (tagOrder[a] || 999) - (tagOrder[b] || 999),
-        );
-
-        setAllEducationTags(sortedTags);  // 모든 가능한 태그 설정
+        setAllEducationTags(data);  // 모든 가능한 태그 설정
         // 초기에는 선택된 태그 없음
       } catch (error) {
         console.error('Error fetching education tags:', error);
@@ -129,21 +124,9 @@ const ShowProfile = ({ userData }) => {
         return;
       }
       
-      const response = await fetch('http://localhost:8003/api/v1/user/tags/location', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,  // 토큰 추가
-          'User-Id': userId,
-        },
-        credentials: 'include'
-      });
+      const response = await Api(`${Config.server}:8003/api/v1/user/tags/location`, 'GET');
   
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
+      const data = response;
       console.log('불러온 위치 태그:', data);
       
       // 데이터 구조에 따라 처리
@@ -170,20 +153,9 @@ const ShowProfile = ({ userData }) => {
           return;
         }
         
-        const response = await fetch('http://localhost:8003/api/v1/user/tags/education', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Id': userId,
-          },
-          credentials: 'include'
-        });
+        const response = await Api(`${Config.server}:8003/api/v1/user/tags/education`, 'GET');
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-      
+        const data = response;
         
         if (data.tags && Array.isArray(data.tags)) {
           const tagNames = data.tags.map(tag => tag.tag_name);
@@ -209,11 +181,9 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchLocationTags = async () => {
       try {
-        const response = await fetch('http://localhost:8003/api/tags/location');
-        if (!response.ok) {
-          throw new Error('Failed to fetch location tags');
-        }
-        const data = await response.json();
+        const response = await Api(`${Config.server}:8003/api/tags/location`, 'GET');
+
+        const data = response
         console.log('Fetched location tags:', data); // 데이터 확인용
         setAllLocationTags(data);
       } catch (error) {
@@ -233,21 +203,7 @@ const ShowProfile = ({ userData }) => {
         
         if (!userId) return;
 
-        const response = await fetch('http://localhost:8003/api/v1/user/tags/position', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Id': userId,
-          },
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          throw new Error('태그 조회 실패');
-        }
-
-        const data = await response.json();
+        const data = await Api(`${Config.server}:8003/api/tags/position`, 'GET');
      
         
         if (data.tags && Array.isArray(data.tags)) {
@@ -268,22 +224,13 @@ const ShowProfile = ({ userData }) => {
       const token = sessionStorage.getItem('token');
       const userId = user?.user_id;
 
-      const response = await fetch('http://localhost:8003/api/v1/user/tags/position', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'User-Id': userId,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
+      const response = await Api(`${Config.server}:8003/api/v1/user/tags/position`, 'PUT', {
           tags: selectedTags.map(tag => ({
             tag_id: tag,
             tag_name: tag,
             tag_type: 'position'
           }))
-        })
-      });
+        });
 
       if (!response.ok) {
         throw new Error('태그 저장 실패');
@@ -350,25 +297,9 @@ const ShowProfile = ({ userData }) => {
       }));
   
       // fetch를 사용한 API 호출
-      const response = await fetch(`http://localhost:8003/api/v1/user/tags/location`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Id': userId || '',
-          'Origin': 'http://localhost:3000'
-        },
-        mode: 'cors',
-        credentials: 'include',
-        body: JSON.stringify({
-          tags: tagsData
-        })
+      const data = await Api(`${Config.server}:8003/api/v1/user/tags/location`, 'PUT', {
+        tags: tagsData
       });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
     
       // 상태 업데이트
       setSelectedLocations(selectedTags);
@@ -393,25 +324,11 @@ const handleEducationTagApply = async (selectedTags) => {
     }));
 
     // fetch를 사용한 API 호출
-    const response = await fetch(`http://localhost:8003/api/v1/user/tags/education`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Id': userId || '',
-        'Origin': 'http://localhost:3000'
-      },
-      mode: 'cors',
-      credentials: 'include',
-      body: JSON.stringify({
+    const data = await Api(`${Config.server}:8003/api/v1/user/tags/education`, 'PUT',
+      {
         tags: tagsData
-      })
-    });
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
     console.log('태그 저장 응답:', data);
 
     // 상태 업데이트
@@ -426,11 +343,7 @@ const fetchAppliedCount = async () => {
   try {
     const response = await Api(
       `${Config.server}:8005/api/v1/applies`,
-      'GET',
-      null,
-      {
-        'Content-Type': 'application/json',
-      }
+      'GET'
     );
     
     if (response && response.applied_jobs) {

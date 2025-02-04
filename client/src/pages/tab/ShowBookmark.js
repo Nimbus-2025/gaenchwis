@@ -25,11 +25,7 @@ const ShowBookmark = () => {
     try {
       const response = await Api(
         `${Config.server}:8005/api/v1/applies`,
-        'GET',
-        null,
-        {
-          'Content-Type': 'application/json',
-        }
+        'GET'
       );
       
       if (response && response.applied_jobs) {
@@ -107,10 +103,6 @@ const ShowBookmark = () => {
       const response = await Api(
         `${Config.server}:8005/api/v1/interest-companies`,
         'GET',
-        null,
-        {
-          'Content-Type': 'application/json'
-        }
       );
   
       console.log('관심기업 원본 응답:', response);

@@ -57,22 +57,8 @@ const LocationTag = ({ isOpen, onClose, allLocationTags, selectedTags, onApply }
       console.log('사용자 ID:', userId);
   
       // 백엔드 API 엔드포인트에 맞춰서 요청
-      const response = await fetch('http://localhost:8003/api/v1/user/tags/location', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Id': userId
-        },
-        body: JSON.stringify(tagsData),
-        credentials: 'include'
-      });
-      console.log('API 응답:', response);
-  
-      if (!response.ok) {
-        throw new Error('태그 저장에 실패했습니다');
-      }
-  
-      const responseData = await response.json();
+      const responseData = await Api(`${Config.server}:8003/api/v1/user/tags/location`, 'PUT', tagsData);
+
       console.log('서버 응답:', responseData);
   
       onApply(tempSelectedTags);

@@ -71,28 +71,16 @@ const UserPage = () => {
 
         const bookmarkResponse = await Api(
           `${Config.server}:8005/api/v1/bookmarks`,
-          'GET',
-          null,
-          {
-            'Content-Type': 'application/json',
-          }
+          'GET'
         );
 
         const favoriteResponse = await Api(
           `${Config.server}:8005/api/v1/interest-companies`,
-          'GET',
-          null,
-          {
-            'Content-Type': 'application/json',
-          }
+          'GET'
         );
         const appliedResponse = await Api(
           `${Config.server}:8005/api/v1/applies`,
-          'GET',
-          null,
-          {
-            'Content-Type': 'application/json',
-          }
+          'GET'
         );
         console.log('지원한 공고 데이터:', appliedResponse); // 데이터 확인용 로그
 

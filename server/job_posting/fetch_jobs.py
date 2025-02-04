@@ -14,7 +14,7 @@ CORS(app,
      resources={r"/api/*": {
          "origins": ["http://localhost:3000"],
          "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         "allow_headers": ["Content-Type", "Authorization", "User-Id"],
+         "allow_headers": ["Content-Type", "Authorization", "user_id"],
          "supports_credentials": True
      }})
 
@@ -35,7 +35,7 @@ user_tags_table = dynamodb.Table('user_tags')
 
 def get_current_user_id():
     # 요청 헤더에서 user_id 가져오기
-    user_id = request.headers.get('User-Id')
+    user_id = request.headers.get('user_id')
     if not user_id:
         raise Exception("User ID not found")
     return user_id
@@ -151,7 +151,7 @@ def update_tags(tag_type):
 @app.route('/api/v1/user/tags/<tag_type>', methods=['GET'])
 def get_user_tags(tag_type):
     try:
-        user_id = request.headers.get('User-Id')
+        user_id = request.headers.get('user_id')
         print(f"Received user_id: {user_id}")
         
         if not user_id:
