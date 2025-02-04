@@ -293,6 +293,7 @@ class UserRepository:
                     bookmark['company_id'] = job_posting.get('company_id')
                     bookmark['company_name'] = job_posting.get('company_name', '')
                     bookmark['post_url'] = job_posting.get('post_url', '')
+                    bookmark['deadline'] = job_posting.get('deadline', '')
                 else:
                     bookmark['company_name'] = ''
 
