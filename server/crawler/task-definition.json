@@ -1,0 +1,24 @@
+{
+  "family": "Gaenchwis-Crawler",
+  "containerDefinitions": [
+    {
+      "name": "Gaenchwis-Crawler",
+      "image": "463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/crawler-service:latest",
+      "cpu": 512,
+      "memory": 512,
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs-backend/Gaenchwis-Backend",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs-crawler"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": ["EC2"],
+  "networkMode": "bridge",
+  "cpu": "512",
+  "memory": "512"
+}

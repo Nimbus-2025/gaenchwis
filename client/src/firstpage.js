@@ -1,15 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import logo from './images/cloud.png'; // 로고 이미지 경로
 import backgroundGif from './images/background.gif'; // 배경 GIF 경로
 import { jwtDecode } from 'jwt-decode';
+import LoginButton from './login-service/LoginButton';
 
 const FirstPage = () => {
     const navigate = useNavigate();
     const handleLogoClick = () =>{
-        navigate('/mainpage');
+        navigate('/MyPage1');
     }
   
 
@@ -17,25 +18,23 @@ const handleGoogleSuccess = async (credentialResponse) => {
     try {
       // 구글 로그인 성공 처리 로직
       const decoded = jwtDecode(credentialResponse.credential);
-      console.log('구글 로그인 사용자 정보:', decoded);
 
-      const response = await fetch('http://localhost:5000/auth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          credential: credentialResponse.credential,
-          userData: decoded
-        })
-      });
+      // 액세스 토큰을 로컬 스토리지에 저장
+      const accessToken = credentialResponse.credential; // JWT 형식의 액세스 토큰
+      localStorage.setItem('accessToken', accessToken);
 
-      if (response.ok) {
-        const data = await response.json();
-        login(data);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/userpage');
-      }
+      // 리프레시 토큰은 구글 API에서 직접 요청해야 하므로, 서버에서 처리하는 것이 일반적입니다.
+      // 서버에 요청하여 리프레시 토큰을 받아오는 로직을 추가할 수 있습니다.
+      const userData = {
+        userId: decoded.sub,
+        name: decoded.name,
+        email: decoded.email,
+        profileImage: decoded.picture,
+        accessToken: accessToken,
+    };
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        navigate('/MyPage1');
     } catch (error) {
       console.error('구글 로그인 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');
@@ -73,15 +72,15 @@ const LoginButtonWrapper = styled.div`
   margin-top: 20px; /* 로고와 버튼 사이의 간격 */
 `;
 return (
+    <GoogleOAuthProvider clientId="800144464912-bjdvo0b4vru9sp0i1segrktsgbk9kngu.apps.googleusercontent.com">
     <PageWrapper>
       <Logo src={logo} alt="Logo" onClick={handleLogoClick}/>
       <LoginButtonWrapper>
-       <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleLoginFailure}
-        />
+        <LoginButton />
+       
        </LoginButtonWrapper>
     </PageWrapper>
+     </GoogleOAuthProvider>
   );
 };
 

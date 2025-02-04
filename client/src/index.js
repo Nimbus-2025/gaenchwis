@@ -6,10 +6,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { store } from './component/calendar1/redux/configStore';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import FirstPage from './firstpage'
-import MainPage from './pages/MainPage';
-import MyPage from './pages/MyPage';
 import UserPage from './pages/UserPage';
 import MyPage1 from './pages/MyPage1';
+import Callback from './login-service/Callback';
+import LoginfromChromeExtension from "./login-service/LoginfromChromeExtension"
+import SearchResult from './pages/tab/SearchResult'; 
+
+LoginfromChromeExtension();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -19,10 +22,10 @@ root.render(
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<FirstPage />} />
-        <Route path="/mainpage" element={<MainPage />} />
-        <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage1" element={<MyPage1 />} />
         <Route path="/userpage" element={<UserPage />} />
+        <Route path="/callback" element={<Callback />} />
+        <Route path="/search" element={<SearchResult />} />
       </Routes>
       </BrowserRouter>
       </Provider>

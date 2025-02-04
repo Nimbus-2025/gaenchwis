@@ -1,0 +1,246 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .category-selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  
+  .category-button {
+    padding: 10px 20px;
+    border: 2px solid #ddd;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    display: flex; 
+    align-items: center;     /* 수직 중앙 정렬 */
+    justify-content: center; /* 수평 중앙 정렬 */
+  }
+  
+  .category-button.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+  
+  .matching-tags-preview {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+  .preview-tag {
+    padding: 4px 12px;
+    background: #e9ecef;
+    border-radius: 15px;
+    font-size: 13px;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .apply-button, .cancel-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .apply-button {
+    background: #007bff;
+    color: white;
+  }
+  
+  .apply-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .cancel-button {
+    background: #6c757d;
+    color: white;
+  }
+  .preview-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-radius: 20px;
+    font-size: 14px;
+    border: 1px solid #90caf9;
+    transition: all 0.2s ease;
+  }
+  .preview-tag {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .preview-tag.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .preview-tag:hover {
+    transform: scale(1.05);
+  }
+  
+  .selected-tags-preview {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+  }
+  
+  .tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+  .preview-tag {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .preview-tag:hover {
+    transform: scale(1.05);
+    background-color: #e0e0e0;
+  }
+  
+  .preview-tag.selected {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+    font-weight: 500;
+  }
+  
+  .selected-tags-preview .preview-tag.selected {
+    background-color: #1976d2;
+    color: white;
+    border-color: #1976d2;
+  }
+  
+  .matching-tags-preview .preview-tag.selected {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+  }
+  
+  .tags-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .matching-tags-preview, .selected-tags-preview {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  h4 {
+    margin: 0;
+    padding: 10px;
+    color: #333;
+    font-size: 14px;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: #333;
+  }
+  
+  .skill-search {
+    margin: 10px 0;
+  }
+  
+  .skill-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .skill-tags-preview {
+    margin-top: 10px;
+  }
+  
+  .preview-tag.skill {
+    background-color: #e3f2fd;
+    border-color: #1976d2;
+  }
+  
+  .preview-tag.skill.selected {
+    background-color: #1976d2;
+    color: white;
+  }
+  
+  .modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .preview-tag.selected.position {
+    background-color: #1976d2;
+    color: white;
+  }
+
+.preview-tag.selected.skill {
+    background-color: #7b1fa2;
+    color: white;
+  }
+  

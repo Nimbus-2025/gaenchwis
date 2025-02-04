@@ -1,0 +1,463 @@
+.user-content {
+    margin-top: 50px; /* 헤더와 버튼 간의 간격을 벌리기 위해 상단 여백 추가 */
+  }
+.button-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-around; /* 버튼 간격을 균등하게 배치 */
+    margin: 50px 0 0; /* 상하 여백 */
+  }
+  .logout-container {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-around; /* 버튼 간격을 균등하게 배치 */
+    margin: 50px 0 0; 
+  }
+  .profile-container {
+    height: 100%;
+    display: flex; /* Flexbox 사용 */
+    flex-direction: row;
+    gap: 30px; /* 박스 간의 간격 조정 */
+    
+  justify-content: space-between;
+  }
+  .button-container Profilebutton {
+    font-size: 18px; /* 글자 크기 */
+    cursor: pointer; /* 커서 포인터 */
+    border: 2px solid black; 
+    background-color: #ffffff; 
+    color: rgb(10, 0, 0); /* 글자색 */
+    transition: background-color 0.3s; /* 배경색 전환 효과 */
+    margin: 0 10px; /* 버튼 간의 좌우 여백 추가 */
+  }
+  .info-box-container {
+    display: flex;
+    flex-direction: column; /* 세로로 정렬 */
+    gap: 30px; /* 각 박스 사이의 간격 */
+    margin:50px 50px;
+    
+    justify-content: space-between; /* 박스 간 동일한 간격 배분 */
+
+  }
+  .schedule-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  .info-box-row {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  Profilebutton {
+    padding: 10px 20px;border: 1px solid rgb(170, 168, 168);
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #e0e0e0; /* 기본 배경색 */
+    transition: background-color 0.3s; /* 배경색 변화 애니메이션 */
+}
+  .button-container Profilebutton:hover {
+    background-color: #0056b3; /* 호버 시 배경색 변경 */
+  }
+  Profilebutton.active {
+    background-color: #007bff; /* 선택된 버튼의 배경색 */
+    color: white; /* 선택된 버튼의 글자색 */
+}
+.profile-info {
+    width: 100%; /* 예시 너비 */
+    height: auto;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border-radius: 16px;
+    box-sizing: border-box;
+    position: relative; /* 절대 위치 버튼을 위한 설정 */
+    border: 1px solid rgb(170, 168, 168);
+}
+
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-image: url('../../images/user.png');  /* 이미지 경로 설정 */
+    background-size: cover; 
+    background-repeat: no-repeat;  /* 이미지 반복 없음 */
+    margin-right: 30px;
+    margin-left:20px;
+}
+
+.profile-details p {
+    margin: 5px 0;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  max-height: 150px;
+  overflow-y: auto; /* 세로 스크롤 활성화 */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.tag {
+    margin-right: 20px;
+}
+
+.tag-item {
+  display: inline-block;
+  background-color: #5170fa;
+  color: #ffffff;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  margin: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+  background-color: #1b33e9;
+  transform: translateY(-2px);
+}
+.info-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.info-box {
+  
+  background-color: #f9f9f9; /* 사각형 배경색 */
+  border-radius: 16px;/*  모서리 둥글게 */
+  padding: 10px; /* 내부 여백 */
+  width: 100%; /* 각 사각형의 너비 */
+  height:300px;
+  border: 1px solid rgb(170, 168, 168);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  
+  
+}
+
+
+.info-box1 {
+  
+  background-color: #f9f9f9; /* 사각형 배경색 */
+  border-radius: 16px;/*  모서리 둥글게 */
+  padding: 10px; /* 내부 여백 */
+  width: 98%; /* 각 사각형의 너비 */
+  margin: 30px 0;
+  margin-top: 50px;
+  height:300px;
+  border: 1px solid rgb(170, 168, 168);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  
+  
+}
+
+
+.section {
+  margin-bottom: 40px; /* 섹션 간의 간격 */
+}
+
+.title {
+  font-size: 24px;
+  margin-top: 3px;
+  margin-bottom: 5px;
+  display: flex; /* 플렉스 박스 사용 */
+  align-items: center;
+}
+
+.bookmark-box {
+  width: 100%; /* 사각형의 너비 */
+  height: 250px; /* 사각형의 높이 */
+  background-color: #f0f0f0; /* 사각형의 배경색 */
+  border: 1px solid #ccc; /* 사각형의 테두리 */
+  border-radius: 5px; /* 사각형의 모서리 둥글게 */
+}
+
+.profile-image {
+  width: 70px; /* 이미지 너비 */
+  height: 70px; /* 이미지 높이 */
+  border-radius: 50%; /* 원형으로 만들기 */
+  object-fit: cover; /* 이미지 비율 유지 */
+  margin-right: 20px; /* 이미지와 텍스트 간의 간격 */
+}
+edit-form {
+  margin-top: 20px;
+}
+
+.profile-box {
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #ccc; /* 박스 테두리 */
+  border-radius: 10px; /* 박스 모서리 둥글게 */
+  background-color: #f9f9f9; /* 박스 배경색 */
+  margin-right: 80px;
+}
+
+.profile-box h2, .profile-box p {
+  margin: 10px 0; /* 텍스트 간의 간격 */
+}
+.edit-form {
+  display: flex; /* Flexbox 사용 */
+}
+.edit-form label {
+  display: block; /* 라벨을 블록으로 설정 */
+  margin-bottom: 10px; /* 라벨과 입력 필드 간의 간격 */
+}
+
+.edit-form input {
+  padding: 5px;
+  width: 100%; /* 입력 필드 너비 */
+  margin-bottom: 10px; /* 입력 필드와 버튼 간의 간격 */
+}
+.phone-edit-container {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  margin-top: 20px; /* 전화번호와 버튼 간의 간격 */
+}
+
+.edit-button {
+  width: 100px !important;  /* width: 200px 제거 */
+  margin-right: 0; /* 오른쪽 여백 제거 */
+  height: 50px;
+  font-size: 15px; /* 버튼 글자 크기 */
+}
+.profile-header {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  justify-content: space-between; /* 텍스트와 버튼 간의 간격 조정 */
+}
+.profile-details {
+  margin: 5px 0;
+  font-size: 20px; 
+}
+.status-box {
+  border: 1px solid #ccc; /* 테두리 */
+  padding: 20px; /* 패딩 */
+  border-radius: 30px; /* 모서리 둥글게 */
+  background-color: #ffffff; /* 배경색 */
+  margin-top: 20px; /* 위쪽 여백 */
+  display: flex; /* Flexbox 사용 */
+  flex-direction: column;
+   /* 세로 방향으로 정렬 */
+}
+.status-container {
+  display: flex; /* 수평 정렬 */
+  justify-content: space-between; /* 항목 간의 공간을 균등하게 배분 */
+  margin-top: 10px; /* 제목과 항목 간의 여백 */
+}
+
+.status-box h4 {
+  margin-bottom: 10px; /* 제목과 항목 간의 여백 */
+}
+
+.status-item {
+  display: flex; /* 수평 정렬 */
+  flex-direction: column;
+  align-items: center; /* 양쪽 정렬 */
+  margin: 10px 0; /* 위아래 여백 */
+  flex: 1; /* 균등하게 공간 배분 */
+}
+
+.status-item span {
+  font-size: 16px; /* 글자 크기 */
+  text-align: center; /* 텍스트 가운데 정렬 */
+}
+.divider {
+  width: 1px; /* 구분선의 너비 */
+  background-color: #ccc; /* 구분선 색상 */
+  height: 50px; /* 구분선의 높이 */
+  align-self: center; /* 가운데 정렬 */
+}
+.add-tag-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.add-tag-button:hover {
+  background-color: #0056b3;
+}
+.today-schedule {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-height: 150px;
+}
+.upcoming-info h4 {
+  margin-top: 20px;
+  color: #666;
+}
+.button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+.info-box-container > h4 {
+  text-align: left;
+  font-size: 24px;  /* 크기 조정 */
+  font-weight: bold;
+  margin-left: 0;  /* 왼쪽 정렬 */
+  padding-left: 0;  /* 왼쪽 패딩 제거 */
+  margin-top: 30px;
+}
+
+
+
+
+.daily-motivation {
+  
+  background: #ffffff;
+  color: rgb(37, 36, 36);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: auto;
+  width: 100%;
+}
+
+.daily-motivation h4 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 10px;
+}
+
+.daily-motivation .quote {
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+  font-style: italic;
+  padding: 20px;
+}
+
+.daily-motivation .author {
+  font-size: 16px;
+  text-align: right;
+  margin: 0;
+  opacity: 0.9;
+  padding: 20px;
+}
+
+/* 호버 효과 추가 */
+.daily-motivation:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.calendar-icon {
+  width: 24px;  /* 아이콘 크기 조절 */
+  height: 24px;
+  margin-left: 10px; /* 텍스트와 아이콘 사이 간격 */
+}
+
+.motivation-icon {
+  width: 24px;  /* 아이콘 크기 조절 */
+  height: 24px; /* 텍스트와 아이콘 사이 간격 */
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center; /* 텍스트와 아이콘 사이 공간 분배 */
+  margin-bottom: 15px;
+}
+.motivation-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.motivation-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  line-height: 1; /* 텍스트의 줄 높이를 조정 */
+  display: flex;
+  align-items: center; /* h4 내부도 수직 중앙 정렬 */
+  padding-top: 10px;
+  margin-top:10px;
+}
+
+
+.today-date {
+  font-size: 20px;
+  color: #333;
+  margin: 0;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.schedules-container {
+  padding: 15px;
+}
+
+.schedule-item {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.schedule-title {
+  font-size: 16px;
+  font-weight: bold;
+  
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.schedule-content {
+  font-size: 14px;
+  text-align: center;
+  color: #666;
+  margin: 0;
+}
+
+.today-date {
+  font-size: 14px;
+  color: #666;
+  margin-left: 10px;
+}
+
+.no-schedule {
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}
+
+.status-number {
+  display: block;  /* 블록 레벨 요소로 변경 */
+  width: 100%;  /* 너비 100%로 설정 */
+  text-align: center;  /* 텍스트 가운데 정렬 */
+  text-decoration: underline;  /* 밑줄 */
+  transition: all 0.2s ease;  /* 부드러운 효과 */
+  color: #0066cc;  /* 파란색 텍스트 */
+   /* 상단 여백 추가 */
+}
+.status-content:hover .status-number {
+  color: #003d99;  /* 더 진한 파란색으로 변경 */
+  transform: scale(1.1);  /* 살짝 크기 증가 */
+}

@@ -1,0 +1,23 @@
+Outputs:
+  VPCFrontendLogGroup:
+    Value: !Ref FrontendLogGroup
+    Export:
+      Name: FrontendLogGroup
+  BackendLogGroup:
+    Value: !Ref BackendLogGroup
+    Export:
+      Name: BackendLogGroup
+
+Resources:
+#--------------------Log
+  FrontendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs-frontend/Gaenchwis-Frontend
+      RetentionInDays: 7
+  BackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs-backend/Gaenchwis-Backend
+      RetentionInDays: 7
+#--------------------Log/

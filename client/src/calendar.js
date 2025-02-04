@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import styled from 'styled-components';
@@ -16,9 +16,9 @@ const theme = createTheme({
 const App = () => {
   const { isOpenEditPopup, isOpenAddPopup } = useSelector((state) => state.schedule);
   const dispatch = useDispatch();
+  const [schedules, setSchedules] = useState([]);
 
   const handleCloseAdd = () => {
-    console.log('닫기 함수 호출');
     dispatch(closeAddSchedule());
   };
 
@@ -32,12 +32,14 @@ const App = () => {
         <Title>CALENDAR</Title>
         <ContentWrapper>
           <Routes>
-            <Route path="/" element={<Calendar />} />
-            <Route path="/edit/:id" element={<EditSchedule />} />
+            <Route path="/" element={<Calendar schedules={schedules} setSchedules={setSchedules}/>} />
+            <Route path="/edit/:id" element={<EditSchedule setSchedules={setSchedules}/>} />
           </Routes>
-          {isOpenEditPopup && <EditSchedule />}
-          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} />}
-          <AddButton onClick={handleOpenAdd}>일정 추가</AddButton>
+          {isOpenEditPopup && <EditSchedule setSchedules={setSchedules}/>}
+          {isOpenAddPopup && <AddSchedule onClose={handleCloseAdd} 
+            type="schedule"
+            setSchedules={setSchedules}
+          />}
         </ContentWrapper>
       </AppWrapper>
     </ThemeProvider>
@@ -68,21 +70,6 @@ const Title = styled.div`
   font-weight: bold;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const AddButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: skyblue;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    background-color: deepskyblue;
-  }
 `;
 
 export default App; 

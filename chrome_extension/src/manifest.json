@@ -1,0 +1,44 @@
+{
+  "name": "Gaenchwis",
+  "description": "Gaenchwis Essay Manager",
+  "version": "1.1",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "change background color"
+  },
+  "icons": {
+    "192": "logo192.png"
+  },
+  "background": {
+    "service_worker": "module/Background.js"
+  },
+  "host_permissions": [
+    "https://*.amazoncognito.com/*"
+  ],
+  "permissions": [
+    "storage", 
+    "contextMenus", 
+    "activeTab", 
+    "scripting",
+    "identity",
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "https://gaenchwis.click/*"
+      ],
+      "js": ["module/SSO.js"]
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:3000/*",
+      "https://gaenchwis.click/*",
+      "https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/*"
+    ]
+  }
+}
+  

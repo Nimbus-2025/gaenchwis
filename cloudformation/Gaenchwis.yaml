@@ -1,0 +1,1475 @@
+Parameters:
+  HeaderName:
+    Description: CloudFront to ALB Header Name
+    Type: String
+    Default: X-Custom-Header
+  HeaderValue:
+    Description: CloudFront to ALB Header Value
+    Type: String
+    Default: random-value-1234
+  CloudFrontTLS:
+    Description: HTTPS TLS Certification
+    Type: String
+    Default: arn:aws:acm:us-east-1:463470980614:certificate/88427da2-bfc7-4b08-99d1-ac888f49d731
+  ALBTLS:
+    Description: HTTPS TLS Certification
+    Type: String
+    Default: arn:aws:acm:ap-northeast-2:463470980614:certificate/a5999268-7bbc-403c-a020-bcadf3e4e5ef
+  MaxECSInstance:
+    Description: Maximum ECS EC2 Instance Scaling
+    Type: String
+    Default: 4
+  ECSKey:
+    Description: ECS EC2 Instance SSH Key
+    Type: String
+    Default: ECSEC2Instance
+  ImageID:
+    Description: ECS EC2 Instance Image ID
+    Type: String
+    Default: ami-0cc0bbf5b4e47aca6
+  InstanceType:
+    Description: ECS EC2 Instance Type
+    Type: String
+    Default: t3.medium
+  AZ1:
+    Description: Seoul AZ1
+    Type: String
+    Default: ap-northeast-2a
+  AZ2:
+    Description: Seoul AZ2
+    Type: String
+    Default: ap-northeast-2b
+
+Outputs:
+  VPC:
+    Value: !Ref VPC
+    Export:
+      Name: VPC
+  VPCPrivateSubnet1:
+    Value: !Ref VPCPrivateSubnet1
+    Export:
+      Name: VPCPrivateSubnet1
+  VPCPrivateSubnet2:
+    Value: !Ref VPCPrivateSubnet2
+    Export:
+      Name: VPCPrivateSubnet2
+  ECSServiceRole:
+    Value: !Ref ECSServiceRole
+    Export:
+      Name: ECSServiceRole
+  FrontendTargetGroup:
+    Value: !Ref FrontendTargetGroup
+    Export:
+      Name: FrontendTargetGroup
+  ApplicationLoadBalancer:
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: ApplicationLoadBalancer
+  ECSContainerExecutionRole:
+    Value: !GetAtt ECSContainerExecutionRole.Arn
+    Export:
+      Name: ECSContainerExecutionRole
+  ECSContainerRole:
+    Value: !GetAtt ECSContainerRole.Arn
+    Export:
+      Name: ECSContainerRole
+  ECSCluster:
+    Value: !Ref ECSCluster
+    Export:
+      Name: ECSCluster
+  LambdaExecutionRole:
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: LambdaExecutionRole
+  BackendTargetGroup8000:
+    Value: !Ref BackendTargetGroup8000
+    Export:
+      Name: BackendTargetGroup8000
+  BackendTargetGroup8001:
+    Value: !Ref BackendTargetGroup8001
+    Export:
+      Name: BackendTargetGroup8001
+  BackendTargetGroup8002:
+    Value: !Ref BackendTargetGroup8002
+    Export:
+      Name: BackendTargetGroup8002
+  BackendTargetGroup8003:
+    Value: !Ref BackendTargetGroup8003
+    Export:
+      Name: BackendTargetGroup8003
+  BackendTargetGroup8004:
+    Value: !Ref BackendTargetGroup8004
+    Export:
+      Name: BackendTargetGroup8004
+  BackendTargetGroup8005:
+    Value: !Ref BackendTargetGroup8005
+    Export:
+      Name: BackendTargetGroup8005
+  BackendTargetGroup8006:
+    Value: !Ref BackendTargetGroup8006
+    Export:
+      Name: BackendTargetGroup8006
+  BackendTargetGroup8007:
+    Value: !Ref BackendTargetGroup8007
+    Export:
+      Name: BackendTargetGroup8007
+  BackendTargetGroup8008:
+    Value: !Ref BackendTargetGroup8008
+    Export:
+      Name: BackendTargetGroup8008
+  BackendTargetGroup8009:
+    Value: !Ref BackendTargetGroup8009
+    Export:
+      Name: BackendTargetGroup8009
+  BackendTargetGroup8010:
+    Value: !Ref BackendTargetGroup8010
+    Export:
+      Name: BackendTargetGroup8010
+
+Resources:
+#--------------------VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: Gaenchwis
+  #VPC Private RouteTable AZ1
+  VPCPrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Private-Route-Table1
+  #VPC Private RouteTable AZ2
+  VPCPrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Private-Route-Table2
+  #VPC Public RouteTable
+  VPCPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Public-Route-Table
+  #VPC Private Route AZ1
+  VPCPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref VPCPrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      InstanceId: !Ref NATInstance1
+  #VPC Private Route AZ2
+  VPCPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref VPCPrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      InstanceId: !Ref NATInstance2
+  #VPC Route
+  VPCPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCInternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref VPCPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VPCInternetGateway
+  #VPC IGW
+  VPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: VPC-InternetGateway
+  #VPC IGW Attachment
+  VPCInternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref VPCInternetGateway
+      VpcId: !Ref VPC
+  #VPC Endpoint to DynamoDB
+  VPCEndpointToDynamoDB:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Gateway
+      ServiceName: com.amazonaws.ap-northeast-2.dynamodb
+      VpcId: !Ref VPC
+      RouteTableIds:
+      - !Ref VPCPrivateRouteTable1
+      - !Ref VPCPrivateRouteTable2
+  #VPC Endpoint to S3
+  VPCEndpointToS3:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Gateway
+      ServiceName: com.amazonaws.ap-northeast-2.s3
+      VpcId: !Ref VPC
+      RouteTableIds:
+      - !Ref VPCPrivateRouteTable1
+      - !Ref VPCPrivateRouteTable2
+#--------------------VPC/
+
+
+
+#--------------------VPC Subnet
+  #Public
+  #Public Subnet AZ1
+  VPCPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref AZ1
+      CidrBlock: 10.0.1.0/24
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Public-Subnet1
+  VPCPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCPublicRouteTable
+      SubnetId: !Ref VPCPublicSubnet1
+  #Public Subnet AZ2
+  VPCPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref AZ2
+      CidrBlock: 10.0.2.0/24
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Public-Subnet2
+  VPCPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCPublicRouteTable
+      SubnetId: !Ref VPCPublicSubnet2
+  #Private
+  #Private Subnet AZ1
+  VPCPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref AZ1
+      CidrBlock: 10.0.10.0/24
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Private-Subnet1
+    DependsOn: VPCPrivateRouteTable1
+  VPCPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCPrivateRouteTable1
+      SubnetId: !Ref VPCPrivateSubnet1
+  #Private Subnet AZ2
+  VPCPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref AZ2
+      CidrBlock: 10.0.20.0/24
+      Tags:
+      - Key: Name
+        Value: Gaenchwis-Private-Subnet2
+    DependsOn: VPCPrivateRouteTable2
+  VPCPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCPrivateRouteTable2
+      SubnetId: !Ref VPCPrivateSubnet2
+#--------------------VPC Subnet/
+
+
+
+#--------------------SecurityGroup
+  #SSH
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: SSH SecurityGroup
+      GroupName: SSH-SecurityGroup
+      Tags:
+      - Key : Name
+        Value : SSH-SecurityGroup
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+  #Application LoadBalancer
+  ApplicationLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Application LoadBalancer SecurityGroup
+      GroupName: Application-LoadBalancer-SecurityGroup
+      Tags:
+      - Key : Name
+        Value : Application-LoadBalancer-SecurityGroup
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+  #NAT
+  NATSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: NAT SecurityGroup
+      GroupName: NAT-SecurityGroup
+      Tags:
+      - Key : Name
+        Value : NAT-SecurityGroup
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        SourceSecurityGroupId: !Ref BackendSecurityGroup
+  #Frontend
+  FrontendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Frontend SecurityGroup
+      GroupName: Frontend-SecurityGroup
+      Tags:
+      - Key : Name
+        Value : Frontend-SecurityGroup
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref ApplicationLoadBalancerSecurityGroup
+  #Backend
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Backend SecurityGroup
+      GroupName: Backend-SecurityGroup
+      Tags:
+      - Key : Name
+        Value : Backend-SecurityGroup
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 8000
+        ToPort: 8010
+        CidrIp: 0.0.0.0/0
+        #SourceSecurityGroupId: !Ref ApplicationLoadBalancerSecurityGroup
+#--------------------SecurityGroup/
+
+
+
+#--------------------IAM Role
+  #ECS Instance
+  ECSInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ECS-Instance-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: EC2ContainerServicePolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecr:*
+            - logs:*
+            - ecs:*
+            - elasticloadbalancing:*
+            - ec2messages:*
+            - ssm:*
+            - cloudwatch:*
+            Resource: '*'
+  #ECS Instance Profile
+  ECSInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: ECS-InstanceProfile
+      Path: /
+      Roles:
+      - !Ref ECSInstanceRole
+  #ECS Service
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ECS-Service-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 
+            - ecs.amazonaws.com
+          Action: 
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: ECSServicePolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecr:*
+            - ecs:*
+            - cloudwatch:*
+            - logs:*
+            - elasticloadbalancing:*
+            Resource: '*'
+  #ECS Container
+  ECSContainerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ECS-Container-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs-tasks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: ECSContainerPolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - ecr:*
+            - logs:*
+            - dynamodb:*
+            - s3:*
+            Resource: '*'
+  #ECS Container Execution
+  ECSContainerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ECS-Container-Execution-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs-tasks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: ECSContainerExecutionPolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            - ecs:*
+            - ecr:*
+            Resource: '*'
+  #Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lambda-execution-role
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaBasicExecution
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            - dynamodb:*
+            - s3:*
+            - ses:*
+            - sagemaker:*
+            Resource: '*'
+  UserLoadLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UserLoadLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  UserSaveLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UserSaveLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  PostLoadLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt PostLoadLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  EssayLoadLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt EssayLoadLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  EssaySaveLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt EssaySaveLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  PostAppliesLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt PostAppliesLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+  RecommendationLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt RecommendationLambdaFunction.Arn
+      Principal: elasticloadbalancing.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+#--------------------IAM Role/
+
+
+
+#--------------------NAT Instance
+  NATInstance1: #AZ1 Public Subnet NAT Instance
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: !Ref ECSKey
+      SourceDestCheck: false
+      ImageId: ami-01ad0c7a4930f0e43
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeviceIndex: 0
+        SubnetId: !Ref VPCPublicSubnet1
+        GroupSet:
+        - !Ref NATSecurityGroup
+        - !Ref SSHSecurityGroup
+  NATInstance2: #AZ2 Public Subnet NAT Instance
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: !Ref ECSKey
+      SourceDestCheck: false
+      ImageId: ami-01ad0c7a4930f0e43
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeviceIndex: 0
+        SubnetId: !Ref VPCPublicSubnet2
+        GroupSet:
+        - !Ref NATSecurityGroup
+        - !Ref SSHSecurityGroup
+#--------------------NAT Instance/
+
+
+
+#--------------------CloudFront
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !GetAtt ApplicationLoadBalancer.DNSName
+          Id: !Ref ApplicationLoadBalancer
+          CustomOriginConfig:
+            OriginProtocolPolicy: https-only
+            OriginSSLProtocols:
+            - TLSv1.2
+          OriginCustomHeaders:
+          - HeaderName: !Ref HeaderName 
+            HeaderValue: !Ref HeaderValue
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CloudFrontTLS
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          TargetOriginId: !Ref ApplicationLoadBalancer
+          ViewerProtocolPolicy: redirect-to-https
+          OriginRequestPolicyId: !Ref CloudFrontOriginPolicy
+          CachePolicyId: !Ref CloudFrontCachePolicy
+          ForwardedValues:
+            QueryString: false
+          AllowedMethods:
+          - GET
+          - HEAD
+          - PUT
+          - PATCH
+          - POST
+          - DELETE
+          - OPTIONS
+        Enabled: true
+        PriceClass: PriceClass_200
+        Aliases:
+        - gaenchwis.click
+  #CloudFront Origin Policy - Cookie, Header, QueryString
+  CloudFrontOriginPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: CloudFront-Origin-Policy
+        CookiesConfig:
+          CookieBehavior: none
+        HeadersConfig:
+          HeaderBehavior: allViewer
+        QueryStringsConfig:
+          QueryStringBehavior: none
+  #CloudFront Cache Policy
+  CloudFrontCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: CloudFront-Cache-PolicyType
+        DefaultTTL: 1
+        MaxTTL: 1
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+            - access_token
+            - id_token
+            - user_id
+            - post_id
+            - applies
+          QueryStringsConfig:
+            QueryStringBehavior: none
+#--------------------CloudFront/
+
+
+
+#--------------------Application LoadBalancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: Application-LoadBalancer
+      Type: application
+      Scheme: internet-facing
+      SecurityGroups:
+      - !Ref ApplicationLoadBalancerSecurityGroup
+      - !Ref BackendSecurityGroup
+      Subnets:
+      - !Ref VPCPublicSubnet1
+      - !Ref VPCPublicSubnet2
+  #Frontend TargetGroup
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Frontend-TargetGroup
+      Port: 80
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Application LoadBalancer Listener HTTPS No Header Access Denied
+  ApplicationLoadBalancerListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id, post_id, applies"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: fixed-response
+        FixedResponseConfig:
+          ContentType: application/json
+          MessageBody: Access Denied
+          StatusCode: 403
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+  #Application LoadBalancer Listener HTTPS Custom Header Access Accept
+  ApplicationLoadBalancerListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref FrontendTargetGroup
+      Conditions: 
+      - Field: http-header
+        HttpHeaderConfig:
+          HttpHeaderName: !Ref HeaderName
+          Values:
+          - !Ref HeaderValue
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 1000
+  
+  #User Load Lambda TargetGroup
+  UserLoadLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: User-Load-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt UserLoadLambdaFunction.Arn
+  #User Load Lambda ListenerRule
+  UserLoadLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 1
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /user_load
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref UserLoadLambdaTargetGroup
+  
+  #User Save Lambda TargetGroup
+  UserSaveLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: User-Save-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt UserSaveLambdaFunction.Arn
+  #User Save Lambda ListenerRule
+  UserSaveLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 2
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /user_save
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref UserSaveLambdaTargetGroup
+
+  #Post Load Lambda TargetGroup
+  PostLoadLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Post-Load-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt PostLoadLambdaFunction.Arn
+  #Post Load Lambda ListenerRule
+  PostLoadLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 3
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /chrome_extension/post_load
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref PostLoadLambdaTargetGroup
+  
+  #Essay Load Lambda TargetGroup
+  EssayLoadLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Essay-Load-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt EssayLoadLambdaFunction.Arn
+  #Essay Load Lambda ListenerRule
+  EssayLoadLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 4
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /chrome_extension/essay_load
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref EssayLoadLambdaTargetGroup
+  
+  #Essay Save Lambda TargetGroup
+  EssaySaveLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Essay-Save-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt EssaySaveLambdaFunction.Arn
+  #Essay Save Lambda ListenerRule
+  EssaySaveLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 5
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /chrome_extension/essay_save
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref EssaySaveLambdaTargetGroup
+  
+  #Post Applies Lambda TargetGroup
+  PostAppliesLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Post-Applies-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt PostAppliesLambdaFunction.Arn
+  #Post Applies Lambda ListenerRule
+  PostAppliesLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 6
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /chrome_extension/post_applies
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref PostAppliesLambdaTargetGroup
+  
+  #Recommendation Lambda TargetGroup
+  RecommendationLambdaTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Recom-Lambda-TargetGroup
+      TargetType: lambda
+      Targets:
+      - Id: !GetAtt RecommendationLambdaFunction.Arn
+  #Recommendation Lambda ListenerRule
+  RecommendationLambdaListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref ApplicationLoadBalancerListenerHTTPS
+      Priority: 7
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - /recommendation
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref RecommendationLambdaTargetGroup
+
+  #Backend TargetGroup 8000
+  BackendTargetGroup8000:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8000
+      Port: 8000
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8000
+  BackendListener8000:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8000
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8000
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8001
+  BackendTargetGroup8001:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8001
+      Port: 8001
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8001
+  BackendListener8001:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8001
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8001
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8002
+  BackendTargetGroup8002:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8002
+      Port: 8002
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8002
+  BackendListener8002:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8002
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8002
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8003
+  BackendTargetGroup8003:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8003
+      Port: 8003
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8003
+  BackendListener8003:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8003
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8003
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8004
+  BackendTargetGroup8004:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8004
+      Port: 8004
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8004
+  BackendListener8004:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8004
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8004
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8005
+  BackendTargetGroup8005:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8005
+      Port: 8005
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8005
+  BackendListener8005:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8005
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8005
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8006
+  BackendTargetGroup8006:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8006
+      Port: 8006
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8006
+  BackendListener8006:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8006
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8006
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8007
+  BackendTargetGroup8007:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8007
+      Port: 8007
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8007
+  BackendListener8007:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8007
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8007
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8008
+  BackendTargetGroup8008:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8008
+      Port: 8008
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8008
+  BackendListener8008:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8008
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8008
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8009
+  BackendTargetGroup8009:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8009
+      Port: 8009
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8009
+  BackendListener8009:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8009
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8009
+      Protocol: HTTPS
+
+  #Backend TargetGroup 8010
+  BackendTargetGroup8010:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Name: Backend-TargetGroup-8010
+      Port: 8010
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /api/v1/healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  #Backend Listener 8010
+  BackendListener8010:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ListenerAttributes:
+      - Key: routing.http.response.access_control_allow_origin.header_value
+        Value: "*"
+      - Key: routing.http.response.access_control_allow_methods.header_value
+        Value: "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+      - Key: routing.http.response.access_control_allow_headers.header_value
+        Value: "Content-Type, access_token, id_token, user_id"
+      Certificates:
+      - CertificateArn: !Ref ALBTLS
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref BackendTargetGroup8010
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 8010
+      Protocol: HTTPS
+#--------------------Application LoadBalancer/
+
+  
+
+#--------------------Lambda
+  UserLoadLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: User-Load
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: user_load.user_load
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: user_load.zip
+  UserSaveLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: User-Save
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: user_save.user_save
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: user_save.zip
+  PostLoadLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Post-Load
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: post_load.post_load
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: post_load.zip
+  EssayLoadLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Essay-Load
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: essay_load.essay_load
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: essay_load.zip
+  EssaySaveLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Essay-Save
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: essay_save.essay_save
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: essay_save.zip
+  PostAppliesLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Post-Applies
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: post_applies.post_applies
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: post_applies.zip
+  RecommendationLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Recommendation
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: recommendation.recommendation
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: recommendation.zip
+#--------------------Lambda/
+
+
+
+#--------------------ECS
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: Gaenchwis
+      ClusterSettings:
+      - Name: containerInsights
+        Value: enabled
+    DependsOn: VPCInternetGatewayAttachment
+  #ECS Capacity Provider
+  ECSCapacityProvider:
+    Type: AWS::ECS::CapacityProvider
+    Properties:
+      AutoScalingGroupProvider:
+        AutoScalingGroupArn: !Ref ECSAutoScalingGroup
+        ManagedScaling:
+          InstanceWarmupPeriod: 180
+          MinimumScalingStepSize: 1
+          MaximumScalingStepSize: 100
+          Status: ENABLED
+        #ManagedTerminationProtection: ENABLED
+  #ECS Capacity Provider Association
+  ECSCapacityProviderAssociation:
+    Type: AWS::ECS::ClusterCapacityProviderAssociations
+    Properties:
+      CapacityProviders:
+        - !Ref ECSCapacityProvider
+      Cluster: !Ref ECSCluster
+      DefaultCapacityProviderStrategy:
+        - Base: 0
+          CapacityProvider: !Ref ECSCapacityProvider
+          Weight: 1
+#--------------------ECS/
+
+
+
+#--------------------ECS ASG
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: ECS-AutoScaling-Group
+      MinSize: 2
+      MaxSize: !Ref MaxECSInstance
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+      - !Ref VPCPrivateSubnet1
+      - !Ref VPCPrivateSubnet2
+      LaunchTemplate:
+        LaunchTemplateId: !Ref ECSAutoScalingGroupLaunchTemplate
+        Version: !GetAtt ECSAutoScalingGroupLaunchTemplate.LatestVersionNumber
+      TargetGroupARNs:
+      - !Ref FrontendTargetGroup
+      - !Ref BackendTargetGroup8000
+      - !Ref BackendTargetGroup8001
+      - !Ref BackendTargetGroup8002
+      - !Ref BackendTargetGroup8003
+      - !Ref BackendTargetGroup8004
+      - !Ref BackendTargetGroup8005
+      - !Ref BackendTargetGroup8006
+      - !Ref BackendTargetGroup8007
+      - !Ref BackendTargetGroup8008
+      - !Ref BackendTargetGroup8009
+      - !Ref BackendTargetGroup8010
+      Tags:
+      - Key: Name
+        Value: ECS-AutoScaling-Group
+        PropagateAtLaunch: true
+  #ECS ASG Policy
+  ECSASGPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref ECSAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 75
+  #ECS ASG LaunchConfiguation
+  ECSAutoScalingGroupLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateName: ECS-AutoScalingGroup-LaunchTemplate
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Name: !Ref ECSInstanceProfile
+        ImageId: !Ref ImageID
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref ECSKey
+        SecurityGroupIds:
+        - !Ref FrontendSecurityGroup
+        - !Ref BackendSecurityGroup
+        - !Ref SSHSecurityGroup
+        BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs: 
+            Encrypted: true
+            VolumeSize: 20
+            VolumeType: gp3
+#--------------------ECS ASG/

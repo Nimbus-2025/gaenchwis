@@ -15,8 +15,7 @@
     background-color: white;
     padding: 2rem;
     border-radius: 8px;
-    width: 95%;
-    max-width: 1200px;
+    width: 800px !important;
     max-height: 80vh;
     overflow-y: auto;
   }

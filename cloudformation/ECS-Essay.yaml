@@ -1,0 +1,54 @@
+Resources:
+  #Essay Backend Service
+  EssayBackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        Alarms:
+          AlarmNames:
+            - Essay Backend Alarm
+          Enable: true
+          Rollback: true
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: Gaenchwis-EssayBackend
+          ContainerPort: 8002
+          TargetGroupArn: !ImportValue BackendTargetGroup8002
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+      TaskDefinition: !Ref EssayBackendTask
+      ServiceName: EssayBackendService
+      Role: !ImportValue ECSServiceRole
+  #Essay Backend Task
+  EssayBackendTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: Gaenchwis-EssayBackend
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/essay-service:latest
+          PortMappings:
+            - ContainerPort: 8002
+              HostPort: 8002
+              Protocol: tcp
+          Environment:
+            - Name: COGNITO_USER_POOL_ID
+              Value: ap-northeast-2_ltCxps5XQ
+            - Name: COGNITO_APP_CLIENT_ID
+              Value: 6dnsfj8d7327ghh5sg62eqbru0
+            - Name: AWS_REGION
+              Value: ap-northeast-2
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: ap-northeast-2
+              awslogs-group: !ImportValue BackendLogGroup
+              awslogs-stream-prefix: ecs-backend
+      Family: Gaenchwis-EssayBackend
+      Cpu: 512
+      Memory: 512
+      TaskRoleArn: !ImportValue ECSContainerRole
+      ExecutionRoleArn: !ImportValue ECSContainerExecutionRole
