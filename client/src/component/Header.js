@@ -58,9 +58,7 @@ const Header = ({ userData, onSearch }) => {
           onChange={(e) => setSearchText(e.target.value)}
           className="search-input"
         />
-        <button type="submit" className="header-search-btn">
-        
-        </button>
+        <button type="submit" className="header-search-btn"></button>
         <button
           className="chrome-button"
           onClick={() =>
