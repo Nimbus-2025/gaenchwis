@@ -238,7 +238,7 @@ def get_all_jobs(page, per_page):
         # Scan with pagination
         response = table.scan(
             Limit=per_page,
-            ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed, company_id'
+            ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed, company_id, deadline'
         )
         
         items = response.get('Items', [])
@@ -251,7 +251,7 @@ def get_all_jobs(page, per_page):
             response = table.scan(
                 Limit=per_page,
                 ExclusiveStartKey=response['LastEvaluatedKey'],
-                ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed'
+                ProjectionExpression='PK, SK, post_id, company_name, post_name, post_url, is_closed, deadline'
             )
             items = response.get('Items', [])
 
@@ -266,7 +266,7 @@ def get_all_jobs(page, per_page):
             )
             job_tags = job_tags_response.get('Items', [])
             item['tags'] = get_tag_names(job_tags, dynamodb)
-
+        print(items)
         return {
             'items': items,
             'total_items': total_items,
