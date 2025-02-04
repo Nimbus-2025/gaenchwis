@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Gaenchwis",
+  "name": "개인 맞춤형 취업 지원 서비스",
   "icons": [
     {
       "src": "favicon.ico",
