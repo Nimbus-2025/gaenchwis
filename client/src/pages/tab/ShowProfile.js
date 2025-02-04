@@ -420,7 +420,7 @@ useEffect(() => {
         <div className="button-wrapper">
         <button className="edit-button" onClick={openEditModal}>개인정보 수정</button>
         </div>
-        <h4>입사지원 현황</h4>
+        <h4 className="status-title">입사지원 현황</h4>  {/* className 추가 */}
         <div className="status-box">
         <div className="status-container">
         <div className="status-item" onClick={() => setIsAppliedModalOpen(true)} style={{ cursor: 'pointer' }}>

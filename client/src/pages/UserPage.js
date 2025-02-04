@@ -195,13 +195,23 @@ const UserPage = () => {
     <div>
       {/* 로그인 상태일 때만 맞춤공고 섹션 표시 */}
       {isLoggedIn && (
-        <>
+         <div className="recommended-section">
           <h1 className="job-header">
           {userData?.name || '사용자'} 님의 맞춤공고 입니다.
         </h1>
-          <div className="job-container">
+        <div className="job-container">
             {recommendLoading ? (
-              <div>맞춤 공고 로딩 중...</div>
+              <div className="loading-container">
+                <div className="loading-spinner-wrapper">
+                  <div className="loading-spinner"></div>
+                  <p className="loading-text">맞춤 공고를 불러오는 중입니다</p>
+                </div>
+                <div className="loading-dots">
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </div>
+                </div>
             ) : recommendedJobs && recommendedJobs.length > 0 ? (
               recommendedJobs.map((job) => (
                 <JobCard
@@ -219,17 +229,28 @@ const UserPage = () => {
               <div>맞춤 공고가 없습니다.</div>
             )}
           </div>
-        </>
+          </div>
       )}
       
-
+      <div className="recent-jobs-section">
       <h1 className="job-header">최근 업데이트된 공고입니다.</h1>
       <div className="job-container">
         
-        {loading ? (
-          <div>로딩 중...</div>
+      {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner-wrapper">
+                <div className="loading-spinner"></div>
+              </div>
+              <p className="loading-text">최신 공고를 불러오는 중입니다</p>
+              <div className="loading-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div>
+            </div>
         ) : (
           <>
+            <div className="jobs-grid">
             {jobs.map(job => (
               <JobCard
                 key={"Post"+job.post_id}
@@ -242,7 +263,7 @@ const UserPage = () => {
                 onToggleApplied={toggleApplied}
               />
             ))}
-            
+             </div>
             {/* 페이지네이션 버튼 */}
             <div className="pagination-container">
               <div className="pagination">
@@ -271,6 +292,7 @@ const UserPage = () => {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );

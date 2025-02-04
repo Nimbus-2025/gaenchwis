@@ -39,14 +39,14 @@ const ShowBookmark = () => {
   };
   const fetchBookmarks = async () => {
     try {
-      setLoading(true);
+      setLoading(prev => ({ ...prev, bookmarks: true }));
       const data = await Api(`${Config.server}:8005/api/v1/bookmarks`, 'GET');
       setBookmarkedJobs(data.bookmarks || []);
     } catch (error) {
       console.error('북마크 목록 조회 중 에러:', error);
       setError(prev => ({ ...prev, bookmarks: '북마크 목록을 불러오는데 실패했습니다.' }));
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, bookmarks: false }));
     }
   };
 
@@ -90,13 +90,14 @@ const ShowBookmark = () => {
   // 관심기업 목록 가져오기
   const fetchFavoriteCompanies = async () => {
     try {
+      
       const userData = JSON.parse(sessionStorage.getItem('user'));
     
       if (!userData) {
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
-  
+      setLoading(prev => ({ ...prev, interested: true }));
       const response = await Api(
         `${Config.server}:8005/api/v1/interest-companies`,
         'GET',
@@ -134,6 +135,8 @@ const ShowBookmark = () => {
       console.error('에러 상세:', error.response || error);
       setJobs([]);
       setFavoriteCompanies([]);
+    } finally {
+      setLoading(prev => ({ ...prev, interested: false })); // 항상 로딩 상태 해제
     }
   };
 
@@ -195,14 +198,17 @@ const ShowBookmark = () => {
         </div>
         
         <div className="company-box">
-          {loading.interested ? (
-            <div className="loading">
-              <div className="loading-spinner"></div>
-              <p>관심기업 공고를 불러오는 중...</p>
-            </div>
-          ) : error.interested ? (
-            <div className="error-message">
-              <p>{error.interested}</p>
+        {loading.interested ? (
+            <div className="loading-container">
+              <div className="loading-spinner-wrapper">
+                <div className="loading-spinner"></div>
+              </div>
+              <p className="loading-text">관심기업 공고를 불러오는 중입니다</p>
+              <div className="loading-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div>
             </div>
           ) : (
             <div className="job-cards-container">
