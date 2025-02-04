@@ -3,7 +3,6 @@ import LocationTag from '../modal/LocationTag';
 import Edit from '../modal/Edit';
 import './ShowProfile.css';
 import Config from '../../api/Config';
-import Proxy from '../../api/Proxy';
 import Api from '../../api/api';
 import { format } from 'date-fns';
 import EducationTag from '../modal/EducationTag';
@@ -55,14 +54,8 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchEducationTags = async () => {
       try {
-        const response = await Api(`http://localhost:8003/api/tags/education`, 'GET');
-      
-      if (!response.ok) {
-        throw new Error('교육 태그를 가져오는데 실패했습니다');
-      }
+        const data = await Api(`${Config.server}:8003/api/tags/education`, 'GET')
 
-      const data = await response.json();
-      console.log('교육 태그 데이터:', data);
         // 태그 정렬
         const sortedTags = data.sort(
           (a, b) => (tagOrder[a] || 999) - (tagOrder[b] || 999),
@@ -136,7 +129,7 @@ const ShowProfile = ({ userData }) => {
         return;
       }
       
-      const response = await fetch('http://localhost:8005/api/v1/user/tags/location', {
+      const response = await fetch('http://localhost:8003/api/v1/user/tags/location', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +170,7 @@ const ShowProfile = ({ userData }) => {
           return;
         }
         
-        const response = await fetch('http://localhost:8005/api/v1/user/tags/education', {
+        const response = await fetch('http://localhost:8003/api/v1/user/tags/education', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -240,7 +233,7 @@ const ShowProfile = ({ userData }) => {
         
         if (!userId) return;
 
-        const response = await fetch('http://localhost:8005/api/v1/user/tags/position', {
+        const response = await fetch('http://localhost:8003/api/v1/user/tags/position', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -275,7 +268,7 @@ const ShowProfile = ({ userData }) => {
       const token = sessionStorage.getItem('token');
       const userId = user?.user_id;
 
-      const response = await fetch('http://localhost:8005/api/v1/user/tags/position', {
+      const response = await fetch('http://localhost:8003/api/v1/user/tags/position', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

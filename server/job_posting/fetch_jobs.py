@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os 
-
+import logging
 load_dotenv()
 
 
@@ -13,10 +14,9 @@ CORS(app,
      resources={r"/api/*": {
          "origins": ["http://localhost:3000"],
          "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         "allow_headers": ["Content-Type", "Authorization"],
+         "allow_headers": ["Content-Type", "Authorization", "User-Id"],
          "supports_credentials": True
      }})
-
 
 
 # aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
@@ -30,8 +30,169 @@ dynamodb = boto3.resource(
     # aws_secret_access_key=aws_secret_access_key
 )
 
+# 테이블 초기화 - 별도로 선언
+user_tags_table = dynamodb.Table('user_tags')
+
+def get_current_user_id():
+    # 요청 헤더에서 user_id 가져오기
+    user_id = request.headers.get('User-Id')
+    if not user_id:
+        raise Exception("User ID not found")
+    return user_id
+
+# 태그 관련 함수들
+class UserTagService:
+    @staticmethod
+    def update_user_tags(user_id: str, tag_type: str, tags: list):
+        try:
+            print(f"Updating tags for user {user_id} with tags: {tags}")
+
+            # 1. 기존 태그 모두 삭제
+            existing_tags = user_tags_table.query(
+                KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+                ExpressionAttributeValues={
+                    ':pk': f"USER#{user_id}",
+                    ':sk': f"{tag_type}#"  # tag_type은 그대로 사용
+                }
+            ).get('Items', [])
+
+            print(f"Existing tags for user {user_id}: {existing_tags}")
+
+            # 기존 태그 삭제를 먼저 수행
+            for tag in existing_tags:
+                user_tags_table.delete_item(
+                    Key={
+                        'PK': tag['PK'],
+                        'SK': tag['SK']
+                    }
+                )
+
+            # 2. 새로운 태그 추가
+            now = datetime.utcnow().isoformat()
+            for tag in tags:
+                print(f"Processing tag: {tag}")
+                user_tags_table.put_item(
+                    Item={
+                        'PK': f"USER#{user_id}",
+                        'SK': f"{tag_type}#{tag['tag_name']}",  # tag_type과 tag_name 사용
+                        'GSI1PK': f"TAG#{tag_type}",
+                        'GSI1SK': f"USER#{user_id}",
+                        'tag_name': tag['tag_name'],
+                        'tag_type': tag_type,
+                        'tag_category': tag_type,
+                        'created_at': now,
+                        'updated_at': now
+                    }
+                )
+
+            return True
+        except Exception as e:
+            logging.error(f"Error updating tags: {str(e)}")
+            return False
+
+    @staticmethod
+    def get_user_tags(user_id: str, tag_type: str = None):
+        try:
+            if tag_type:
+                response = user_tags_table.query(
+                    KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+                    ExpressionAttributeValues={
+                        ':pk': f"USER#{user_id}",
+                        ':sk': f"{tag_type}#"  # tag_type은 그대로 사용
+                    }
+                )
+            else:
+                response = user_tags_table.query(
+                    KeyConditionExpression='PK = :pk',
+                    ExpressionAttributeValues={
+                        ':pk': f"USER#{user_id}"
+                    }
+                )
+            return response.get('Items', [])
+        except Exception as e:
+            logging.error(f"Error getting tags: {str(e)}")
+            return []
+
+# API 엔드포인트
 
 
+
+@app.route("/api/v1/user/tags/<tag_type>", methods=['PUT'])
+def update_tags(tag_type):
+    try:
+        user_id = get_current_user_id()
+        request_data = request.get_json()
+
+        print(f"\n=== 태그 업데이트 요청 정보 ===")
+        print(f"User ID: {user_id}")
+        print(f"Tag Type: {tag_type}")
+        print(f"Request Data: {request_data}")
+        print(f"Tags to Update: {request_data['tags']}")
+
+        
+        
+        success = UserTagService.update_user_tags(
+            user_id=user_id,
+            tag_type=tag_type,
+            tags=request_data['tags']
+        )
+        
+        if success:
+            updated_tags = UserTagService.get_user_tags(user_id, tag_type)
+            return jsonify({
+                "message": "태그가 성공적으로 업데이트되었습니다.", 
+                "tags": updated_tags
+            })
+        else:
+            return jsonify({"error": "태그 업데이트 실패"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/v1/user/tags/<tag_type>', methods=['GET'])
+def get_user_tags(tag_type):
+    try:
+        user_id = request.headers.get('User-Id')
+        print(f"Received user_id: {user_id}")
+        
+        if not user_id:
+            return jsonify({"error": "User ID not provided"}), 400
+
+        # DynamoDB에서 해당 사용자의 태그 조회
+        response = user_tags_table.query(
+            KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+            ExpressionAttributeValues={
+                ':pk': f"USER#{user_id}",
+                ':sk': f"{tag_type}#"
+            }
+        )
+        
+        print(f"DynamoDB response: {response}")
+        
+        items = response.get('Items', [])
+        print(f"Retrieved tags: {items}")
+        
+        # 태그 데이터 변환
+        formatted_tags = []
+        for item in items:
+            formatted_tags.append({
+                'tag_id': item.get('SK', '').split('#')[1],
+                'tag_name': item.get('tag_name', ''),
+                'tag_type': tag_type
+            })
+        
+        return jsonify({
+            "status": "success",
+            "tags": formatted_tags,
+            "message": f"{tag_type} 태그 조회 성공"
+        })
+        
+    except Exception as e:
+        print(f"태그 조회 중 에러 발생: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "message": f"{tag_type} 태그 조회 실패"
+        }), 500
 def get_tag_names(job_tags, dynamodb):
     try:
         tags_table = dynamodb.Table('tags')
@@ -450,6 +611,12 @@ def get_tags(tag_type):
     except Exception as e:
         print(f"Error in get_tags: {str(e)}")  # 에러 로깅
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/*', methods=['OPTIONS'])
+def preflight():
+    return jsonify({"status": "healthy"}), 200
+# 서버 실행
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8003)

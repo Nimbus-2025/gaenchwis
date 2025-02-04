@@ -33,7 +33,8 @@ const EducationTag = ({ isOpen, onClose, allEducationTags, selectedTags, onApply
       console.log('tempSelectedTags:', tempSelectedTags);
       console.log('tagsData:', tagsData);
   
-      const response = await fetch('http://localhost:8005/api/v1/user/tags/education', {
+      const response = await Api(
+        `${Config.server}:8003/api/v1/user/tags/location`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
