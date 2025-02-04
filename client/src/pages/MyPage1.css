@@ -1,0 +1,211 @@
+.user-content {
+    margin-top: 20px; /* 헤더와 버튼 간의 간격을 벌리기 위해 상단 여백 추가 */
+  }
+  .button-container {
+    display: flex; /* 버튼들을 가로로 나열 */
+    justify-content: center; /* 버튼들을 중앙 정렬 */
+    padding-left: 150px; 
+    height:50px;
+    gap: 30px; /* 버튼 간 간격 */
+  }
+  .button-logout-container {
+    display: flex; /* 버튼 컨테이너와 로그아웃 컨테이너를 같은 줄에 배치 */
+    align-items: center; /* 세로 방향으로 중앙 정렬 */
+    justify-content: space-between;
+    width: 100%; /* 부모 요소가 가득 차도록 설정 */
+    height: 30px;
+    margin-top:10px;
+    margin-bottom:60px;
+    
+    
+    
+  }
+  .logout-container {
+    display: flex; /* 로그인 버튼을 수평 중앙 정렬 */
+    justify-content: center;/* 수직 중앙 정렬 */
+    margin-right: 250px;
+    border-bottom: 1px solid #afafaf; /* 하단 테두리 추가 */
+  }
+  
+  .button-container button {
+    display: flex;
+    flex-direction: row; /* 이미지와 텍스트를 세로로 배치 */
+    border: none; /* 기본 버튼 스타일 제거 */ /* 배경 이미지 설정 */
+    background-size: 30px 30px; /* 이미지 크기 조정 */
+    background-repeat: no-repeat;
+    width: 130px; /* 버튼 너비 */
+    height: 50px; /* 버튼 높이 */
+    cursor: pointer; /* 커서 모양 변경 */
+    color: rgb(0, 10, 16); /* 텍스트 색상 */
+    text-align: center; /* 텍스트 가운데 정렬 */
+    justify-content: center;
+    padding: 0;
+    margin-top: 10px;
+    box-shadow: none; /* 그림자 제거 */
+    outline: none; /* 외곽선 제거 */
+    border-bottom: 1px solid #afafaf; /* 하단 테두리 추가 */
+}
+
+  button {
+    height: 30px; 
+    border-radius: 5px;
+    cursor: pointer;
+    justify-content: center; /* 가로 방향 중앙 정렬 */
+    align-items: center; /* 세로 방향 중앙 정렬 */
+    background-color: #ffffff; /* 기본 배경색 */
+    transition: background-color 0.3s; /* 배경색 변화 애니메이션 */
+}
+.button-container button.active {
+  font-weight: bold; /* 텍스트를 진하게 */
+  color: #333; /* 필요시 색상 변경 */
+}
+button:active {
+  font-weight: bold;
+  background-color: #d0cbcb;
+  transform: scale(0.98); /* 버튼 살짝 눌리는 효과 */
+}
+  
+  
+  .rectangle-container {
+    display: flex; /* Flexbox 사용 */
+    height:auto;
+    width: 100%;
+    justify-content: center; /* 가로 방향으로 가운데 정렬 */
+    align-items: center; /* 세로 방향으로 가운데 정렬 */
+   /* 버튼과 사각형 간의 간격 설정 */
+  
+    
+  }
+
+.rectangle {
+  /* 높이 관련 스타일 수정 */
+  height: 100%;  /* 컨텐츠에 맞게 자동 조절 */
+  width: 100%;
+  padding: 20px;
+  margin-left: 300px;
+  margin-right:300px;
+    
+}
+  
+
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+.tag-item {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+.info-container {
+  display: flex; /* Flexbox 사용 */
+  justify-content: center; /* 항목 간의 간격을 균등하게 배분 */
+  margin: 20px auto; /* 위쪽 여백과 가운데 정렬 */
+  width: 100%;
+   /* 전체 너비의 80% */
+}
+
+
+
+.tag-item {
+  display: block; /* 각 태그를 블록으로 표시 */
+  margin-top: 5px; /* 태그 간의 간격 */
+}
+
+
+.bookmark-interest-container {
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 40px; /* 섹션 간의 간격 */
+}
+
+.title {
+  font-size: 24px;
+  margin-top: 3px;
+  margin-bottom: 5px;
+  display: flex; /* 플렉스 박스 사용 */
+  align-items: center;
+}
+
+
+
+edit-form {
+  margin-top: 20px;
+}
+
+.profile-box {
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #ccc; /* 박스 테두리 */
+  border-radius: 10px; /* 박스 모서리 둥글게 */
+  background-color: #f9f9f9; /* 박스 배경색 */
+  margin-right: 80px;
+}
+
+.profile-box h2, .profile-box p {
+  margin: 10px 0; /* 텍스트 간의 간격 */
+}
+.edit-form {
+  display: flex; /* Flexbox 사용 */
+}
+.edit-form label {
+  display: block; /* 라벨을 블록으로 설정 */
+  margin-bottom: 10px; /* 라벨과 입력 필드 간의 간격 */
+}
+
+.edit-form input {
+  padding: 5px;
+  width: 100%; /* 입력 필드 너비 */
+  margin-bottom: 10px; /* 입력 필드와 버튼 간의 간격 */
+}
+.phone-edit-container {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  margin-top: 10px; /* 전화번호와 버튼 간의 간격 */
+}
+
+.profile-header {
+  display: flex; /* Flexbox 사용 */
+  align-items: center; /* 수직 정렬 */
+  justify-content: space-between; /* 텍스트와 버튼 간의 간격 조정 */
+}
+.profile-details {
+ flex-grow: 1;
+}
+.login-popup {
+  position: fixed; /* 화면 기준으로 배치 */
+  top: 50%; /* 화면 높이의 중간 */
+  left: 50%; /* 화면 너비의 중간 */
+  transform: translate(-50%, -50%); /* 정중앙으로 이동 */
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  z-index: 1000; /* 다른 요소보다 위에 표시 */
+  text-align: center;
+}
+
+.login-popup-content button {
+  margin: 10px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-popup-content button:nth-child(2) {
+  background: #ddd;
+  color: black;
+}

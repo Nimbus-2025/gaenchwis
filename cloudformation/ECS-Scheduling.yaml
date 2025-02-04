@@ -1,0 +1,55 @@
+Resources:
+  #Scheduling Backend Service
+  SchedulingBackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue ECSCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        Alarms:
+          AlarmNames:
+            - Scheduling Backend Alarm
+          Enable: true
+          Rollback: true
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: Gaenchwis-SchedulingBackend
+          ContainerPort: 8006
+          TargetGroupArn: !ImportValue BackendTargetGroup8006
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+      TaskDefinition: !Ref SchedulingBackendTask
+      ServiceName: SchedulingBackendService
+      Role: !ImportValue ECSServiceRole
+  #Scheduling Backend Task
+  SchedulingBackendTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Name: Gaenchwis-SchedulingBackend
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/scheduling-service:latest
+          PortMappings:
+            - ContainerPort: 8006
+              HostPort: 8006
+              Protocol: tcp
+          Environment:
+            - Name: COGNITO_USER_POOL_ID
+              Value: ap-northeast-2_ltCxps5XQ
+            - Name: COGNITO_APP_CLIENT_ID
+              Value: 6dnsfj8d7327ghh5sg62eqbru0
+            - Name: AWS_REGION
+              Value: ap-northeast-2
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: ap-northeast-2
+              awslogs-group: !ImportValue BackendLogGroup
+              awslogs-stream-prefix: ecs-backend
+      Family: Gaenchwis-SchedulingBackend
+      Cpu: 512
+      Memory: 512
+      TaskRoleArn: !ImportValue ECSContainerRole
+      ExecutionRoleArn: !ImportValue ECSContainerExecutionRole
+#--------------------ECS Container/

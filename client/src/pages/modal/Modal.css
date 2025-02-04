@@ -1,0 +1,85 @@
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+  
+.edit-modal-content {
+    background-color: rgb(255, 255, 255);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 90%;
+    animation: editModalFadeIn 0.3s ease-out;
+}
+  
+
+  
+.edit-modal-content h2 {
+    margin: 0 0 20px 0;
+    color: #020202a5;
+    font-size: 24px;
+    text-align: center;
+}
+  
+.edit-modal-content label {
+    display: block;
+    margin-bottom: 20px;
+    color: #080808cb;
+    font-size: 14px;
+}
+  
+.edit-modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+  
+.edit-modal-content input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+  
+.edit-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+  
+.edit-modal-content button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #007bff;
+    color: rgb(19, 18, 18);
+}
+
+.edit-modal-content button:last-child {
+    background-color: #e5e3e3;
+}
+  
+.edit-modal-content button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+  
+.edit-modal-content button:active {
+    transform: translateY(0);
+}

@@ -1,0 +1,212 @@
+
+  .bookmark-interest-container {
+    padding: 20px;
+    max-width: 100%;
+    margin: 30px;
+    max-height: 1000px;
+    background: none;
+  }
+  
+  .section {
+    margin-bottom: 30px;
+  }
+  
+  .bookmark-title {
+    font-size: 22px;
+    line-height: 24px;  /* 텍스트 높이와 동일하게 */
+    display: inline-block;
+  }
+  
+  .star-icon, .heart-icon {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 3px;  /* 약간 아래로 조정 */
+    vertical-align: middle
+    
+  }
+  
+  .bookmarked-box {
+    flex: 1;
+    background: none; /* 배경색 제거 */
+    border: none;    /* 테두리 제거 */
+    overflow: hidden;
+    display: flex;
+    height: 100%;       /* 컨텐츠에 맞게 자동 조절 */
+    min-height: auto;
+    flex-direction: column;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+  }
+  
+  .error-message {
+    text-align: center;
+    padding: 20px;
+    color: #dc3545;
+  }
+  
+  .empty-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+  }
+  
+  .bookmarked-jobs {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+
+
+  
+  .bookmark-count {
+    color: #666;
+    font-size: 14px;
+  }
+  
+
+  .bookmark-box {
+    flex: 1;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .job-cards-container {
+    height: auto;
+    overflow-y: auto; /* 세로 스크롤만 표시 */
+    overflow-x: hidden;
+    padding-right: 20px; /* 스크롤바 공간 확보 */
+    padding-left: 20px;
+    margin-bottom: 30px;
+  }
+  
+  /* 스크롤바 스타일링 */
+  .job-cards-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .job-cards-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .job-cards-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .job-cards-container::-webkit-scrollbar-thumb:hover {
+    background: #ffffff;
+  }
+  
+
+  
+  .loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+ 
+  
+  .company-box {
+    flex: 1;
+    background: none; /* 배경색 제거 */
+    border: none;    /* 테두리 제거 */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .job-cards-container {
+    max-height: 600px; /* 각 섹션의 최대 높이 제한 */
+    padding-right: 10px;
+  }
+
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 1px;  /* 텍스트와 아이콘 사이 간격 */
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+
+}
+
+.loading-spinner-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.loading-dots span {
+  font-size: 1.5rem;
+  color: #3498db;
+  animation: blink 1.4s infinite;
+  opacity: 0;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}

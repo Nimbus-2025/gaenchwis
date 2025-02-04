@@ -1,0 +1,153 @@
+Resources:
+#--------------------Authentication
+  GaenchwisCognito:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: GaenchwisCognito
+      AutoVerifiedAttributes:
+      - email
+      AliasAttributes:
+      - email
+      LambdaConfig:
+        PreSignUp: !GetAtt LoginLambdaFunction.Arn
+        
+  GaenchwisCognitoDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: gaenchwis
+      UserPoolId: !Ref GaenchwisCognito
+      ManagedLoginVersion: 2
+
+  GaenchwisClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: GaenchwisClient
+      UserPoolId: !Ref GaenchwisCognito
+      GenerateSecret: false
+      AllowedOAuthFlows:
+      - code
+      AllowedOAuthScopes:
+      - email
+      - openid
+      - profile
+      SupportedIdentityProviders:
+      - Google
+      - Kakao
+      - Naver
+      ExplicitAuthFlows:
+      - ALLOW_REFRESH_TOKEN_AUTH
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+      - https://lomllodaddlcklkmdhoidmldhbmoickc.chromiumapp.org
+      - https://gaenchwis.auth.ap-northeast-2.amazoncognito.com/oauth2/idpresponse
+      - https://gaenchwis.click/callback
+      - http://localhost:3000/callback
+    DependsOn: 
+    - IdentityProviderGoogle
+    - IdentityProviderKakao
+    - IdentityProviderNaver
+
+  GaenchwisClientLogin:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties:
+      ClientId: !Ref GaenchwisClient
+      UseCognitoProvidedValues: true
+      UserPoolId: !Ref GaenchwisCognito
+
+  IdentityProviderGoogle:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      ProviderName: Google
+      UserPoolId: !Ref GaenchwisCognito
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Sub "{{resolve:secretsmanager:Gaenchwis-Login:SecretString:google_client_id}}"
+        client_secret: !Sub "{{resolve:secretsmanager:Gaenchwis-Login:SecretString:google_client_secret}}"
+        authorize_scopes: 'openid email profile'
+      AttributeMapping:
+        email: email
+        name: name
+  IdentityProviderKakao:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      ProviderName: Kakao
+      ProviderType: OIDC
+      UserPoolId: !Ref GaenchwisCognito
+      ProviderDetails:
+        client_id: !Sub "{{resolve:secretsmanager:Gaenchwis-Login:SecretString:kakao_app_key}}"
+        authorize_scopes: 'openid'
+        authorize_url: https://kauth.kakao.com/oauth/authorize
+        token_url: https://kauth.kakao.com/oauth/token
+        attributes_url: https://kapi.kakao.com/v2/user/me
+        attributes_url_add_attributes: "profile_nickname"
+        oidc_issuer: https://kauth.kakao.com
+        attributes_request_method: GET
+      AttributeMapping:
+        email: email
+        name: profile_nickname
+  IdentityProviderNaver:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      ProviderName: Naver
+      ProviderType: OIDC
+      UserPoolId: !Ref GaenchwisCognito
+      ProviderDetails:
+        client_id: !Sub "{{resolve:secretsmanager:Gaenchwis-Login:SecretString:naver_client_id}}"
+        client_secret: !Sub "{{resolve:secretsmanager:Gaenchwis-Login:SecretString:naver_client_secret}}"
+        authorize_scopes: "openid profile"
+        authorize_url: https://nid.naver.com/oauth2/authorize
+        token_url: https://nid.naver.com/oauth2/token
+        attributes_url: https://openapi.naver.com/v1/nid/me
+        attributes_url_add_attributes: response.email,response.nickname,response.mobile
+        oidc_issuer: https://nid.naver.com
+        attributes_request_method: GET
+      AttributeMapping:
+        email: response.email
+        name: response.nickname
+        phone_number: response.mobile
+#--------------------Authentication/
+
+
+
+#--------------------IAM Role
+  #Login Lambda Execution Role
+  LoginLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: login-lambda-execution-role
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LoginLambdaExecution
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            - cognito-idp:*
+            - dynamodb:*
+            Resource: '*'
+#--------------------IAM Role/
+
+
+
+#--------------------Lambda
+  LoginLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: login-lambda
+      Role: !GetAtt LoginLambdaExecutionRole.Arn
+      Runtime: python3.9
+      Handler: login.login
+      Layers:
+      - arn:aws:lambda:ap-northeast-2:463470980614:layer:Python_dependencies:2
+      Code:
+        S3Bucket: gaenchwis-lambda 
+        S3Key: login.zip
+#--------------------Lambda/

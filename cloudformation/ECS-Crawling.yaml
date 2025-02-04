@@ -1,0 +1,66 @@
+Resources:
+  # EventBridge IAM Role
+  EventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EventBridge-ECS-Role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EventBridgeECSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:RunTask
+                  - iam:PassRole
+                Resource: '*'
+
+  # Crawler Backend Task
+  CrawlerBackendTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: Gaenchwis-Crawler
+      ContainerDefinitions:
+        - Name: Gaenchwis-Crawler
+          Image: 463470980614.dkr.ecr.ap-northeast-2.amazonaws.com/gaenchwis/crawler-service:latest
+          Essential: true
+          Memory: 512
+          Cpu: 512
+          Command: ["bash", "-c", "'sleep 7200; kill -s SIGINT 1'"]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: ap-northeast-2
+              awslogs-group: !ImportValue BackendLogGroup
+              awslogs-stream-prefix: ecs-crawler
+      Cpu: '512'
+      Memory: '512'
+      NetworkMode: bridge
+      RequiresCompatibilities:
+        - EC2
+      TaskRoleArn: !ImportValue ECSContainerRole
+      ExecutionRoleArn: !ImportValue ECSContainerExecutionRole
+
+  # EventBridge Rule for Scheduling
+  CrawlerScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: 'Schedule for running crawler task'
+      ScheduleExpression: 'cron(0 */3 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Arn: !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/Gaenchwis'
+          Id: CrawlerTask
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          EcsParameters:
+            TaskDefinitionArn: !Ref CrawlerBackendTask
+            TaskCount: 1
+            LaunchType: EC2
+            Group: crawler-service
