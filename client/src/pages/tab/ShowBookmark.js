@@ -51,39 +51,25 @@ const ShowBookmark = () => {
   };
 
 
-  const handleBookmarkToggle = async (postId) => {
-    try {
-      await Api(`${Config.server}:8005/api/v1/bookmark/${postId}`, 'DELETE');
-      setBookmarkedJobs(prev => prev.filter(job => job.post_id !== postId));
-    } catch (error) {
-      console.error('북마크 처리 중 에러:', error);
-      alert('북마크 처리에 실패했습니다.');
-    }
-  };
-
-  const handleFavoriteToggle = async (companyName) => {
-    try {
-      // 관심기업 토글 API 호출 (필요한 경우)
-      setFavoriteCompanies(prev => 
-        prev.includes(companyName)
-          ? prev.filter(name => name !== companyName)
-          : [...prev, companyName]
-      );
-      // 관심기업 목록이 변경되면 공고 목록 다시 불러오기
-      
-    } catch (error) {
-      console.error('관심기업 처리 중 에러:', error);
-      alert('관심기업 처리에 실패했습니다.');
-    }
-  };
-
-
-  const handleAppliedToggle = (postId) => {
-    setAppliedJobs(prev => 
-      prev.includes(postId)
-        ? prev.filter(id => id !== postId)
-        : [...prev, postId]
+  const handleBookmarkToggle = async (jobId) => {
+    setBookmarkedJobs((prev) => 
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     );
+    fetchBookmarks();
+  };
+
+  const handleFavoriteToggle = async (company) => {
+    setFavoriteCompanies((prev) => 
+      prev.includes(company) ? prev.filter(c => c !== company) : [...prev, company]
+    );
+    fetchFavoriteCompanies();
+  };
+
+  const handleAppliedToggle = (jobId) => {
+    setAppliedJobs((prev) => 
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
+    );
+    fetchAppliedJobs();
   };
   
 
@@ -174,7 +160,7 @@ const ShowBookmark = () => {
             <div className="job-cards-container">
               {bookmarkedJobs.map((job) => (
                 <JobCard
-                  key={job.post_id}
+                  key={"Book"+job.post_id}
                   job={job}
                   favoriteCompanies={favoriteCompanies}
                   bookmarkedJobs={bookmarkedJobs.map(j => j.post_id)}
@@ -214,7 +200,7 @@ const ShowBookmark = () => {
             <div className="job-cards-container">
               {jobs.map((job) => (
                 <JobCard
-                  key={job.post_id}
+                  key={"Inter"+job.post_id}
                   job={job}
                   favoriteCompanies={favoriteCompanies}
                   bookmarkedJobs={bookmarkedJobs.map(j => j.post_id)}

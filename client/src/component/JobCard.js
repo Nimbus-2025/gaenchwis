@@ -30,7 +30,6 @@ const JobCard = ({
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
-
       // company_id 추출 로직 수정
       const company_id = job.company_id || (job.PK ? job.PK.replace('COMPANY#', '') : null);
       
@@ -45,19 +44,21 @@ const JobCard = ({
         company_name: job.company_name
       };
 
-      const response = await Api(
-        `${Config.server}:8005/api/v1/interest-company`,
-        'POST',
-        requestData,
-        {
-          
-          'Content-Type': 'application/json'
-        }
-      );
-
-      if (response) {
-        onToggleFavorite(company_id);
+      if(isFavorite()){
+        const response = await Api(
+          `${Config.server}:8005/api/v1/interest-company/${company_id}`,
+          'DELETE'
+        );
       }
+      else{
+        const response = await Api(
+          `${Config.server}:8005/api/v1/interest-company`,
+          'POST',
+          requestData
+        );
+      }
+      onToggleFavorite(company_id);
+      
     } catch (error) {
       console.error('관심기업 처리 중 에러:', error);
       alert('관심기업 처리에 실패했습니다. 다시 시도해주세요.');
@@ -119,7 +120,7 @@ const JobCard = ({
   // 관심기업 여부 확인
   const isFavorite = () => {
     const companyId = getCompanyId();
-    return companyId && favoriteCompanies.includes(companyId);
+    return favoriteCompanies.includes(companyId);
   };
 
 
