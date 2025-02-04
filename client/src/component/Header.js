@@ -67,6 +67,7 @@ const Header = ({ userData, onSearch }) => {
           }
           data-tooltip="크롬 익스텐션"
         />
+        <p className="chrome-extension">갠취스 연동 크롬 익스텐션</p>
       </form>
 
       <CategoryPopup
