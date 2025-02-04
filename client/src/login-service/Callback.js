@@ -56,7 +56,7 @@ function Callback() {
         user["name"]=userData.name;
         user["phone"]=userData.phone;
         sessionStorage.setItem('user', JSON.stringify(user));
-        window.location.href = 'MyPage1';
+        window.location.href = '/MyPage1';
       })
       .catch((error) => {
         console.error('Failed to exchange code for token:', error);
