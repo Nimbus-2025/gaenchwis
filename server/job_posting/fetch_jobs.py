@@ -12,10 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, 
      resources={r"/api/*": {
-         "origins": ["http://localhost:3000"],
+         "origins": ["*"],
          "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         "allow_headers": ["Content-Type", "Authorization", "user_id"],
-         "supports_credentials": True
+         "allow_headers": ["Content-Type", "user_id", "id_token", "access_token"]
      }})
 
 
@@ -117,10 +116,9 @@ class UserTagService:
 
 
 
-@app.route("/api/v1/user/tags/<tag_type>", methods=['PUT'])
-def update_tags(tag_type):
+@app.route("/api/v1/user/tags/<tag_type>/<user_id>", methods=['PUT'])
+def update_tags(tag_type, user_id):
     try:
-        user_id = get_current_user_id()
         request_data = request.get_json()
 
         print(f"\n=== 태그 업데이트 요청 정보 ===")
@@ -148,10 +146,9 @@ def update_tags(tag_type):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/v1/user/tags/<tag_type>', methods=['GET'])
-def get_user_tags(tag_type):
+@app.route('/api/v1/user/tags/<tag_type>/<user_id>', methods=['GET'])
+def get_user_tags(tag_type, user_id):
     try:
-        user_id = request.headers.get('user_id')
         print(f"Received user_id: {user_id}")
         
         if not user_id:

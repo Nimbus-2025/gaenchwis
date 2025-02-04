@@ -54,6 +54,10 @@ const ShowProfile = ({ userData }) => {
   useEffect(() => {
     const fetchEducationTags = async () => {
       try {
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const token = sessionStorage.getItem('token');  // 토큰 가져오기
+        const userId = user?.user_id;
+
         const data = await Api(`${Config.server}:8003/api/tags/education`, 'GET')
 
         setAllEducationTags(data);  // 모든 가능한 태그 설정
@@ -124,7 +128,7 @@ const ShowProfile = ({ userData }) => {
         return;
       }
       
-      const response = await Api(`${Config.server}:8003/api/v1/user/tags/location`, 'GET');
+      const response = await Api(`${Config.server}:8003/api/v1/user/tags/location/${userId}`, 'GET');
   
       const data = response;
       console.log('불러온 위치 태그:', data);
@@ -153,7 +157,7 @@ const ShowProfile = ({ userData }) => {
           return;
         }
         
-        const response = await Api(`${Config.server}:8003/api/v1/user/tags/education`, 'GET');
+        const response = await Api(`${Config.server}:8003/api/v1/user/tags/education/${userId}`, 'GET');
 
         const data = response;
         
@@ -203,7 +207,7 @@ const ShowProfile = ({ userData }) => {
         
         if (!userId) return;
 
-        const data = await Api(`${Config.server}:8003/api/tags/position`, 'GET');
+        const data = await Api(`${Config.server}:8003/api/v1/user/tags/position/${userId}`, 'GET');
      
         
         if (data.tags && Array.isArray(data.tags)) {
@@ -224,7 +228,7 @@ const ShowProfile = ({ userData }) => {
       const token = sessionStorage.getItem('token');
       const userId = user?.user_id;
 
-      const response = await Api(`${Config.server}:8003/api/v1/user/tags/position`, 'PUT', {
+      const response = await Api(`${Config.server}:8003/api/v1/user/tags/position/${userId}`, 'PUT', {
           tags: selectedTags.map(tag => ({
             tag_id: tag,
             tag_name: tag,
@@ -297,7 +301,7 @@ const ShowProfile = ({ userData }) => {
       }));
   
       // fetch를 사용한 API 호출
-      const data = await Api(`${Config.server}:8003/api/v1/user/tags/location`, 'PUT', {
+      const data = await Api(`${Config.server}:8003/api/v1/user/tags/location/${userId}`, 'PUT', {
         tags: tagsData
       });
     
@@ -324,7 +328,7 @@ const handleEducationTagApply = async (selectedTags) => {
     }));
 
     // fetch를 사용한 API 호출
-    const data = await Api(`${Config.server}:8003/api/v1/user/tags/education`, 'PUT',
+    const data = await Api(`${Config.server}:8003/api/v1/user/tags/education/${userId}`, 'PUT',
       {
         tags: tagsData
       });
